@@ -1,0 +1,18 @@
+import readline from "readline";
+import { RPC } from "./rpc_server.js";
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+  terminal: false,
+});
+
+rl.on("line", async (line) => {
+  try {
+    const req = RPC.parseData(line);
+    RPC.validRequest(req);
+    RPC.exec(req);
+  } catch (err) {
+    process.stdout.write(JSON.stringify(err) + "\n");
+  }
+});

@@ -1,0 +1,61 @@
+local job_id
+local callbacks = {}
+
+local generate_uuid = function()
+  local random = math.random
+  local template = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx"
+  return string.gsub(template, "[xy]", function(c)
+    local v = (c == "x") and random(0, 0xf) or random(8, 0xb)
+    return string.format("%x", v)
+  end)
+end
+
+local M = {}
+
+M.init = function()
+  vim.api.nvim_create_user_command("Dbout", function()
+    local files = vim.api.nvim_get_runtime_file("js/main.js", false)
+    job_id = vim.fn.jobstart({
+      "node",
+      files[1],
+    }, {
+      on_stdout = function(_, json)
+        local data = vim.fn.json_decode(json)
+        vim.notify(vim.inspect(data))
+        if callbacks[data.id] then
+          callbacks[data.id](data.result)
+          callbacks[data.id] = nil
+        end
+      end,
+      on_stderr = function(_, json)
+        local data = vim.fn.json_decode(json)
+        vim.notify(data.error.message, vim.log.levels.ERROR)
+      end,
+    })
+  end, {})
+end
+
+M.send_jsonrpc = function(method, params, cb)
+  local id = generate_uuid()
+  local jsonrpc = {
+    jsonrpc = "2.0",
+    id = id,
+    method = method,
+    params = params,
+  }
+
+  callbacks[id] = cb
+  vim.fn.chansend(job_id, vim.fn.json_encode(jsonrpc) .. "\n")
+end
+
+M.send_notification = function(method, params)
+  local jsonrpc = {
+    jsonrpc = "2.0",
+    method = method,
+    params = params,
+  }
+
+  vim.fn.chansend(job_id, vim.fn.json_encode(jsonrpc) .. "\n")
+end
+
+return M
