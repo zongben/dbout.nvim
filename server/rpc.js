@@ -8,7 +8,7 @@ const METHODS = {
 };
 
 const handlers = {
-  [METHODS.CREATE_CONNECTION]: (params) => Consumer.createConnection(params),
+  [METHODS.CREATE_CONNECTION]: (id, params) => Consumer.createConnection(id, params),
   [METHODS.GET_DB_LIST]: (id) => Consumer.getDbList(id),
   [METHODS.GET_TABLE_LIST]: (id, params) => Consumer.getTableList(id, params),
   [METHODS.QUERY]: (id, params) => Consumer.query(id, params),

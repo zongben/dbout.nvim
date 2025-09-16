@@ -12,7 +12,7 @@ class Driver {
       case DB_TYPE.MSSQL: {
         const conn = await MsSql.createConnection(conn_str);
         this.#connections.set(id, conn);
-        break;
+        return "";
       }
       default: {
         throw new Error(`${db_type} is not supported`);
