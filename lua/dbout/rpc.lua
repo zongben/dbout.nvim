@@ -12,27 +12,29 @@ end
 
 local M = {}
 
-M.init = function()
-  vim.api.nvim_create_user_command("Dbout", function()
-    local files = vim.api.nvim_get_runtime_file("js/main.js", false)
-    job_id = vim.fn.jobstart({
-      "node",
-      files[1],
-    }, {
-      on_stdout = function(_, json)
-        local data = vim.fn.json_decode(json)
-        vim.notify(vim.inspect(data))
-        if callbacks[data.id] then
-          callbacks[data.id](data.result)
-          callbacks[data.id] = nil
-        end
-      end,
-      on_stderr = function(_, json)
-        local data = vim.fn.json_decode(json)
-        vim.notify(data.error.message, vim.log.levels.ERROR)
-      end,
-    })
-  end, {})
+M.server_up = function()
+  local files = vim.api.nvim_get_runtime_file("server/main.js", false)
+  job_id = vim.fn.jobstart({
+    "node",
+    files[1],
+  }, {
+    on_stdout = function(_, json)
+      local data = vim.fn.json_decode(json)
+      vim.notify(vim.inspect(data))
+      if callbacks[data.id] then
+        callbacks[data.id](data.result)
+        callbacks[data.id] = nil
+      end
+    end,
+    on_stderr = function(_, json)
+      local data = vim.fn.json_decode(json)
+      vim.notify(data.error.message, vim.log.levels.ERROR)
+    end,
+  })
+end
+
+M.is_alive = function()
+  return vim.fn.jobwait({ job_id }, 0)[0] == -1
 end
 
 M.send_jsonrpc = function(method, params, cb)
