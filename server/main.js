@@ -1,5 +1,5 @@
 import readline from "readline";
-import { RPC } from "./rpc_server.js";
+import { RPC } from "./rpc.js";
 
 const rl = readline.createInterface({
   input: process.stdin,
