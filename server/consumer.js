@@ -1,8 +1,8 @@
 import { driver } from "./driver.js";
 
 export class Consumer {
-  static async createConnection(id, params) {
-    const { dbType, connStr } = params;
+  static async createConnection(params) {
+    const { id, dbType, connStr } = params;
     await driver.createConnection(id, dbType, connStr);
   }
 
@@ -11,7 +11,12 @@ export class Consumer {
   }
 
   static async getTableList(id, params) {
-    const { tableName } = params;
-    await driver.getTableList(id, tableName);
+    const { dbName } = params;
+    return await driver.getTableList(id, dbName);
+  }
+
+  static async query(id, params) {
+    const { sql } = params;
+    return await driver.query(id, sql);
   }
 }

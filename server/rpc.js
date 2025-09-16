@@ -1,9 +1,17 @@
 import { Consumer } from "./consumer.js";
 
-export const METHODS = {
+const METHODS = {
   CREATE_CONNECTION: "create_connection",
   GET_DB_LIST: "get_db_list",
   GET_TABLE_LIST: "get_table_list",
+  QUERY: "query",
+};
+
+const handlers = {
+  [METHODS.CREATE_CONNECTION]: (params) => Consumer.createConnection(params),
+  [METHODS.GET_DB_LIST]: (id) => Consumer.getDbList(id),
+  [METHODS.GET_TABLE_LIST]: (id, params) => Consumer.getTableList(id, params),
+  [METHODS.QUERY]: (id, params) => Consumer.query(id, params),
 };
 
 export class RPC {
@@ -49,24 +57,12 @@ export class RPC {
   }
 
   static async exec(req) {
-    const { id, method, params } = req;
     try {
-      switch (method) {
-        case METHODS.CREATE_CONNECTION: {
-          await Consumer.createConnection(id, params);
-          return this.ok(id, "");
-        }
-        case METHODS.GET_DB_LIST: {
-          const data = await Consumer.getDbList(id);
-          return this.ok(id, data);
-        }
-        case METHODS.GET_TABLE_LIST: {
-          const data = await Consumer.getTableList(id, params);
-          return this.ok(id, data);
-        }
-        default: {
-          return this.methodNotFound(`${method} is not found`);
-        }
+      const { id, method, params } = req;
+      if (!handlers[method]) return this.methodNotFound(`${method} not found`);
+      const data = await handlers[method](id, params);
+      if (data) {
+        return this.ok(id, data);
       }
     } catch (err) {
       return this.internalError(err.stack);
