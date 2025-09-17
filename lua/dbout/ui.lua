@@ -1,9 +1,11 @@
 local inited = false
 
 local dbout_buf_name = "dbout://dbout.nvim"
-local dbout_bufnr
 local db_explorer_buf_name = "dbout://db explorer"
+
 local db_explorer_buf_var = "is_db_explorer"
+
+local dbout_bufnr
 local db_explorer_bufnr
 
 local switch_win_to_buf = function(bufnr)
@@ -46,6 +48,12 @@ M.open_db_explorer = function()
   switch_win_to_buf(db_explorer_bufnr)
 end
 
+M.close_db_explorer = function()
+  if db_explorer_bufnr and vim.api.nvim_buf_is_loaded(db_explorer_bufnr) then
+    vim.api.nvim_buf_delete(db_explorer_bufnr, { unload = true })
+  end
+end
+
 M.init = function()
   if inited then
     return
@@ -77,6 +85,10 @@ M.init = function()
         vim.ui.select({ "mssql", "sqlite" }, {
           prompt = "choose a database",
         }, function(item)
+          if not item then
+            return
+          end
+
           vim.notify("you choose " .. item)
         end)
       end, { buffer = buf })
