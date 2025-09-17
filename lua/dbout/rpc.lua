@@ -1,14 +1,7 @@
+local utils = require("dbout.utils")
+
 local job_id
 local callbacks = {}
-
-local generate_uuid = function()
-  local random = math.random
-  local template = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx"
-  return string.gsub(template, "[xy]", function(c)
-    local v = (c == "x") and random(0, 0xf) or random(8, 0xb)
-    return string.format("%x", v)
-  end)
-end
 
 local M = {}
 
@@ -38,7 +31,7 @@ M.is_alive = function()
 end
 
 M.send_jsonrpc = function(method, params, cb)
-  local id = generate_uuid()
+  local id = utils.generate_uuid()
   local jsonrpc = {
     jsonrpc = "2.0",
     id = id,

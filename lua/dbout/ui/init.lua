@@ -47,6 +47,7 @@ M.open_db_explorer = function()
   vim.cmd("vertical resize 30")
 
   switch_win_to_buf(db_explorer_bufnr)
+  db_explorer.render(db_explorer_bufnr)
 end
 
 M.close_db_explorer = function()
@@ -60,7 +61,7 @@ M.is_inited = function()
 end
 
 M.init = function()
-  inited = true
+  db_explorer.init()
 
   vim.api.nvim_create_autocmd({ "BufDelete" }, {
     callback = function(args)
@@ -84,6 +85,8 @@ M.init = function()
       db_explorer.set_keymaps(M, buf)
     end,
   })
+
+  inited = true
 end
 
 return M
