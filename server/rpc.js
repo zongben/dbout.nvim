@@ -8,10 +8,10 @@ const METHODS = {
 };
 
 const handlers = {
-  [METHODS.CREATE_CONNECTION]: (id, params) => Consumer.createConnection(id, params),
-  [METHODS.GET_DB_LIST]: (id) => Consumer.getDbList(id),
-  [METHODS.GET_TABLE_LIST]: (id, params) => Consumer.getTableList(id, params),
-  [METHODS.QUERY]: (id, params) => Consumer.query(id, params),
+  [METHODS.CREATE_CONNECTION]: (params) => Consumer.createConnection(params),
+  [METHODS.GET_DB_LIST]: (params) => Consumer.getDbList(params),
+  [METHODS.GET_TABLE_LIST]: (params) => Consumer.getTableList(params),
+  [METHODS.QUERY]: (params) => Consumer.query(params),
 };
 
 export class RPC {
@@ -60,7 +60,7 @@ export class RPC {
     try {
       const { id, method, params } = req;
       if (!handlers[method]) return this.methodNotFound(`${method} not found`);
-      const data = await handlers[method](id, params);
+      const data = await handlers[method](params);
       if (data) {
         return this.ok(id, data);
       }

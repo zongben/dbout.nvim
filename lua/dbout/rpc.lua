@@ -13,7 +13,6 @@ M.server_up = function()
   }, {
     on_stdout = function(_, json)
       local data = vim.fn.json_decode(json)
-      vim.notify(vim.inspect(data))
       if callbacks[data.id] then
         callbacks[data.id](data.result)
         callbacks[data.id] = nil
