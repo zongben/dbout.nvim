@@ -10,6 +10,8 @@ M.init = function()
     end
 
     ui.init()
+    ui.open_dbout()
+    ui.open_db_explorer()
   end, {})
 end
 
