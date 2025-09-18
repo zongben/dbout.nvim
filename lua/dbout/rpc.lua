@@ -20,7 +20,10 @@ M.server_up = function()
     end,
     on_stderr = function(_, json)
       local data = vim.fn.json_decode(json)
-      vim.notify(data.error.message, vim.log.levels.ERROR)
+      if data.id and callbacks[data.id] then
+        callbacks[data.id] = nil
+      end
+      vim.notify(data.error.message .. " " .. data.error.data, vim.log.levels.ERROR)
     end,
   })
 end
@@ -37,9 +40,10 @@ M.send_jsonrpc = function(method, params, cb)
     method = method,
     params = params,
   }
-
   callbacks[id] = cb
-  vim.fn.chansend(job_id, vim.fn.json_encode(jsonrpc) .. "\n")
+  local json = vim.fn.json_encode(jsonrpc)
+  -- vim.notify(json)
+  vim.fn.chansend(job_id, json .. "\n")
 end
 
 M.send_notification = function(method, params)
