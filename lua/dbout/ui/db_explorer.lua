@@ -28,6 +28,35 @@ local toggle_state = function(state)
   end
 end
 
+local find_root = function(root_id)
+  for _, root in ipairs(explorer_tree) do
+    if root.id == root_id then
+      return root
+    end
+  end
+end
+
+local find_node = function(parent, name)
+  for _, child in ipairs(parent.children or {}) do
+    if child.name == name then
+      return child
+    end
+  end
+end
+
+local add_children = function(parent, list, opts)
+  for _, item in ipairs(list) do
+    table.insert(parent.children, {
+      name = item.name,
+      node = opts.node,
+      icon = opts.icon,
+      state = node_state.close,
+      is_selected = false,
+      children = {},
+    })
+  end
+end
+
 local create_root = function(connection)
   table.insert(explorer_tree, {
     id = connection.id,
@@ -38,43 +67,25 @@ local create_root = function(connection)
     node = "root",
     state = node_state.close,
     children = {},
+    icon = "󱘖",
   })
 end
 
 local create_db_list = function(root_id, db_list)
-  for _, root in ipairs(explorer_tree) do
-    if root.id == root_id then
-      for _, db in ipairs(db_list) do
-        table.insert(root.children, {
-          name = db.name,
-          node = "db",
-          is_selected = false,
-          state = node_state.close,
-          children = {},
-        })
-      end
-      break
-    end
-  end
+  local root = find_root(root_id)
+  add_children(root, db_list, {
+    node = "db",
+    icon = "",
+  })
 end
 
 local create_table_list = function(root_id, db_name, table_list)
-  for _, root in ipairs(explorer_tree) do
-    if root.id == root_id then
-      for _, db in ipairs(root.children) do
-        if db.name == db_name then
-          for _, t in ipairs(table_list) do
-            table.insert(db.children, {
-              name = t.table_name,
-              node = "table",
-            })
-          end
-          break
-        end
-      end
-      break
-    end
-  end
+  local root = find_root(root_id)
+  local node = find_node(root, db_name)
+  add_children(node, table_list, {
+    node = "table",
+    icon = "",
+  })
 end
 
 local M = {}
@@ -91,29 +102,27 @@ end
 M.render = function(buf)
   local lines = {}
   local line = 1
-  for _, root in ipairs(explorer_tree) do
-    root.line = line
-    root.first_line = line
-    table.insert(lines, "󱘖 " .. root.name)
+
+  local function render_node(node, depth)
+    node.line = line
+    node.first_line = line
+
+    local prefix = string.rep("  ", depth)
+    local icon = node.icon
+    table.insert(lines, prefix .. icon .. " " .. node.name)
     line = line + 1
 
-    if root.state == node_state.open then
-      for _, db in ipairs(root.children) do
-        db.line = line
-        table.insert(lines, " L  " .. db.name)
-        line = line + 1
-
-        if db.state == node_state.open then
-          for _, t in ipairs(db.children) do
-            t.line = line
-            table.insert(lines, "  L " .. t.name)
-            line = line + 1
-          end
-        end
+    if node.state == node_state.open and node.children then
+      for _, child in ipairs(node.children) do
+        render_node(child, depth + 1)
       end
     end
 
-    root.last_line = line - 1
+    node.last_line = line - 1
+  end
+
+  for _, root in ipairs(explorer_tree) do
+    render_node(root, 0)
   end
 
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
