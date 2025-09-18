@@ -48,6 +48,8 @@ local create_db_list = function(root_id, db_list)
         table.insert(root.children, {
           name = db.name,
           node = "db",
+          is_selected = false,
+          state = node_state.close,
           children = {},
         })
       end
@@ -56,12 +58,23 @@ local create_db_list = function(root_id, db_list)
   end
 end
 
-local get_db_list = function(root_id, cb)
-  rpc.send_jsonrpc("get_db_list", {
-    id = root_id,
-  }, function(data)
-    cb(data[1].rows)
-  end)
+local create_table_list = function(root_id, db_name, table_list)
+  for _, root in ipairs(explorer_tree) do
+    if root.id == root_id then
+      for _, db in ipairs(root.children) do
+        if db.name == db_name then
+          for _, t in ipairs(table_list) do
+            table.insert(db.children, {
+              name = t.table_name,
+              node = "table",
+            })
+          end
+          break
+        end
+      end
+      break
+    end
+  end
 end
 
 local M = {}
@@ -81,14 +94,22 @@ M.render = function(buf)
   for _, root in ipairs(explorer_tree) do
     root.line = line
     root.first_line = line
-    table.insert(lines, root.name)
+    table.insert(lines, "󱘖 " .. root.name)
     line = line + 1
 
     if root.state == node_state.open then
       for _, db in ipairs(root.children) do
         db.line = line
-        table.insert(lines, " L " .. db.name)
+        table.insert(lines, " L  " .. db.name)
         line = line + 1
+
+        if db.state == node_state.open then
+          for _, t in ipairs(db.children) do
+            t.line = line
+            table.insert(lines, "  L " .. t.name)
+            line = line + 1
+          end
+        end
       end
     end
 
@@ -133,14 +154,38 @@ M.set_keymaps = function(ui, buf)
           return
         end
 
-        root.is_connected = true
-        get_db_list(root.id, function(db_list)
-          create_db_list(root.id, db_list)
+        rpc.send_jsonrpc("get_db_list", {
+          id = root.id,
+        }, function(db_data)
+          root.is_connected = true
+          create_db_list(root.id, db_data[1].rows)
           root.state = toggle_state(root.state)
           M.render(buf)
         end)
       end)
       return
+    end
+
+    for _, child in ipairs(root.children) do
+      if current_line == child.line then
+        if child.is_selected then
+          child.state = toggle_state(child.state)
+          M.render(buf)
+          return
+        end
+
+        rpc.send_jsonrpc("get_table_list", {
+          id = root.id,
+          dbName = child.name,
+        }, function(data)
+          child.is_selected = true
+          create_table_list(root.id, child.name, data[1].rows)
+          child.state = toggle_state(child.state)
+          M.render(buf)
+        end)
+
+        break
+      end
     end
   end)
 
