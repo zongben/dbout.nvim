@@ -16,6 +16,6 @@ rl.on("line", async (line) => {
       process.stdout.write(JSON.stringify(res) + "\n");
     }
   } catch (err) {
-    process.stdout.write(JSON.stringify(err) + "\n");
+    process.stderr.write(JSON.stringify(err) + "\n");
   }
 });

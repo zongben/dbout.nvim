@@ -59,13 +59,14 @@ export class RPC {
   static async exec(req) {
     try {
       const { id, method, params } = req;
-      if (!handlers[method]) return this.methodNotFound(`${method} not found`);
+      if (!handlers[method])
+        return this.methodNotFound(id, `${method} not found`);
       const data = await handlers[method](params);
       if (data) {
         return this.ok(id, data);
       }
     } catch (err) {
-      return this.internalError(err.stack);
+      throw this.internalError(req.id, err.stack);
     }
   }
 
@@ -77,9 +78,10 @@ export class RPC {
     };
   }
 
-  static methodNotFound(data) {
+  static methodNotFound(id, data) {
     return {
       jsonrpc: "2.0",
+      id,
       error: {
         code: -32601,
         message: "Method not found",
@@ -110,9 +112,10 @@ export class RPC {
     };
   }
 
-  static internalError(data) {
+  static internalError(id, data) {
     return {
       jsonrpc: "2.0",
+      id,
       error: {
         code: -32603,
         message: "Internal error",
