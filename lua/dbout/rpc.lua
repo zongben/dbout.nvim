@@ -23,7 +23,7 @@ M.server_up = function()
       if data.id and callbacks[data.id] then
         callbacks[data.id] = nil
       end
-      vim.notify(data.error.message .. " " .. data.error.data, vim.log.levels.ERROR)
+      vim.notify(data.error.message .. "\n" .. data.error.data, vim.log.levels.ERROR)
     end,
   })
 end
