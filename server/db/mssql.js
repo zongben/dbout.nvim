@@ -31,7 +31,7 @@ export class MsSql {
   }
 
   async getTableList(db_name) {
-    const sql = `USE ${db_name}; SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'`;
+    const sql = `USE ${db_name}; SELECT TABLE_NAME as table_name FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'`;
     return await this.query(sql);
   }
 }
