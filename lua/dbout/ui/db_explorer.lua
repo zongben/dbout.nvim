@@ -88,6 +88,23 @@ local create_table_list = function(root_id, db_name, table_list)
   })
 end
 
+local function find_node_by_line(tree, line, root)
+  root = root or nil
+  for _, node in ipairs(tree) do
+    local current_root = root or node
+
+    if line >= node.first_line and line <= node.last_line then
+      if node.children and #node.children > 0 then
+        local found_node, found_root = find_node_by_line(node.children, line, current_root)
+        if found_node then
+          return found_node, found_root
+        end
+      end
+      return node, current_root
+    end
+  end
+end
+
 local M = {}
 
 M.init = function()
@@ -137,19 +154,16 @@ M.set_keymaps = function(ui, buf)
     local win = vim.api.nvim_get_current_win()
     local current_line = vim.api.nvim_win_get_cursor(win)[1]
 
-    local root
-    for _, r in ipairs(explorer_tree) do
-      if current_line >= r.first_line and current_line <= r.last_line then
-        root = r
-        break
-      end
-      return
+    local toggle_and_render = function(node)
+      node.state = toggle_state(node.state)
+      M.render(buf)
     end
 
-    if current_line == root.line then
+    local node, root = find_node_by_line(explorer_tree, current_line)
+
+    if node.node == "root" then
       if root.is_connected then
-        root.state = toggle_state(root.state)
-        M.render(buf)
+        toggle_and_render(root)
         return
       end
 
@@ -168,33 +182,28 @@ M.set_keymaps = function(ui, buf)
         }, function(db_data)
           root.is_connected = true
           create_db_list(root.id, db_data[1].rows)
-          root.state = toggle_state(root.state)
-          M.render(buf)
+          toggle_and_render(root)
         end)
       end)
       return
     end
 
-    for _, child in ipairs(root.children) do
-      if current_line == child.line then
-        if child.is_selected then
-          child.state = toggle_state(child.state)
-          M.render(buf)
-          return
-        end
-
-        rpc.send_jsonrpc("get_table_list", {
-          id = root.id,
-          dbName = child.name,
-        }, function(data)
-          child.is_selected = true
-          create_table_list(root.id, child.name, data[1].rows)
-          child.state = toggle_state(child.state)
-          M.render(buf)
-        end)
-
-        break
+    if node.node == "db" then
+      local db = node
+      if db.is_selected then
+        toggle_and_render(db)
+        return
       end
+
+      rpc.send_jsonrpc("get_table_list", {
+        id = root.id,
+        dbName = db.name,
+      }, function(data)
+        db.is_selected = true
+        create_table_list(root.id, db.name, data[1].rows)
+        toggle_and_render(db)
+      end)
+      return
     end
   end)
 
