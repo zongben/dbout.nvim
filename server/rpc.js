@@ -57,10 +57,11 @@ export class RPC {
   }
 
   static async exec(req) {
+    const { id, method, params } = req;
+
+    if (!handlers[method]) throw this.methodNotFound(id, `${method} not found`);
+
     try {
-      const { id, method, params } = req;
-      if (!handlers[method])
-        return this.methodNotFound(id, `${method} not found`);
       const data = await handlers[method](params);
       if (data) {
         return this.ok(id, data);
