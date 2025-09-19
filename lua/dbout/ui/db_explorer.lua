@@ -166,12 +166,37 @@ M.set_keymaps = function(ui, buf)
         return
       end
 
+      db.is_selected = true
+      create_node(db, {
+        { name = "tables" },
+        { name = "views" },
+      }, function(folder)
+        return {
+          name = folder.name,
+          node = "folder",
+          icon = "",
+          state = node_state.close,
+          is_selected = false,
+          children = {},
+          parent = db.name,
+        }
+      end)
+      toggle_and_render(db)
+    end
+
+    if node.node == "folder" and node.name == "tables" then
+      local folder = node
+      if folder.is_selected then
+        toggle_and_render(folder)
+        return
+      end
+
       rpc.send_jsonrpc("get_table_list", {
         id = root.id,
-        dbName = db.name,
+        dbName = folder.parent,
       }, function(data)
-        db.is_selected = true
-        create_node(db, data[1].rows, function(table)
+        folder.is_selected = true
+        create_node(folder, data[1].rows, function(table)
           return {
             name = table.name,
             node = "table",
@@ -181,7 +206,7 @@ M.set_keymaps = function(ui, buf)
             children = {},
           }
         end)
-        toggle_and_render(db)
+        toggle_and_render(folder)
       end)
       return
     end
