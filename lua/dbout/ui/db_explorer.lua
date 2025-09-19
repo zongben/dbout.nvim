@@ -28,35 +28,6 @@ local toggle_state = function(state)
   end
 end
 
-local find_root = function(root_id)
-  for _, root in ipairs(explorer_tree) do
-    if root.id == root_id then
-      return root
-    end
-  end
-end
-
-local find_node = function(parent, name)
-  for _, child in ipairs(parent.children or {}) do
-    if child.name == name then
-      return child
-    end
-  end
-end
-
-local add_children = function(parent, list, opts)
-  for _, item in ipairs(list) do
-    table.insert(parent.children, {
-      name = item.name,
-      node = opts.node,
-      icon = opts.icon,
-      state = node_state.close,
-      is_selected = false,
-      children = {},
-    })
-  end
-end
-
 local create_root = function(connection)
   table.insert(explorer_tree, {
     id = connection.id,
@@ -71,21 +42,12 @@ local create_root = function(connection)
   })
 end
 
-local create_db_list = function(root_id, db_list)
-  local root = find_root(root_id)
-  add_children(root, db_list, {
-    node = "db",
-    icon = "",
-  })
-end
-
-local create_table_list = function(root_id, db_name, table_list)
-  local root = find_root(root_id)
-  local node = find_node(root, db_name)
-  add_children(node, table_list, {
-    node = "table",
-    icon = "",
-  })
+local create_node = function(parent, children, format)
+  local format_children = {}
+  for _, child in ipairs(children) do
+    table.insert(format_children, format(child))
+  end
+  parent.children = format_children
 end
 
 local function find_node_by_line(tree, line, root)
@@ -181,7 +143,16 @@ M.set_keymaps = function(ui, buf)
           id = root.id,
         }, function(db_data)
           root.is_connected = true
-          create_db_list(root.id, db_data[1].rows)
+          create_node(root, db_data[1].rows, function(db)
+            return {
+              name = db.name,
+              node = "db",
+              icon = "",
+              state = node_state.close,
+              is_selected = false,
+              children = {},
+            }
+          end)
           toggle_and_render(root)
         end)
       end)
@@ -200,7 +171,16 @@ M.set_keymaps = function(ui, buf)
         dbName = db.name,
       }, function(data)
         db.is_selected = true
-        create_table_list(root.id, db.name, data[1].rows)
+        create_node(db, data[1].rows, function(table)
+          return {
+            name = table.name,
+            node = "table",
+            icon = "",
+            state = node_state.close,
+            is_selected = false,
+            children = {},
+          }
+        end)
         toggle_and_render(db)
       end)
       return
