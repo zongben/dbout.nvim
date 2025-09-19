@@ -72,7 +72,6 @@ local M = {}
 M.init = function()
   explorer_tree = {}
   connections = saver.load() or {}
-
   for _, conn in ipairs(connections) do
     create_root(conn)
   end
@@ -96,15 +95,110 @@ M.render = function(buf)
         render_node(child, depth + 1)
       end
     end
-
     node.last_line = line - 1
   end
 
   for _, root in ipairs(explorer_tree) do
     render_node(root, 0)
   end
-
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+end
+
+local create_node_handler = function(buf)
+  local function toggle_and_render(node)
+    node.state = toggle_state(node.state)
+    M.render(buf)
+  end
+
+  local node_handler = {}
+
+  node_handler["root"] = function(root, _)
+    if root.is_connected then
+      toggle_and_render(root)
+      return
+    end
+
+    rpc.send_jsonrpc("create_connection", {
+      id = root.id,
+      dbType = root.db_type,
+      connStr = root.connstr,
+    }, function(data)
+      if data ~= "connected" then
+        vim.notify(root.name .. " connection failed", vim.log.levels.WARN)
+        return
+      end
+
+      rpc.send_jsonrpc("get_db_list", {
+        id = root.id,
+      }, function(db_data)
+        root.is_connected = true
+        create_node(root, db_data[1].rows, function(db)
+          return {
+            name = db.name,
+            node = "db",
+            icon = "",
+            state = node_state.close,
+            is_selected = false,
+            children = {},
+          }
+        end)
+        toggle_and_render(root)
+      end)
+    end)
+  end
+
+  node_handler["db"] = function(_, node)
+    local db = node
+    if db.is_selected then
+      toggle_and_render(db)
+      return
+    end
+
+    db.is_selected = true
+    create_node(db, {
+      { name = "tables" },
+      { name = "views" },
+    }, function(folder)
+      return {
+        name = folder.name,
+        node = "folder" .. "_" .. folder.name,
+        icon = "",
+        state = node_state.close,
+        is_selected = false,
+        children = {},
+        parent = db.name,
+      }
+    end)
+    toggle_and_render(db)
+  end
+
+  node_handler["folder_tables"] = function(root, node)
+    local folder = node
+    if folder.is_selected then
+      toggle_and_render(folder)
+      return
+    end
+
+    rpc.send_jsonrpc("get_table_list", {
+      id = root.id,
+      dbName = folder.parent,
+    }, function(data)
+      folder.is_selected = true
+      create_node(folder, data[1].rows, function(table)
+        return {
+          name = table.name,
+          node = "table",
+          icon = "",
+          state = node_state.close,
+          is_selected = false,
+          children = {},
+        }
+      end)
+      toggle_and_render(folder)
+    end)
+  end
+
+  return node_handler
 end
 
 M.set_keymaps = function(ui, buf)
@@ -112,103 +206,20 @@ M.set_keymaps = function(ui, buf)
     vim.keymap.set(mode, key, cb, { buffer = buf })
   end
 
+  local node_handler = create_node_handler(buf)
+
   map("n", "<CR>", function()
     local win = vim.api.nvim_get_current_win()
     local current_line = vim.api.nvim_win_get_cursor(win)[1]
 
-    local toggle_and_render = function(node)
-      node.state = toggle_state(node.state)
-      M.render(buf)
-    end
-
     local node, root = find_node_by_line(explorer_tree, current_line)
-
-    if node.node == "root" then
-      if root.is_connected then
-        toggle_and_render(root)
-        return
-      end
-
-      rpc.send_jsonrpc("create_connection", {
-        id = root.id,
-        dbType = root.db_type,
-        connStr = root.connstr,
-      }, function(data)
-        if data ~= "connected" then
-          vim.notify(root.name .. " connection failed", vim.log.levels.WARN)
-          return
-        end
-
-        rpc.send_jsonrpc("get_db_list", {
-          id = root.id,
-        }, function(db_data)
-          root.is_connected = true
-          create_node(root, db_data[1].rows, function(db)
-            return {
-              name = db.name,
-              node = "db",
-              icon = "",
-              state = node_state.close,
-              is_selected = false,
-              children = {},
-            }
-          end)
-          toggle_and_render(root)
-        end)
-      end)
+    if not node then
       return
     end
 
-    if node.node == "db" then
-      local db = node
-      if db.is_selected then
-        toggle_and_render(db)
-        return
-      end
-
-      db.is_selected = true
-      create_node(db, {
-        { name = "tables" },
-        { name = "views" },
-      }, function(folder)
-        return {
-          name = folder.name,
-          node = "folder",
-          icon = "",
-          state = node_state.close,
-          is_selected = false,
-          children = {},
-          parent = db.name,
-        }
-      end)
-      toggle_and_render(db)
-    end
-
-    if node.node == "folder" and node.name == "tables" then
-      local folder = node
-      if folder.is_selected then
-        toggle_and_render(folder)
-        return
-      end
-
-      rpc.send_jsonrpc("get_table_list", {
-        id = root.id,
-        dbName = folder.parent,
-      }, function(data)
-        folder.is_selected = true
-        create_node(folder, data[1].rows, function(table)
-          return {
-            name = table.name,
-            node = "table",
-            icon = "",
-            state = node_state.close,
-            is_selected = false,
-            children = {},
-          }
-        end)
-        toggle_and_render(folder)
-      end)
-      return
+    local handler = node_handler[node.node]
+    if handler then
+      handler(root, node)
     end
   end)
 
