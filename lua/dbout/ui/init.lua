@@ -28,6 +28,7 @@ M.open_dbout = function()
 
   main_bufnr = vim.api.nvim_create_buf(true, false)
   vim.api.nvim_buf_set_name(main_bufnr, main_buf_name)
+  vim.api.nvim_set_option_value("filetype", "sql", { buf = main_bufnr })
   switch_win_to_buf(main_bufnr)
 end
 
