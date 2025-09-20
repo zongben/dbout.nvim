@@ -91,7 +91,10 @@ M.render = function(buf)
   for _, root in ipairs(explorer_tree) do
     render_node(root, 0)
   end
+
+  vim.api.nvim_set_option_value("modifiable", true, { buf = buf })
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+  vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
 end
 
 local create_node_handler = function(buf)

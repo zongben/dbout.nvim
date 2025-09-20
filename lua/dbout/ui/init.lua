@@ -29,15 +29,18 @@ M.open_dbout = function()
 end
 
 M.open_db_explorer = function()
-  if not main_bufnr or main_bufnr ~= vim.api.nvim_get_current_buf() then
+  if main_bufnr == nil then
     return
   end
 
   if explorer_bufnr == nil then
     explorer_bufnr = vim.api.nvim_create_buf(false, true)
     vim.api.nvim_buf_set_name(explorer_bufnr, explorer_buf_name)
-    vim.api.nvim_set_option_value("filetype", explorer_filetype, { buf = explorer_bufnr })
     vim.api.nvim_buf_set_var(explorer_bufnr, explorer_buf_var.is_explorer, true)
+
+    vim.api.nvim_set_option_value("filetype", explorer_filetype, { buf = explorer_bufnr })
+    vim.api.nvim_set_option_value("modifiable", false, { buf = explorer_bufnr })
+
     explorer.set_keymaps(M, explorer_bufnr)
   end
 
