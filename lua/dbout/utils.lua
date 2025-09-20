@@ -9,4 +9,17 @@ M.generate_uuid = function()
   end)
 end
 
+M.switch_win_to_buf = function(bufnr)
+  local win = vim.fn.win_findbuf(bufnr)
+  local winnr
+  if #win > 0 then
+    winnr = win[1]
+  else
+    winnr = vim.api.nvim_get_current_win()
+  end
+
+  vim.api.nvim_win_set_buf(winnr, bufnr)
+  vim.api.nvim_set_current_win(winnr)
+end
+
 return M

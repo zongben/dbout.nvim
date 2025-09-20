@@ -7,6 +7,7 @@ M.node_state = {
 
 M.explorer_events = {
   toggle = "toggle",
+  create_db_buffer = "create_db_buffer",
 }
 
 return M

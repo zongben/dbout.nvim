@@ -109,6 +109,10 @@ local create_node_handler = function(buf)
     folder_tables = node_handlers.toggle_folder_tables,
   }
 
+  handler[explorer_events.create_db_buffer] = {
+    db = node_handlers.create_db_buffer,
+  }
+
   return handler
 end
 
@@ -136,6 +140,10 @@ M.set_keymaps = function(ui, buf)
 
   map("n", "<CR>", function()
     call_node_event(explorer_events.toggle)
+  end)
+
+  map("n", "c", function()
+    call_node_event(explorer_events.create_db_buffer)
   end)
 
   map("n", "n", function()

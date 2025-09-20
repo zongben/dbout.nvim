@@ -1,5 +1,6 @@
 local node_state = require("dbout.enum").node_state
 local rpc = require("dbout.rpc")
+local main = require("dbout.ui.main")
 
 local toggle_and_render
 
@@ -105,6 +106,20 @@ M.toggle_folder_tables = function(root, node)
       }
     end)
     toggle_and_render(folder)
+  end)
+end
+
+M.create_db_buffer = function(root, node)
+  local db = node
+  rpc.send_jsonrpc("try_query_db", {
+    id = root.id,
+    dbName = db.name,
+  }, function()
+    local bufnr = vim.api.nvim_create_buf(true, false)
+    vim.api.nvim_set_option_value("filetype", "sql", { buf = bufnr })
+    vim.api.nvim_buf_set_var(bufnr, "root_id", root.id)
+    vim.api.nvim_buf_set_var(bufnr, "db_name", node.name)
+    main.set_keymaps(bufnr)
   end)
 end
 

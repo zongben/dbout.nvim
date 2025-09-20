@@ -1,4 +1,6 @@
 local explorer = require("dbout.ui.explorer")
+local main = require("dbout.ui.main")
+local utils = require("dbout.utils")
 
 local inited = false
 
@@ -13,31 +15,17 @@ local explorer_buf_var = {
 local main_bufnr
 local explorer_bufnr
 
-local switch_win_to_buf = function(bufnr)
-  local win = vim.fn.win_findbuf(bufnr)
-  local winnr
-  if #win > 0 then
-    winnr = win[1]
-  else
-    winnr = vim.api.nvim_get_current_win()
-  end
-
-  vim.api.nvim_win_set_buf(winnr, bufnr)
-  vim.api.nvim_set_current_win(winnr)
-end
-
 local M = {}
 
 M.open_dbout = function()
-  if main_bufnr then
-    switch_win_to_buf(main_bufnr)
-    return
+  if main_bufnr == nil then
+    main_bufnr = vim.api.nvim_create_buf(true, false)
+    vim.api.nvim_buf_set_name(main_bufnr, main_buf_name)
+    vim.api.nvim_set_option_value("filetype", "sql", { buf = main_bufnr })
+    main.set_keymaps(main_bufnr)
   end
 
-  main_bufnr = vim.api.nvim_create_buf(true, false)
-  vim.api.nvim_buf_set_name(main_bufnr, main_buf_name)
-  vim.api.nvim_set_option_value("filetype", "sql", { buf = main_bufnr })
-  switch_win_to_buf(main_bufnr)
+  utils.switch_win_to_buf(main_bufnr)
 end
 
 M.open_db_explorer = function()
@@ -59,7 +47,7 @@ M.open_db_explorer = function()
     explorer.render(explorer_bufnr)
   end
 
-  switch_win_to_buf(explorer_bufnr)
+  utils.switch_win_to_buf(explorer_bufnr)
 end
 
 M.close_db_explorer = function()
