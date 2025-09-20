@@ -28,12 +28,7 @@ M.toggle_root = function(root, _)
     id = root.id,
     dbType = root.db_type,
     connStr = root.connstr,
-  }, function(data)
-    if data ~= "connected" then
-      vim.notify(root.name .. " connection failed", vim.log.levels.WARN)
-      return
-    end
-
+  }, function()
     rpc.send_jsonrpc("get_db_list", {
       id = root.id,
     }, function(db_data)
