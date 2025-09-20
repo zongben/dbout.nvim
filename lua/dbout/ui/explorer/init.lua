@@ -1,6 +1,8 @@
 local utils = require("dbout.utils")
 local saver = require("dbout.saver")
-local rpc = require("dbout.rpc")
+local node_state = require("dbout.enum").node_state
+local node_handlers = require("dbout.ui.explorer.node_handlers")
+local explorer_events = require("dbout.enum").explorer_events
 
 local supported_db = { "mssql", "sqlite" }
 
@@ -15,10 +17,6 @@ local create_connection = function(tbl)
 end
 
 local explorer_tree
-local node_state = {
-  open = "open",
-  close = "close",
-}
 
 local toggle_state = function(state)
   if state == node_state.open then
@@ -40,14 +38,6 @@ local create_root = function(connection)
     children = {},
     icon = "󱘖",
   })
-end
-
-local create_node = function(parent, children, format)
-  local format_children = {}
-  for _, child in ipairs(children) do
-    table.insert(format_children, format(child))
-  end
-  parent.children = format_children
 end
 
 local function find_node_by_line(tree, line, root)
@@ -109,96 +99,17 @@ local create_node_handler = function(buf)
     node.state = toggle_state(node.state)
     M.render(buf)
   end
+  node_handlers.init(toggle_and_render)
 
-  local node_handler = {}
+  local handler = {}
 
-  node_handler["root"] = function(root, _)
-    if root.is_connected then
-      toggle_and_render(root)
-      return
-    end
+  handler[explorer_events.toggle] = {
+    root = node_handlers.toggle_root,
+    db = node_handlers.toggle_db,
+    folder_tables = node_handlers.toggle_folder_tables,
+  }
 
-    rpc.send_jsonrpc("create_connection", {
-      id = root.id,
-      dbType = root.db_type,
-      connStr = root.connstr,
-    }, function(data)
-      if data ~= "connected" then
-        vim.notify(root.name .. " connection failed", vim.log.levels.WARN)
-        return
-      end
-
-      rpc.send_jsonrpc("get_db_list", {
-        id = root.id,
-      }, function(db_data)
-        root.is_connected = true
-        create_node(root, db_data[1].rows, function(db)
-          return {
-            name = db.name,
-            node = "db",
-            icon = "",
-            state = node_state.close,
-            is_selected = false,
-            children = {},
-          }
-        end)
-        toggle_and_render(root)
-      end)
-    end)
-  end
-
-  node_handler["db"] = function(_, node)
-    local db = node
-    if db.is_selected then
-      toggle_and_render(db)
-      return
-    end
-
-    db.is_selected = true
-    create_node(db, {
-      { name = "tables" },
-      { name = "views" },
-    }, function(folder)
-      return {
-        name = folder.name,
-        node = "folder" .. "_" .. folder.name,
-        icon = "",
-        state = node_state.close,
-        is_selected = false,
-        children = {},
-        parent = db.name,
-      }
-    end)
-    toggle_and_render(db)
-  end
-
-  node_handler["folder_tables"] = function(root, node)
-    local folder = node
-    if folder.is_selected then
-      toggle_and_render(folder)
-      return
-    end
-
-    rpc.send_jsonrpc("get_table_list", {
-      id = root.id,
-      dbName = folder.parent,
-    }, function(data)
-      folder.is_selected = true
-      create_node(folder, data[1].rows, function(table)
-        return {
-          name = table.name,
-          node = "table",
-          icon = "",
-          state = node_state.close,
-          is_selected = false,
-          children = {},
-        }
-      end)
-      toggle_and_render(folder)
-    end)
-  end
-
-  return node_handler
+  return handler
 end
 
 M.set_keymaps = function(ui, buf)
@@ -217,9 +128,9 @@ M.set_keymaps = function(ui, buf)
       return
     end
 
-    local handler = node_handler[node.node]
+    local handler = node_handler[explorer_events.toggle]
     if handler then
-      handler(root, node)
+      handler[node.node](root, node)
     end
   end)
 
