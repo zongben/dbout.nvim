@@ -129,7 +129,7 @@ M.set_keymaps = function(ui, buf)
     end
 
     local handler = node_handler[explorer_events.toggle]
-    if handler then
+    if handler and handler[node.node] then
       handler[node.node](root, node)
     end
   end)

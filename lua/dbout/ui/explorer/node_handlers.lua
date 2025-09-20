@@ -52,29 +52,34 @@ M.toggle_root = function(root, _)
   end)
 end
 
-M.toggle_db = function(_, node)
+M.toggle_db = function(root, node)
   local db = node
   if db.is_selected then
     toggle_and_render(db)
     return
   end
 
-  db.is_selected = true
-  create_node(db, {
-    { name = "tables" },
-    { name = "views" },
-  }, function(folder)
-    return {
-      name = folder.name,
-      node = "folder" .. "_" .. folder.name,
-      icon = "",
-      state = node_state.close,
-      is_selected = false,
-      children = {},
-      parent = db.name,
-    }
+  rpc.send_jsonrpc("try_query_db", {
+    id = root.id,
+    dbName = db.name,
+  }, function()
+    db.is_selected = true
+    create_node(db, {
+      { name = "tables" },
+      { name = "views" },
+    }, function(folder)
+      return {
+        name = folder.name,
+        node = "folder" .. "_" .. folder.name,
+        icon = "",
+        state = node_state.close,
+        is_selected = false,
+        children = {},
+        parent = db.name,
+      }
+    end)
+    toggle_and_render(db)
   end)
-  toggle_and_render(db)
 end
 
 M.toggle_folder_tables = function(root, node)

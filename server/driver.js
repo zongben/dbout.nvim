@@ -34,6 +34,12 @@ class Driver {
     const conn = this.#connections.get(id);
     return await conn.getTableList(db_name);
   }
+
+  async tryQueryDb(id, db_name) {
+    const conn = this.#connections.get(id);
+    await conn.tryQueryDb(db_name);
+    return "successed";
+  }
 }
 
 export const driver = new Driver();

@@ -34,4 +34,9 @@ export class MsSql {
     const sql = `USE ${db_name}; SELECT TABLE_NAME as name FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'`;
     return await this.query(sql);
   }
+
+  async tryQueryDb(db_name) {
+    const sql = `USE ${db_name};`;
+    return await this.query(sql);
+  }
 }

@@ -20,4 +20,9 @@ export class Consumer {
     const { id, sql } = params;
     return await driver.query(id, sql);
   }
+
+  static async tryQueryDb(params) {
+    const { id, dbName } = params;
+    return await driver.tryQueryDb(id, dbName);
+  }
 }
