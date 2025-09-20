@@ -1,4 +1,5 @@
 local rpc = require("dbout.rpc")
+local viewer = require("dbout.ui.viewer")
 
 local M = {}
 
@@ -19,7 +20,7 @@ M.set_keymaps = function(buf)
       id = root_id,
       sql = sql,
     }, function(data)
-      vim.notify(vim.inspect(data))
+      viewer.open_viewer(data)
     end)
   end)
 end
