@@ -4,6 +4,15 @@ local node_state = require("dbout.enum").node_state
 local node_handlers = require("dbout.ui.explorer.node_handlers")
 local explorer_events = require("dbout.enum").explorer_events
 
+local explorer_buf_name = "dbout://dbout explorer"
+
+local explorer_filetype = "dbout_explorer"
+local explorer_buf_var = {
+  is_explorer = "is_explorer",
+}
+
+local explorer_bufnr
+
 local supported_db = { "mssql", "sqlite" }
 
 local connections = {}
@@ -58,6 +67,37 @@ local function find_node_by_line(tree, line, root)
 end
 
 local M = {}
+
+M.open_db_explorer = function()
+  if explorer_bufnr == nil then
+    explorer_bufnr = vim.api.nvim_create_buf(false, true)
+    vim.api.nvim_buf_set_name(explorer_bufnr, explorer_buf_name)
+    vim.api.nvim_buf_set_var(explorer_bufnr, explorer_buf_var.is_explorer, true)
+
+    vim.api.nvim_set_option_value("filetype", explorer_filetype, { buf = explorer_bufnr })
+    vim.api.nvim_set_option_value("modifiable", false, { buf = explorer_bufnr })
+
+    M.set_keymaps(explorer_bufnr)
+  end
+
+  if vim.fn.bufwinnr(explorer_bufnr) == -1 then
+    vim.cmd("vsplit")
+    vim.cmd("vertical resize 30")
+    M.render(explorer_bufnr)
+  end
+
+  vim.api.nvim_set_option_value("winfixwidth", true, { win = vim.fn.win_findbuf(explorer_bufnr)[1] })
+  utils.switch_win_to_buf(explorer_bufnr)
+end
+
+M.close_db_explorer = function()
+  if explorer_bufnr and vim.api.nvim_buf_is_loaded(explorer_bufnr) then
+    local wins = vim.fn.win_findbuf(explorer_bufnr)
+    if #wins > 0 then
+      vim.api.nvim_win_close(wins[1], true)
+    end
+  end
+end
 
 M.init = function()
   explorer_tree = {}
@@ -119,7 +159,7 @@ local create_node_handler = function(buf)
   return handler
 end
 
-M.set_keymaps = function(ui, buf)
+M.set_keymaps = function(buf)
   local node_handler = create_node_handler(buf)
 
   local map = function(mode, key, cb)
@@ -182,7 +222,7 @@ M.set_keymaps = function(ui, buf)
   end)
 
   map("n", "q", function()
-    ui.close_db_explorer()
+    M.close_db_explorer()
   end)
 end
 

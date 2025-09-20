@@ -24,4 +24,13 @@ M.open_viewer = function(json_data)
   vim.api.nvim_win_set_buf(winnr, viewer_bufnr)
 end
 
+M.close_viewer = function()
+  if viewer_bufnr and vim.api.nvim_buf_is_loaded(viewer_bufnr) then
+    local wins = vim.fn.win_findbuf(viewer_bufnr)
+    if #wins > 0 then
+      vim.api.nvim_win_close(wins[1], true)
+    end
+  end
+end
+
 return M

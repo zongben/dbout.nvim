@@ -1,7 +1,23 @@
 local rpc = require("dbout.rpc")
 local viewer = require("dbout.ui.viewer")
+local utils = require("dbout.utils")
+
+local main_bufnr
+local main_buf_name = "dbout://dbout.nvim"
 
 local M = {}
+
+M.init = function()
+  vim.api.nvim_create_autocmd({ "BufDelete" }, {
+    callback = function(args)
+      local buf = args.buf
+      if vim.api.nvim_buf_get_name(buf) == main_buf_name then
+        main_bufnr = nil
+        return
+      end
+    end,
+  })
+end
 
 M.set_keymaps = function(buf)
   local map = function(mode, key, cb)
@@ -23,6 +39,17 @@ M.set_keymaps = function(buf)
       viewer.open_viewer(data)
     end)
   end)
+end
+
+M.open_dbout = function()
+  if main_bufnr == nil then
+    main_bufnr = vim.api.nvim_create_buf(true, false)
+    vim.api.nvim_buf_set_name(main_bufnr, main_buf_name)
+    vim.api.nvim_set_option_value("filetype", "sql", { buf = main_bufnr })
+    M.set_keymaps(main_bufnr)
+  end
+
+  utils.switch_win_to_buf(main_bufnr)
 end
 
 return M
