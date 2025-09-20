@@ -22,4 +22,13 @@ M.switch_win_to_buf = function(bufnr)
   vim.api.nvim_set_current_win(winnr)
 end
 
+M.close_buf_win = function(bufnr)
+  if bufnr and vim.api.nvim_buf_is_loaded(bufnr) then
+    local wins = vim.fn.win_findbuf(bufnr)
+    if #wins > 0 then
+      vim.api.nvim_win_close(wins[1], true)
+    end
+  end
+end
+
 return M

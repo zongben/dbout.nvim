@@ -1,6 +1,6 @@
-local node_state = require("dbout.enum").node_state
 local rpc = require("dbout.rpc")
 local main = require("dbout.ui.main")
+local node_state = require("dbout.enum").node_state
 
 local toggle_and_render
 

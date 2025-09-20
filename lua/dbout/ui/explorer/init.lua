@@ -1,19 +1,22 @@
 local utils = require("dbout.utils")
 local saver = require("dbout.saver")
-local node_state = require("dbout.enum").node_state
 local node_handlers = require("dbout.ui.explorer.node_handlers")
-local explorer_events = require("dbout.enum").explorer_events
+local node_state = require("dbout.enum").node_state
 
 local explorer_buf_name = "dbout://dbout explorer"
-
 local explorer_filetype = "dbout_explorer"
 local explorer_buf_var = {
   is_explorer = "is_explorer",
 }
 
-local explorer_bufnr
-
 local supported_db = { "mssql", "sqlite" }
+
+local explorer_events = {
+  toggle = "toggle",
+  create_db_buffer = "create_db_buffer",
+}
+
+local explorer_bufnr
 
 local connections = {}
 local create_connection = function(tbl)
@@ -91,12 +94,7 @@ M.open_db_explorer = function()
 end
 
 M.close_db_explorer = function()
-  if explorer_bufnr and vim.api.nvim_buf_is_loaded(explorer_bufnr) then
-    local wins = vim.fn.win_findbuf(explorer_bufnr)
-    if #wins > 0 then
-      vim.api.nvim_win_close(wins[1], true)
-    end
-  end
+  utils.close_buf_win(explorer_bufnr)
 end
 
 M.init = function()
