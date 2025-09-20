@@ -113,13 +113,13 @@ local create_node_handler = function(buf)
 end
 
 M.set_keymaps = function(ui, buf)
+  local node_handler = create_node_handler(buf)
+
   local map = function(mode, key, cb)
     vim.keymap.set(mode, key, cb, { buffer = buf })
   end
 
-  local node_handler = create_node_handler(buf)
-
-  map("n", "<CR>", function()
+  local function call_node_event(event)
     local win = vim.api.nvim_get_current_win()
     local current_line = vim.api.nvim_win_get_cursor(win)[1]
 
@@ -128,10 +128,14 @@ M.set_keymaps = function(ui, buf)
       return
     end
 
-    local handler = node_handler[explorer_events.toggle]
+    local handler = node_handler[event]
     if handler and handler[node.node] then
       handler[node.node](root, node)
     end
+  end
+
+  map("n", "<CR>", function()
+    call_node_event(explorer_events.toggle)
   end)
 
   map("n", "n", function()
