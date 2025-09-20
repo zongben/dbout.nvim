@@ -50,6 +50,7 @@ M.open_db_explorer = function()
     explorer.render(explorer_bufnr)
   end
 
+  vim.api.nvim_set_option_value("winfixwidth", true, { win = vim.fn.win_findbuf(explorer_bufnr)[1] })
   utils.switch_win_to_buf(explorer_bufnr)
 end
 
