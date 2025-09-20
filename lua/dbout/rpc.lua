@@ -29,7 +29,7 @@ M.server_up = function()
 end
 
 M.is_alive = function()
-  return vim.fn.jobwait({ job_id }, 0)[0] == -1
+  return vim.fn.jobwait({ job_id }, 0)[1] == -1
 end
 
 M.send_jsonrpc = function(method, params, cb)
