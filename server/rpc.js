@@ -1,5 +1,8 @@
 import { Consumer } from "./consumer.js";
 
+/**
+ * @enum {string}
+ */
 const METHODS = {
   CREATE_CONNECTION: "create_connection",
   GET_DB_LIST: "get_db_list",
@@ -9,14 +12,21 @@ const METHODS = {
 };
 
 const handlers = {
-  [METHODS.CREATE_CONNECTION]: (params) => Consumer.createConnection(params),
-  [METHODS.GET_DB_LIST]: (params) => Consumer.getDbList(params),
-  [METHODS.GET_TABLE_LIST]: (params) => Consumer.getTableList(params),
-  [METHODS.QUERY]: (params) => Consumer.query(params),
-  [METHODS.TRY_QUERY_DB]: (params) => Consumer.tryQueryDb(params),
+  [METHODS.CREATE_CONNECTION]: (/** @type {any} */ params) =>
+    Consumer.createConnection(params),
+  [METHODS.GET_DB_LIST]: (/** @type {any} */ params) =>
+    Consumer.getDbList(params),
+  [METHODS.GET_TABLE_LIST]: (/** @type {any} */ params) =>
+    Consumer.getTableList(params),
+  [METHODS.QUERY]: (/** @type {any} */ params) => Consumer.query(params),
+  [METHODS.TRY_QUERY_DB]: (/** @type {any} */ params) =>
+    Consumer.tryQueryDb(params),
 };
 
 export class RPC {
+  /**
+   * @param {string} data
+   */
   static parseData(data) {
     try {
       return JSON.parse(data);
@@ -25,6 +35,9 @@ export class RPC {
     }
   }
 
+  /**
+   * @param {JsonRpcReq} decoded
+   */
   static validRequest(decoded) {
     if (!decoded.jsonrpc) {
       throw this.invalidRequest("jsonrpc is required");
@@ -58,6 +71,9 @@ export class RPC {
     }
   }
 
+  /**
+   * @param {{ id: string; method?: string; params?: any; }} req
+   */
   static async exec(req) {
     const { id, method, params } = req;
 
@@ -73,6 +89,11 @@ export class RPC {
     }
   }
 
+  /**
+   * @param {string} id
+   * @param {any} result
+   * @returns {JsonRpcRes}
+   */
   static ok(id, result) {
     return {
       jsonrpc: "2.0",
@@ -81,6 +102,11 @@ export class RPC {
     };
   }
 
+  /**
+   * @param {string} id
+   * @param {string} data
+   * @returns {JsonRpcErrorRes}
+   */
   static methodNotFound(id, data) {
     return {
       jsonrpc: "2.0",
@@ -93,6 +119,10 @@ export class RPC {
     };
   }
 
+  /**
+   * @param {any} data
+   * @returns {JsonRpcErrorRes}
+   */
   static parseError(data) {
     return {
       jsonrpc: "2.0",
@@ -104,6 +134,10 @@ export class RPC {
     };
   }
 
+  /**
+   * @param {any} data
+   * @returns {JsonRpcErrorRes}
+   */
   static invalidRequest(data) {
     return {
       jsonrpc: "2.0",
@@ -115,6 +149,11 @@ export class RPC {
     };
   }
 
+  /**
+   * @param {string} id
+   * @param {any} data
+   * @returns {JsonRpcErrorRes}
+   */
   static internalError(id, data) {
     return {
       jsonrpc: "2.0",

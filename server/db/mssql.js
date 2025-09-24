@@ -1,11 +1,13 @@
+// @ts-nocheck
 import sql from "mssql";
 
 export class MsSql {
   /** @type {sql.ConnectionPool} */
   #pool;
 
-  constructor() {}
-
+  /**
+   * @param {sql.config} config
+   */
   async #init(config) {
     this.#pool = await new sql.ConnectionPool(config).connect();
   }
@@ -37,6 +39,6 @@ export class MsSql {
 
   async tryQueryDb(db_name) {
     const sql = `USE ${db_name};`;
-    return await this.query(sql);
+    await this.query(sql);
   }
 }
