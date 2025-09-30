@@ -113,8 +113,18 @@ M.create_db_buffer = function(root, node)
     local bufnr = vim.api.nvim_create_buf(true, false)
     vim.api.nvim_set_option_value("filetype", "sql", { buf = bufnr })
     vim.api.nvim_buf_set_var(bufnr, "root_id", root.id)
+    vim.api.nvim_buf_set_var(bufnr, "root_name", root.name)
     vim.api.nvim_buf_set_var(bufnr, "db_name", node.name)
     main.set_keymaps(bufnr)
+
+    vim.api.nvim_create_autocmd("BufEnter", {
+      buffer = bufnr,
+      callback = function(args)
+        local root_name = vim.api.nvim_buf_get_var(args.buf, "root_name")
+        local db_name = vim.api.nvim_buf_get_var(args.buf, "db_name")
+        vim.wo.winbar = root_name .. ":" .. db_name
+      end,
+    })
   end)
 end
 
