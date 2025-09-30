@@ -1,13 +1,8 @@
-// @ts-nocheck
 import sql from "mssql";
 
 export class MsSql {
-  /** @type {sql.ConnectionPool} */
   #pool;
 
-  /**
-   * @param {sql.config} config
-   */
   async #init(config) {
     this.#pool = await new sql.ConnectionPool(config).connect();
   }
