@@ -79,8 +79,6 @@ M.open_db_explorer = function()
 
     vim.api.nvim_set_option_value("filetype", explorer_filetype, { buf = explorer_bufnr })
     vim.api.nvim_set_option_value("modifiable", false, { buf = explorer_bufnr })
-
-    M.set_keymaps(explorer_bufnr)
   end
 
   if vim.fn.bufwinnr(explorer_bufnr) == -1 then
@@ -89,6 +87,7 @@ M.open_db_explorer = function()
     M.render(explorer_bufnr)
   end
 
+  M.set_keymaps(explorer_bufnr)
   vim.api.nvim_set_option_value("winfixwidth", true, { win = vim.fn.win_findbuf(explorer_bufnr)[1] })
   utils.switch_win_to_buf(explorer_bufnr)
 end
