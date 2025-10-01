@@ -1,37 +1,17 @@
 local rpc = require("dbout.rpc")
-local ui = require("dbout.ui")
+local tele = require("dbout.tele")
 
-local args = {
-  open_db_explorer = "OpenDbExplorer",
-  close_db_explorer = "CloseDbExplorer",
-}
+local args = {}
 
 local M = {}
 
 M.init = function()
-  vim.api.nvim_create_user_command("Dbout", function(opts)
-    local cmd = opts.args
-
-    if cmd == "" then
-      if not rpc.is_alive() then
-        rpc.server_up()
-      end
-      if not ui.is_inited() then
-        ui.init()
-      end
-      ui.open_dbout()
-      return
+  vim.api.nvim_create_user_command("Dbout", function()
+    if not rpc.is_alive() then
+      rpc.server_up()
     end
 
-    if not ui.is_inited() then
-      return
-    end
-
-    if cmd == args.open_db_explorer then
-      ui.open_db_explorer()
-    elseif cmd == args.close_db_explorer then
-      ui.close_db_explorer()
-    end
+    tele.open_connection_picker()
   end, {
     nargs = "?",
     complete = function(_, line, pos)
