@@ -120,6 +120,7 @@ M.create_db_buffer = function(root, node)
     local lsp_name = "sqls" .. "_" .. root.db_type .. "_" .. root.name
     vim.lsp.config[lsp_name] = {
       cmd = { "sqls" },
+      filetypes = { "sql" },
       settings = {
         sqls = {
           connections = {

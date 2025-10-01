@@ -24,7 +24,7 @@ M.set_keymaps = function(buf)
     vim.keymap.set(mode, key, cb, { buffer = buf })
   end
 
-  map("n", "<F5>", function()
+  map({ "n", "i", "v" }, "<F5>", function()
     local win = vim.api.nvim_get_current_win()
     local bufnr = vim.api.nvim_win_get_buf(win)
     local root_id = vim.api.nvim_buf_get_var(bufnr, "root_id")

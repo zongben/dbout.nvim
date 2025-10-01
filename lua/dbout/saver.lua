@@ -14,11 +14,13 @@ M.save = function(connection)
 end
 
 M.load = function()
-  if vim.fn.filereadable(persist_file) == 0 then
-    return nil
+  local f = io.open(persist_file, "r")
+  if not f then
+    return
   end
-  local json = vim.fn.readfile(persist_file)
-  return vim.fn.json_decode(json[1])
+  local content = f:read("*a")
+  f:close()
+  return vim.fn.json_decode(content)
 end
 
 return M
