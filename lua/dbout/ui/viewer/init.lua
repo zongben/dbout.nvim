@@ -10,7 +10,7 @@ M.open_viewer = function(json_data)
     vim.api.nvim_set_option_value("filetype", "json", { buf = viewer_bufnr })
   end
 
-  local formatted = vim.fn.system({ "jq", ".", "-M" }, vim.fn.json_encode(json_data))
+  local formatted = vim.fn.system({ "jq", "-S", ".", "-M" }, vim.fn.json_encode(json_data))
   local lines = vim.split(formatted, "\n", { plain = true })
   vim.api.nvim_buf_set_lines(viewer_bufnr, 0, -1, false, lines)
 

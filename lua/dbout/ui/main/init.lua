@@ -30,8 +30,25 @@ M.set_keymaps = function(buf)
     local root_id = vim.api.nvim_buf_get_var(bufnr, "root_id")
     -- local db_name = vim.api.nvim_buf_get_var(bufnr, "db_name")
 
-    local sql = table.concat(vim.api.nvim_buf_get_lines(bufnr, 0, -1, false), "\n")
+    local start_row, end_row
+    if vim.fn.mode():match("[vV\22]") then
+      local v_row = vim.fn.getpos("v")[2]
+      local c_row = vim.fn.getpos(".")[2]
 
+      if v_row < c_row then
+        start_row = v_row
+        end_row = c_row
+      else
+        start_row = c_row
+        end_row = v_row
+      end
+      start_row = start_row - 1
+    else
+      start_row = 0
+      end_row = -1
+    end
+
+    local sql = table.concat(vim.api.nvim_buf_get_lines(bufnr, start_row, end_row, false), "\n")
     rpc.send_jsonrpc("query", {
       id = root_id,
       sql = sql,
