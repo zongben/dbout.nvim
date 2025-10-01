@@ -2,6 +2,7 @@ local utils = require("dbout.utils")
 
 local job_id
 local callbacks = {}
+local buffer = ""
 
 local M = {}
 
@@ -12,7 +13,17 @@ M.server_up = function()
     files[1],
   }, {
     on_stdout = function(_, json)
-      local data = vim.fn.json_decode(json)
+      for _, chunk in ipairs(json) do
+        buffer = buffer .. chunk
+      end
+
+      local ok, data = pcall(vim.fn.json_decode, buffer)
+      if not ok then
+        return
+      else
+        buffer = ""
+      end
+
       if callbacks[data.id] then
         callbacks[data.id](data.result)
         callbacks[data.id] = nil
