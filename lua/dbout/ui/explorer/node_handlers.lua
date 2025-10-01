@@ -117,12 +117,28 @@ M.create_db_buffer = function(root, node)
     vim.api.nvim_buf_set_var(bufnr, "db_name", node.name)
     main.set_keymaps(bufnr)
 
+    local lsp_name = "sqls" .. "_" .. root.db_type .. "_" .. root.name
+    vim.lsp.config[lsp_name] = {
+      cmd = { "sqls" },
+      settings = {
+        sqls = {
+          connections = {
+            {
+              driver = root.db_type,
+              dataSourceName = root.connstr,
+            },
+          },
+        },
+      },
+    }
+    vim.lsp.enable(lsp_name, true)
+
     vim.api.nvim_create_autocmd("BufEnter", {
       buffer = bufnr,
       callback = function(args)
         local root_name = vim.api.nvim_buf_get_var(args.buf, "root_name")
         local db_name = vim.api.nvim_buf_get_var(args.buf, "db_name")
-        vim.wo.winbar = root_name .. ":" .. db_name
+        vim.wo.winbar = root_name .. "|" .. db_name
       end,
     })
   end)
