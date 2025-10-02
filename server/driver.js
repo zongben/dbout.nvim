@@ -34,15 +34,9 @@ class Driver {
     return await conn.query(sql);
   }
 
-  async getTableList(id, db_name) {
+  async getTableList(id) {
     const conn = this.#connections.get(id);
-    return await conn.getTableList(db_name);
-  }
-
-  async tryQueryDb(id, db_name) {
-    const conn = this.#connections.get(id);
-    await conn.tryQueryDb(db_name);
-    return "successed";
+    return await conn.getTableList();
   }
 }
 

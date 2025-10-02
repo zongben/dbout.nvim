@@ -12,17 +12,12 @@ export class Consumer {
   }
 
   static async getTableList(params) {
-    const { id, dbName } = params;
-    return await driver.getTableList(id, dbName);
+    const { id } = params;
+    return await driver.getTableList(id);
   }
 
   static async query(params) {
     const { id, sql } = params;
     return await driver.query(id, sql);
-  }
-
-  static async tryQueryDb(params) {
-    const { id, dbName } = params;
-    return await driver.tryQueryDb(id, dbName);
   }
 }

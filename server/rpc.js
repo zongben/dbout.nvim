@@ -5,7 +5,6 @@ const METHODS = {
   GET_DB_LIST: "get_db_list",
   GET_TABLE_LIST: "get_table_list",
   QUERY: "query",
-  TRY_QUERY_DB: "try_query_db",
 };
 
 const handlers = {
@@ -13,7 +12,6 @@ const handlers = {
   [METHODS.GET_DB_LIST]: (params) => Consumer.getDbList(params),
   [METHODS.GET_TABLE_LIST]: (params) => Consumer.getTableList(params),
   [METHODS.QUERY]: (params) => Consumer.query(params),
-  [METHODS.TRY_QUERY_DB]: (params) => Consumer.tryQueryDb(params),
 };
 
 export class RPC {
