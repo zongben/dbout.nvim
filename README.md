@@ -8,7 +8,8 @@ https://github.com/user-attachments/assets/88241a1c-b718-4595-b9be-4f53fdba197a
 ## Key Features
 
 * JSON Result Display: View query results in a structured JSON format for easy reading and further processing.
-* No more connection strings in your neovim config: All your database connections are securely saved locally on your machine.
+* No More Connection Strings In Your Neovim Config: All your database connections are securely saved locally on your machine.
+* LSP Support: Use `sqls` provides lsp completion.
 * Quick Database Connections: Easily manage multiple database connections with telescope.
 * Cross-Database Support: Unified interface for different databases.
 * Execute SQL Queries: Run SQL statements directly within Neovim.
