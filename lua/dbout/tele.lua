@@ -11,38 +11,27 @@ local M = {}
 
 M.picker_mappings = nil
 
-local create_connection_buffer = function(connection)
-  local bufnr = vim.api.nvim_create_buf(true, false)
-  vim.api.nvim_set_option_value("filetype", "sql", { buf = bufnr })
-  vim.api.nvim_buf_set_var(bufnr, "connection_id", connection.id)
-  vim.api.nvim_buf_set_var(bufnr, "connection_name", connection.name)
+local create_connection_buffer = function(connection, cb)
+  conn.connection(connection, function()
+    cb()
 
-  local lsp_name = "sqls" .. "_" .. connection.db_type .. "_" .. connection.name
-  vim.lsp.config[lsp_name] = {
-    cmd = { "sqls" },
-    filetypes = { "sql" },
-    settings = {
-      sqls = {
-        connections = {
-          {
-            driver = connection.db_type,
-            dataSourceName = connection.connstr,
-          },
-        },
-      },
-    },
-  }
-  vim.lsp.enable(lsp_name, true)
+    local bufnr = vim.api.nvim_create_buf(true, false)
+    vim.api.nvim_set_option_value("filetype", "sql", { buf = bufnr })
+    vim.api.nvim_buf_set_var(bufnr, "connection_id", connection.id)
+    vim.api.nvim_buf_set_var(bufnr, "connection_name", connection.name)
 
-  vim.api.nvim_create_autocmd("BufEnter", {
-    buffer = bufnr,
-    callback = function(args)
-      local connection_name = vim.api.nvim_buf_get_var(args.buf, "connection_name")
-      vim.wo.winbar = connection_name
-    end,
-  })
+    conn.start_lsp(connection)
 
-  utils.switch_win_to_buf(bufnr)
+    vim.api.nvim_create_autocmd("BufEnter", {
+      buffer = bufnr,
+      callback = function(args)
+        local connection_name = vim.api.nvim_buf_get_var(args.buf, "connection_name")
+        vim.wo.winbar = connection_name
+      end,
+    })
+
+    utils.switch_win_to_buf(bufnr)
+  end)
 end
 
 local function create_finder(connections)
@@ -87,8 +76,9 @@ local new_picker = function()
           if not selection then
             return false
           end
-          actions.close(prompt_bufnr)
-          create_connection_buffer(selection.value)
+          create_connection_buffer(selection.value, function()
+            actions.close(prompt_bufnr)
+          end)
         end)
         if M.picker_mappings then
           M.picker_mappings(map)

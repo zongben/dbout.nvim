@@ -1,5 +1,6 @@
 local saver = require("dbout.saver")
 local utils = require("dbout.utils")
+local rpc = require("dbout.rpc")
 
 local connections = {}
 local supported_db = { "mssql", "sqlite" }
@@ -57,6 +58,35 @@ M.update_connection = function(conn)
     end
   end
   save()
+end
+
+M.start_lsp = function(conn)
+  local lsp_name = "sqls" .. "_" .. conn.db_type .. "_" .. conn.name
+  vim.lsp.config[lsp_name] = {
+    cmd = { "sqls" },
+    filetypes = { "sql" },
+    settings = {
+      sqls = {
+        connections = {
+          {
+            driver = conn.db_type,
+            dataSourceName = conn.connstr,
+          },
+        },
+      },
+    },
+  }
+  vim.lsp.enable(lsp_name, true)
+end
+
+M.connection = function(conn, cb)
+  rpc.send_jsonrpc("create_connection", {
+    id = conn.id,
+    dbType = conn.db_type,
+    connStr = conn.connstr,
+  }, function()
+    cb()
+  end)
 end
 
 return M

@@ -8,6 +8,10 @@ class Driver {
   #connections = new Map();
 
   async createConnection(id, db_type, conn_str) {
+    if (this.#connections.has(id)) {
+      return "connected";
+    }
+
     switch (db_type) {
       case DB_TYPE.MSSQL: {
         const conn = await MsSql.createConnection(conn_str);
