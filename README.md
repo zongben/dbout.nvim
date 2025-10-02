@@ -20,7 +20,13 @@ No need to switch to external tools — everything happens inside Neovim, making
 
 ## Installation
 
-[node](https://github.com/nodejs/node) and [jq](https://github.com/jqlang/jq) is required.
+Requirements:
+
+* [Nodejs](https://github.com/nodejs/node)
+* [jq](https://github.com/jqlang/jq)
+* [sqls](https://github.com/sqls-server/sqls)
+
+`sqls` is recommended to be installed via [mason.nvim](https://github.com/mason-org/mason.nvim). If you are not using mason, make sure sqls is installed and available in your system PATH.
 
 With lazy.nvim:
 
