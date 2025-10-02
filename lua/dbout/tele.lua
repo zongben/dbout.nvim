@@ -34,7 +34,7 @@ local function create_finder(connections)
   })
 
   local function make_display(entry)
-    return displayer({ entry.name, { entry.value.connstr, "Comment" } })
+    return displayer({ entry.name, { entry.value.db_type .. ":" .. entry.value.connstr, "Comment" } })
   end
 
   return finders.new_table({
@@ -86,20 +86,14 @@ local refresh_picker = function(prompt_bufnr)
 end
 
 local create_connection = function(connection, cb)
-  local name = vim.fn.input("Enter name: ", connection.name or "")
-  if not name then
-    return
-  end
+  local fn = function(db_type)
+    local name = vim.fn.input("Enter name: ", connection.name or "")
+    if not name then
+      return
+    end
 
-  if conn.is_conn_exists(connection.id or "", name) then
-    vim.notify(name .. " is used.", vim.log.levels.ERROR)
-    return
-  end
-
-  vim.ui.select(conn.get_supported_db(), {
-    prompt = "Choose a database",
-  }, function(db_type)
-    if not db_type then
+    if conn.is_conn_exists(connection.id or "", name) then
+      vim.notify(name .. " is used.", vim.log.levels.ERROR)
       return
     end
 
@@ -110,6 +104,20 @@ local create_connection = function(connection, cb)
 
     local c = conn.create_connection(connection.id, name, db_type, connstr)
     cb(c)
+  end
+
+  if connection.id then
+    fn(connection.db_type)
+    return
+  end
+
+  vim.ui.select(conn.get_supported_db(), {
+    prompt = "Choose a database",
+  }, function(db_type)
+    if not db_type then
+      return
+    end
+    fn(db_type)
   end)
 end
 
