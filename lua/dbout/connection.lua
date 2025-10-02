@@ -67,6 +67,12 @@ M.start_lsp = function(conn)
   vim.lsp.config[lsp_name] = {
     cmd = { "sqls" },
     filetypes = { "sql" },
+    root_dir = function(bufnr, on_dir)
+      local ok, buf_connection_name = pcall(vim.api.nvim_buf_get_var, bufnr, "connection_name")
+      if ok and buf_connection_name == conn.name then
+        on_dir()
+      end
+    end,
     settings = {
       sqls = {
         connections = {

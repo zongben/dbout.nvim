@@ -15,8 +15,8 @@ local create_connection_buffer = function(connection, close_picker)
   conn.connect(connection, function()
     close_picker()
 
-    conn.start_lsp(connection)
     queryer.create_buf(connection)
+    conn.start_lsp(connection)
   end)
 end
 
