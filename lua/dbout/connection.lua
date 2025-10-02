@@ -1,6 +1,8 @@
 local saver = require("dbout.saver")
+local utils = require("dbout.utils")
 
 local connections = {}
+local supported_db = { "mssql", "sqlite" }
 
 local M = {}
 
@@ -12,6 +14,15 @@ M.init = function()
   connections = saver.load()
 end
 
+M.create_connection = function(name, db_type, connstr)
+  return {
+    id = utils.generate_uuid(),
+    name = name,
+    db_type = db_type,
+    connstr = connstr,
+  }
+end
+
 M.is_conn_exists = function(id, name)
   return #vim.tbl_filter(function(c)
     return c.id ~= id and c.name == name
@@ -20,6 +31,10 @@ end
 
 M.get_connections = function()
   return connections
+end
+
+M.get_supported_db = function()
+  return supported_db
 end
 
 M.add_connection = function(conn)

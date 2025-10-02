@@ -7,11 +7,43 @@ local entry_display = require("telescope.pickers.entry_display")
 local conn = require("dbout.connection")
 local utils = require("dbout.utils")
 
-local supported_db = { "mssql", "sqlite" }
-
 local M = {}
 
 M.picker_mappings = nil
+
+local create_connection_buffer = function(connection)
+  local bufnr = vim.api.nvim_create_buf(true, false)
+  vim.api.nvim_set_option_value("filetype", "sql", { buf = bufnr })
+  vim.api.nvim_buf_set_var(bufnr, "connection_id", connection.id)
+  vim.api.nvim_buf_set_var(bufnr, "connection_name", connection.name)
+
+  local lsp_name = "sqls" .. "_" .. connection.db_type .. "_" .. connection.name
+  vim.lsp.config[lsp_name] = {
+    cmd = { "sqls" },
+    filetypes = { "sql" },
+    settings = {
+      sqls = {
+        connections = {
+          {
+            driver = connection.db_type,
+            dataSourceName = connection.connstr,
+          },
+        },
+      },
+    },
+  }
+  vim.lsp.enable(lsp_name, true)
+
+  vim.api.nvim_create_autocmd("BufEnter", {
+    buffer = bufnr,
+    callback = function(args)
+      local connection_name = vim.api.nvim_buf_get_var(args.buf, "connection_name")
+      vim.wo.winbar = connection_name
+    end,
+  })
+
+  utils.switch_win_to_buf(bufnr)
+end
 
 local function create_finder(connections)
   local displayer = entry_display.create({
@@ -56,10 +88,7 @@ local new_picker = function()
             return false
           end
           actions.close(prompt_bufnr)
-
-          --when selected
-          --logic here
-          --
+          create_connection_buffer(selection.value)
         end)
         if M.picker_mappings then
           M.picker_mappings(map)
@@ -71,8 +100,13 @@ local new_picker = function()
 end
 
 local refresh_picker = function(prompt_bufnr)
-  local finder = create_finder(conn.get_connections())
-  action_state.get_current_picker(prompt_bufnr):refresh(finder)
+  local picker = action_state.get_current_picker(prompt_bufnr)
+  if picker then
+    local finder = create_finder(conn.get_connections())
+    picker:refresh(finder)
+  else
+    M.open_connection_picker()
+  end
 end
 
 local create_connection = function(connection, cb)
@@ -86,7 +120,7 @@ local create_connection = function(connection, cb)
     return
   end
 
-  vim.ui.select(supported_db, {
+  vim.ui.select(conn.get_supported_db(), {
     prompt = "Choose a database",
   }, function(db_type)
     if not db_type then
@@ -98,12 +132,8 @@ local create_connection = function(connection, cb)
       return
     end
 
-    cb({
-      id = utils.generate_uuid(),
-      name = name,
-      db_type = db_type,
-      connstr = connstr,
-    })
+    local c = conn.create_connection(name, db_type, connstr)
+    cb(c)
   end)
 end
 
@@ -119,14 +149,14 @@ M.new_connection = function(prompt_bufnr)
 end
 
 M.delete_connection = function(prompt_bufnr)
-  local selection = action_state.get_selected_entry().value
-  conn.remove_connection(selection.id)
+  local connection = action_state.get_selected_entry().value
+  conn.remove_connection(connection.id)
   refresh_picker(prompt_bufnr)
 end
 
 M.edit_connection = function(prompt_bufnr)
-  local selection = action_state.get_selected_entry().value
-  create_connection(selection, function(c)
+  local connection = action_state.get_selected_entry().value
+  create_connection(connection, function(c)
     conn.update_connection(c)
     refresh_picker(prompt_bufnr)
   end)

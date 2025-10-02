@@ -12,8 +12,8 @@ M.server_up = function()
     "node",
     files[1],
   }, {
-    on_stdout = function(_, json)
-      for _, chunk in ipairs(json) do
+    on_stdout = function(_, raw)
+      for _, chunk in ipairs(raw) do
         buffer = buffer .. chunk
       end
 
@@ -29,8 +29,8 @@ M.server_up = function()
         callbacks[data.id] = nil
       end
     end,
-    on_stderr = function(_, json)
-      local data = vim.fn.json_decode(json)
+    on_stderr = function(_, raw)
+      local data = vim.fn.json_decode(raw)
       if data.id and callbacks[data.id] then
         callbacks[data.id] = nil
       end

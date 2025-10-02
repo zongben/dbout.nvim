@@ -28,7 +28,6 @@ M.set_keymaps = function(buf)
     local win = vim.api.nvim_get_current_win()
     local bufnr = vim.api.nvim_win_get_buf(win)
     local root_id = vim.api.nvim_buf_get_var(bufnr, "root_id")
-    -- local db_name = vim.api.nvim_buf_get_var(bufnr, "db_name")
 
     local start_row, end_row
     if vim.fn.mode():match("[vV\22]") then
