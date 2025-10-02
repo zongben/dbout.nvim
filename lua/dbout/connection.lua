@@ -3,7 +3,7 @@ local utils = require("dbout.utils")
 local rpc = require("dbout.rpc")
 
 local connections = {}
-local supported_db = { "mssql", "sqlite3" }
+local supported_db = { "mssql", "sqlite3", "postgresql", "mysql" }
 
 local M = {}
 

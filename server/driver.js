@@ -1,4 +1,5 @@
 import { MsSql } from "./db/mssql.js";
+import { MySql } from "./db/mysql.js";
 import { Postgres } from "./db/postgres.js";
 import { Sqlite } from "./db/sqlite.js";
 
@@ -6,12 +7,14 @@ const DB_TYPE = {
   MSSQL: "mssql",
   SQLITE: "sqlite3",
   POSTGRES: "postgresql",
+  MYSQL: "mysql",
 };
 
 const DRIVER_MAP = {
   [DB_TYPE.MSSQL]: MsSql,
   [DB_TYPE.SQLITE]: Sqlite,
   [DB_TYPE.POSTGRES]: Postgres,
+  [DB_TYPE.MYSQL]: MySql,
 };
 
 class Driver {
