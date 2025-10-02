@@ -2,14 +2,12 @@ import { Consumer } from "./consumer.js";
 
 const METHODS = {
   CREATE_CONNECTION: "create_connection",
-  GET_DB_LIST: "get_db_list",
   GET_TABLE_LIST: "get_table_list",
   QUERY: "query",
 };
 
 const handlers = {
   [METHODS.CREATE_CONNECTION]: (params) => Consumer.createConnection(params),
-  [METHODS.GET_DB_LIST]: (params) => Consumer.getDbList(params),
   [METHODS.GET_TABLE_LIST]: (params) => Consumer.getTableList(params),
   [METHODS.QUERY]: (params) => Consumer.query(params),
 };

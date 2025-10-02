@@ -3,7 +3,7 @@ local utils = require("dbout.utils")
 local rpc = require("dbout.rpc")
 
 local connections = {}
-local supported_db = { "mssql", "sqlite" }
+local supported_db = { "mssql", "sqlite3" }
 
 local M = {}
 
@@ -15,9 +15,9 @@ M.init = function()
   connections = saver.load()
 end
 
-M.create_connection = function(name, db_type, connstr)
+M.create_connection = function(id, name, db_type, connstr)
   return {
-    id = utils.generate_uuid(),
+    id = id or utils.generate_uuid(),
     name = name,
     db_type = db_type,
     connstr = connstr,
@@ -53,11 +53,13 @@ end
 M.update_connection = function(conn)
   for _, c in ipairs(connections) do
     if c.id == conn.id then
-      c = conn
+      c.name = conn.name
+      c.db_type = conn.db_type
+      c.connstr = conn.connstr
+      save()
       return
     end
   end
-  save()
 end
 
 M.start_lsp = function(conn)

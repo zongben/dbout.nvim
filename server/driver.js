@@ -1,7 +1,14 @@
 import { MsSql } from "./db/mssql.js";
+import { Sqlite } from "./db/sqlite.js";
 
 const DB_TYPE = {
   MSSQL: "mssql",
+  SQLITE: "sqlite3",
+};
+
+const DRIVER_MAP = {
+  [DB_TYPE.MSSQL]: MsSql,
+  [DB_TYPE.SQLITE]: Sqlite,
 };
 
 class Driver {
@@ -12,21 +19,14 @@ class Driver {
       return "connected";
     }
 
-    switch (db_type) {
-      case DB_TYPE.MSSQL: {
-        const conn = await MsSql.createConnection(conn_str);
-        this.#connections.set(id, conn);
-        return "connected";
-      }
-      default: {
-        throw new Error(`${db_type} is not supported`);
-      }
+    const Driver = DRIVER_MAP[db_type];
+    if (!Driver) {
+      throw new Error(`${db_type} is not supported`);
     }
-  }
 
-  async getDbList(id) {
-    const conn = this.#connections.get(id);
-    return await conn.getDbList();
+    const conn = await Driver.createConnection(conn_str);
+    this.#connections.set(id, conn);
+    return "connected";
   }
 
   async query(id, sql) {

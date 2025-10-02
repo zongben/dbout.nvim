@@ -108,7 +108,7 @@ local create_connection = function(connection, cb)
       return
     end
 
-    local c = conn.create_connection(name, db_type, connstr)
+    local c = conn.create_connection(connection.id, name, db_type, connstr)
     cb(c)
   end)
 end

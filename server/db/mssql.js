@@ -22,11 +22,6 @@ export class MsSql {
     }));
   }
 
-  async getDbList() {
-    const result = await this.query("SELECT name FROM sys.databases;");
-    return result;
-  }
-
   async getTableList() {
     const sql = `SELECT TABLE_NAME as name FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'`;
     return await this.query(sql);

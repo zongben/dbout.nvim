@@ -6,11 +6,6 @@ export class Consumer {
     return await driver.createConnection(id, dbType, connStr);
   }
 
-  static async getDbList(params) {
-    const { id } = params;
-    return await driver.getDbList(id);
-  }
-
   static async getTableList(params) {
     const { id } = params;
     return await driver.getTableList(id);
