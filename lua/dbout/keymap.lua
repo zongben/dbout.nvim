@@ -5,21 +5,24 @@ local queryer = require("dbout.ui.queryer")
 
 local M = {}
 
+local map = function(bufnr, mode, key, cb)
+  if key == "" then
+    return
+  end
+  vim.keymap.set(mode, key, cb, { buffer = bufnr })
+end
+
 M.init = function(keymap)
-  tele.picker_mappings = function(map)
+  tele.picker_mappings = function(tele_map)
     local t = keymap.telescope
-    map("n", t.new_connection, tele.new_connection)
-    map("n", t.delete_connection, tele.delete_connection)
-    map("n", t.edit_connection, tele.edit_connection)
+    tele_map("n", t.new_connection, tele.new_connection)
+    tele_map("n", t.delete_connection, tele.delete_connection)
+    tele_map("n", t.edit_connection, tele.edit_connection)
   end
 
   queryer.buffer_mappings = function(buf)
     local q = keymap.queryer
-    local map = function(mode, key, cb)
-      vim.keymap.set(mode, key, cb, { buffer = buf })
-    end
-
-    map({ "n", "i", "v" }, q.query, function()
+    map(buf, { "n", "i", "v" }, q.query, function()
       local win = vim.api.nvim_get_current_win()
       local bufnr = vim.api.nvim_win_get_buf(win)
       local connection_id = vim.api.nvim_buf_get_var(bufnr, "connection_id")
@@ -49,6 +52,13 @@ M.init = function(keymap)
       }, function(data)
         viewer.open_viewer(data)
       end)
+    end)
+  end
+
+  viewer.buffer_mappings = function(buf)
+    local v = keymap.viewer
+    map(buf, { "n" }, v.close, function()
+      viewer.close_viewer()
     end)
   end
 end

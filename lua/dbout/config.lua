@@ -10,6 +10,9 @@ M.defaults = {
     queryer = {
       query = "<F5>",
     },
+    viewer = {
+      close = "q",
+    },
   },
 }
 
