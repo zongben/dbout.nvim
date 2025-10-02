@@ -79,7 +79,7 @@ M.start_lsp = function(conn)
   vim.lsp.enable(lsp_name, true)
 end
 
-M.connection = function(conn, cb)
+M.connect = function(conn, cb)
   rpc.send_jsonrpc("create_connection", {
     id = conn.id,
     dbType = conn.db_type,

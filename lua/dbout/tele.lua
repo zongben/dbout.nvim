@@ -5,32 +5,18 @@ local actions = require("telescope.actions")
 local conf = require("telescope.config").values
 local entry_display = require("telescope.pickers.entry_display")
 local conn = require("dbout.connection")
-local utils = require("dbout.utils")
+local queryer = require("dbout.ui.queryer")
 
 local M = {}
 
 M.picker_mappings = nil
 
-local create_connection_buffer = function(connection, cb)
-  conn.connection(connection, function()
-    cb()
-
-    local bufnr = vim.api.nvim_create_buf(true, false)
-    vim.api.nvim_set_option_value("filetype", "sql", { buf = bufnr })
-    vim.api.nvim_buf_set_var(bufnr, "connection_id", connection.id)
-    vim.api.nvim_buf_set_var(bufnr, "connection_name", connection.name)
+local create_connection_buffer = function(connection, close_picker)
+  conn.connect(connection, function()
+    close_picker()
 
     conn.start_lsp(connection)
-
-    vim.api.nvim_create_autocmd("BufEnter", {
-      buffer = bufnr,
-      callback = function(args)
-        local connection_name = vim.api.nvim_buf_get_var(args.buf, "connection_name")
-        vim.wo.winbar = connection_name
-      end,
-    })
-
-    utils.switch_win_to_buf(bufnr)
+    queryer.create_buf(connection)
   end)
 end
 
