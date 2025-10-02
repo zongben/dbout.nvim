@@ -19,7 +19,7 @@ export class Postgres {
     try {
       const result = await client.query(sql);
       return {
-        total: result.rows.length,
+        total: result.rowCount,
         rows: result.rows,
       };
     } finally {

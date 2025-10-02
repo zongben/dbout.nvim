@@ -14,9 +14,18 @@ export class MySql {
   }
 
   async query(sql) {
-    const [rows, _] = await this.#pool.execute(sql);
+    const [result, _] = await this.#pool.execute(sql);
+
+    let total, rows;
+    if (Array.isArray(result)) {
+      rows = result;
+      total = result.length;
+    } else {
+      rows = [];
+      total = result.affectedRows;
+    }
     return {
-      total: rows.length,
+      total,
       rows,
     };
   }

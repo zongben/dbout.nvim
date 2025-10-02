@@ -13,20 +13,20 @@ export class Sqlite {
 
   query(sql) {
     const stmt = this.#db.prepare(sql);
-    let rows;
+
+    let total, rows;
     try {
       rows = stmt.all();
-      return {
-        total: rows.length,
-        rows,
-      };
+      total = rows.length;
     } catch (err) {
       const info = stmt.run();
-      return {
-        total: info.changes,
-        rows: [],
-      };
+      rows = [];
+      total = info.changes;
     }
+    return {
+      total,
+      rows,
+    };
   }
 
   getTableList() {
