@@ -3,8 +3,9 @@ local M = {}
 M.defaults = {
   keymap = {
     telescope = {
-      create_connection = "n",
+      new_connection = "n",
       delete_connection = "d",
+      edit_connection = "e",
     },
   },
 }

@@ -4,8 +4,18 @@ local connections = {}
 
 local M = {}
 
+local save = function()
+  saver.save(connections)
+end
+
 M.init = function()
   connections = saver.load()
+end
+
+M.is_conn_exists = function(id, name)
+  return #vim.tbl_filter(function(c)
+    return c.id ~= id and c.name == name
+  end, connections) > 0
 end
 
 M.get_connections = function()
@@ -14,14 +24,24 @@ end
 
 M.add_connection = function(conn)
   table.insert(connections, conn)
-  saver.save(connections)
+  save()
 end
 
 M.remove_connection = function(id)
   connections = vim.tbl_filter(function(c)
     return c.id ~= id
   end, connections)
-  saver.save(connections)
+  save()
+end
+
+M.update_connection = function(conn)
+  for _, c in ipairs(connections) do
+    if c.id == conn.id then
+      c = conn
+      return
+    end
+  end
+  save()
 end
 
 return M

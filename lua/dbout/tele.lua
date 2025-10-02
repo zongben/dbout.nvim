@@ -75,50 +75,61 @@ local refresh_picker = function(prompt_bufnr)
   action_state.get_current_picker(prompt_bufnr):refresh(finder)
 end
 
-M.open_connection_picker = function()
-  new_picker()
-end
-
-M.create_connection = function(prompt_bufnr)
-  local name = vim.fn.input("Enter name: ")
+local create_connection = function(connection, cb)
+  local name = vim.fn.input("Enter name: ", connection.name or "")
   if not name then
     return
   end
 
-  for _, c in ipairs(conn.connections) do
-    if c.name == name then
-      vim.notify(name .. " is used.", vim.log.levels.ERROR)
-      return
-    end
+  if conn.is_conn_exists(connection.id or "", name) then
+    vim.notify(name .. " is used.", vim.log.levels.ERROR)
+    return
   end
 
   vim.ui.select(supported_db, {
-    prompt = "choose a database",
+    prompt = "Choose a database",
   }, function(db_type)
     if not db_type then
       return
     end
 
-    local connstr = vim.fn.input("Enter " .. db_type .. " connection string: ")
+    local connstr = vim.fn.input("Enter " .. db_type .. " connection string: ", connection.connstr or "")
     if not connstr then
       return
     end
 
-    conn.add_connection({
+    cb({
       id = utils.generate_uuid(),
       name = name,
       db_type = db_type,
       connstr = connstr,
     })
+  end)
+end
 
+M.open_connection_picker = function()
+  new_picker()
+end
+
+M.new_connection = function(prompt_bufnr)
+  create_connection({}, function(c)
+    conn.add_connection(c)
     refresh_picker(prompt_bufnr)
   end)
 end
 
 M.delete_connection = function(prompt_bufnr)
-  local selection = action_state.get_selected_entry()
-  conn.remove_connection(selection.value.id)
+  local selection = action_state.get_selected_entry().value
+  conn.remove_connection(selection.id)
   refresh_picker(prompt_bufnr)
+end
+
+M.edit_connection = function(prompt_bufnr)
+  local selection = action_state.get_selected_entry().value
+  create_connection(selection, function(c)
+    conn.update_connection(c)
+    refresh_picker(prompt_bufnr)
+  end)
 end
 
 return M
