@@ -7,6 +7,9 @@ M.defaults = {
       delete_connection = "d",
       edit_connection = "e",
     },
+    queryer = {
+      query = "<F5>",
+    },
   },
 }
 

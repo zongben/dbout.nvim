@@ -1,7 +1,7 @@
 local tele = require("dbout.tele")
 local rpc = require("dbout.rpc")
 local viewer = require("dbout.ui.viewer")
-local queryer =require("dbout.ui.queryer")
+local queryer = require("dbout.ui.queryer")
 
 local M = {}
 
@@ -14,11 +14,12 @@ M.init = function(keymap)
   end
 
   queryer.buffer_mappings = function(buf)
+    local q = keymap.queryer
     local map = function(mode, key, cb)
       vim.keymap.set(mode, key, cb, { buffer = buf })
     end
 
-    map({ "n", "i", "v" }, "<F5>", function()
+    map({ "n", "i", "v" }, q.query, function()
       local win = vim.api.nvim_get_current_win()
       local bufnr = vim.api.nvim_win_get_buf(win)
       local connection_id = vim.api.nvim_buf_get_var(bufnr, "connection_id")
