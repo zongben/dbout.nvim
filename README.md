@@ -3,6 +3,8 @@
 **dbout.nvim** is a Neovim plugin that helps you connect to databases, execute SQL queries, and display the results in **JSON format**. 
 No need to switch to external tools — everything happens inside Neovim, making your workflow faster and smoother.
 
+https://github.com/user-attachments/assets/88241a1c-b718-4595-b9be-4f53fdba197a
+
 ## Key Features
 
 * JSON Result Display: View query results in a structured JSON format for easy reading and further processing.
