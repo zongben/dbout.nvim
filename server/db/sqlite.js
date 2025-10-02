@@ -14,21 +14,19 @@ export class Sqlite {
   query(sql) {
     const stmt = this.#db.prepare(sql);
     let rows;
-
-    const cmd = sql.trim().split(" ")[0].toUpperCase();
-    if (["SELECT", "PRAGMA"].includes(cmd)) {
+    try {
       rows = stmt.all();
-    } else {
-      const info = stmt.run();
-      rows = [{ changes: info.changes, lastInsertRowid: info.lastInsertRowid }];
-    }
-
-    return [
-      {
+      return {
         total: rows.length,
         rows,
-      },
-    ];
+      };
+    } catch (err) {
+      const info = stmt.run();
+      return {
+        total: info.changes,
+        rows: [],
+      };
+    }
   }
 
   getTableList() {

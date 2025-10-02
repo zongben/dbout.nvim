@@ -16,10 +16,10 @@ export class MsSql {
 
   async query(sql) {
     const result = await this.#pool.request().query(sql);
-    return result.recordsets.map((rows) => ({
-      total: rows.length,
-      rows,
-    }));
+    return {
+      total: result.rowsAffected[0],
+      rows: result.recordset ?? [],
+    };
   }
 
   async getTableList() {
