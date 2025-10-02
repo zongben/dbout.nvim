@@ -17,4 +17,11 @@ M.add_connection = function(conn)
   saver.save(connections)
 end
 
+M.remove_connection = function(id)
+  connections = vim.tbl_filter(function(c)
+    return c.id ~= id
+  end, connections)
+  saver.save(connections)
+end
+
 return M

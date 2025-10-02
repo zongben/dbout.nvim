@@ -4,6 +4,7 @@ M.defaults = {
   keymap = {
     telescope = {
       create_connection = "n",
+      delete_connection = "d",
     },
   },
 }

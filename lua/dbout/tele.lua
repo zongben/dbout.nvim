@@ -115,4 +115,10 @@ M.create_connection = function(prompt_bufnr)
   end)
 end
 
+M.delete_connection = function(prompt_bufnr)
+  local selection = action_state.get_selected_entry()
+  conn.remove_connection(selection.value.id)
+  refresh_picker(prompt_bufnr)
+end
+
 return M
