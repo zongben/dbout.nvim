@@ -1,17 +1,19 @@
 local rpc = require("dbout.rpc")
-local tele = require("dbout.tele")
 
 local args = {}
 
 local M = {}
 
-M.init = function()
+M.init = function(enable_telescope)
   vim.api.nvim_create_user_command("Dbout", function()
     if not rpc.is_alive() then
       rpc.server_up()
     end
 
-    tele.open_connection_picker()
+    if enable_telescope then
+      local tele = require("dbout.tele")
+      tele.open_connection_picker()
+    end
   end, {
     nargs = "?",
     complete = function(_, line, pos)

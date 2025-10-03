@@ -1,6 +1,7 @@
 local M = {}
 
 M.defaults = {
+  enable_telescope = true,
   keymap = {
     telescope = {
       new_connection = "n",
