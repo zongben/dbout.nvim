@@ -10,7 +10,6 @@ https://github.com/user-attachments/assets/88241a1c-b718-4595-b9be-4f53fdba197a
 * JSON Result Display: View query results in a structured JSON format for easy reading and further processing.
 * No More Connection Strings In Your Neovim Config: All your database connections are securely saved locally on your machine.
 * LSP Support: Use `sqls` as the SQL language server, and spins up separate LSP instances per database connection to avoid mixing completions across different databases.
-* Quick Database Connections: Easily manage multiple database connections with telescope.
 * Cross-Database Support: Unified interface for different databases.
 * Execute SQL Queries: Run SQL statements directly within Neovim.
 
@@ -37,6 +36,7 @@ With lazy.nvim:
 {
   "zongben/dbout.nvim",
   build = "npm install",
+  --this is optional if you disable telescope
   dependencies = {
     "nvim-telescope/telescope.nvim",
     "nvim-lua/plenary.nvim"
@@ -53,6 +53,7 @@ The default configuration is as follows:
 
 ```lua
 {
+  enable_telescope = true,
   keymap = {
     telescope = {
       new_connection = "n",
@@ -72,13 +73,20 @@ The default configuration is as follows:
 
 ## Usage
 
-Call `Dbout` to open the database connection manager:  
+For users with Telescope, you can call `:Dbout` to open the database connection manager:
 
 `n` – Create a new database connection  
 `d` – Delete an existing connection  
 `e` – Edit an existing connection  
 
-After selecting a connection, a buffer for that database connection will be opened.  
+Alternatively, you can use user commands to perform the same actions:
+
+`:Dbout CreateConnection`  
+`:Dbout DeleteConnection`  
+`:Dbout EditConnection`  
+`:Dbout OpenConnection`  
+
+After open a connection, a buffer for that database connection will be opened.  
 Inside the connection buffer:  
 
 `F5` – Execute the current SQL query  
