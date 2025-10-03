@@ -1,11 +1,31 @@
 local rpc = require("dbout.rpc")
+local conn = require("dbout.connection")
 
-local args = {}
+local args = {
+  create_connection = "CreateConnection",
+  edit_connection = "EditConnection",
+  delete_connection = "DeleteConnection",
+  open_connection = "OpenConnection",
+}
+
+local select_connection = function(cb)
+  vim.ui.select(conn.get_connections(), {
+    prompt = "Choose a connection",
+    format_item = function(item)
+      return item.name .. " " .. item.db_type .. ":" .. item.connstr
+    end,
+  }, function(connection)
+    if not connection then
+      return
+    end
+    cb(connection)
+  end)
+end
 
 local M = {}
 
 M.init = function(enable_telescope)
-  vim.api.nvim_create_user_command("Dbout", function()
+  vim.api.nvim_create_user_command("Dbout", function(opts)
     if not rpc.is_alive() then
       rpc.server_up()
     end
@@ -13,6 +33,27 @@ M.init = function(enable_telescope)
     if enable_telescope then
       local tele = require("dbout.tele")
       tele.open_connection_picker()
+    end
+
+    local cmd = opts.args
+    if cmd == args.create_connection then
+      conn.create_connection({}, function(c)
+        conn.add_connection(c)
+      end)
+    elseif cmd == args.edit_connection then
+      select_connection(function(c)
+        conn.create_connection(c, function(cn)
+          conn.update_connection(cn)
+        end)
+      end)
+    elseif cmd == args.delete_connection then
+      select_connection(function(c)
+        conn.remove_connection(c.id)
+      end)
+    elseif cmd == args.open_connection then
+      select_connection(function(c)
+        conn.open_connection(c)
+      end)
     end
   end, {
     nargs = "?",

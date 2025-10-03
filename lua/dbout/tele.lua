@@ -11,15 +11,6 @@ local M = {}
 
 M.picker_mappings = nil
 
-local create_connection_buffer = function(connection, close_picker)
-  conn.connect(connection, function()
-    close_picker()
-
-    queryer.create_buf(connection)
-    conn.start_lsp(connection)
-  end)
-end
-
 local function create_finder(connections)
   local displayer = entry_display.create({
     separator = " ",
@@ -62,8 +53,11 @@ local new_picker = function()
           if not selection then
             return false
           end
-          create_connection_buffer(selection.value, function()
+
+          local connection = selection.value
+          conn.open_connection(connection, function()
             actions.close(prompt_bufnr)
+            queryer.create_buf(connection)
           end)
         end)
         if M.picker_mappings then
@@ -85,48 +79,12 @@ local refresh_picker = function(prompt_bufnr)
   end
 end
 
-local create_connection = function(connection, cb)
-  local fn = function(db_type)
-    local name = vim.fn.input("Enter name: ", connection.name or "")
-    if not name then
-      return
-    end
-
-    if conn.is_conn_exists(connection.id or "", name) then
-      vim.notify(name .. " is used.", vim.log.levels.ERROR)
-      return
-    end
-
-    local connstr = vim.fn.input("Enter " .. db_type .. " connection string: ", connection.connstr or "")
-    if not connstr then
-      return
-    end
-
-    local c = conn.create_connection(connection.id, name, db_type, connstr)
-    cb(c)
-  end
-
-  if connection.id then
-    fn(connection.db_type)
-    return
-  end
-
-  vim.ui.select(conn.get_supported_db(), {
-    prompt = "Choose a database",
-  }, function(db_type)
-    if not db_type then
-      return
-    end
-    fn(db_type)
-  end)
-end
-
 M.open_connection_picker = function()
   new_picker()
 end
 
 M.new_connection = function(prompt_bufnr)
-  create_connection({}, function(c)
+  conn.create_connection({}, function(c)
     conn.add_connection(c)
     refresh_picker(prompt_bufnr)
   end)
@@ -140,7 +98,7 @@ end
 
 M.edit_connection = function(prompt_bufnr)
   local connection = action_state.get_selected_entry().value
-  create_connection(connection, function(c)
+  conn.create_connection(connection, function(c)
     conn.update_connection(c)
     refresh_picker(prompt_bufnr)
   end)

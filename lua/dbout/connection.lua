@@ -1,6 +1,7 @@
 local saver = require("dbout.saver")
 local utils = require("dbout.utils")
 local rpc = require("dbout.rpc")
+local queryer = require("dbout.ui.queryer")
 
 local connections = {}
 local supported_db = { "sqlite3", "postgresql", "mysql", "mssql" }
@@ -15,13 +16,44 @@ M.init = function()
   connections = saver.load()
 end
 
-M.create_connection = function(id, name, db_type, connstr)
-  return {
-    id = id or utils.generate_uuid(),
-    name = name,
-    db_type = db_type,
-    connstr = connstr,
-  }
+M.create_connection = function(connection, cb)
+  local fn = function(db_type)
+    local name = vim.fn.input("Enter name: ", connection.name or "")
+    if not name then
+      return
+    end
+
+    if M.is_conn_exists(connection.id or "", name) then
+      vim.notify(name .. " is used.", vim.log.levels.ERROR)
+      return
+    end
+
+    local connstr = vim.fn.input("Enter " .. db_type .. " connection string: ", connection.connstr or "")
+    if not connstr then
+      return
+    end
+
+    cb({
+      id = connection.id or utils.generate_uuid(),
+      name = name,
+      db_type = db_type,
+      connstr = connstr,
+    })
+  end
+
+  if connection.id then
+    fn(connection.db_type)
+    return
+  end
+
+  vim.ui.select(M.get_supported_db(), {
+    prompt = "Choose a database",
+  }, function(db_type)
+    if not db_type then
+      return
+    end
+    fn(db_type)
+  end)
 end
 
 M.is_conn_exists = function(id, name)
@@ -94,6 +126,17 @@ M.connect = function(conn, cb)
     connStr = conn.connstr,
   }, function()
     cb()
+  end)
+end
+
+M.open_connection = function(connection, cb)
+  M.connect(connection, function()
+    if cb then
+      cb()
+    end
+
+    queryer.create_buf(connection)
+    M.start_lsp(connection)
   end)
 end
 
