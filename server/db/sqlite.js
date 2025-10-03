@@ -15,6 +15,7 @@ export class Sqlite {
     const stmt = this.#db.prepare(sql);
 
     let total, rows;
+    const start = Date.now();
     try {
       rows = stmt.all();
       total = rows.length;
@@ -23,7 +24,10 @@ export class Sqlite {
       rows = [];
       total = info.changes;
     }
+    const end = Date.now();
+
     return {
+      duration: `${end - start}ms`,
       total,
       rows,
     };

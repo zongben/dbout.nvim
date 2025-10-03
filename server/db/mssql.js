@@ -15,8 +15,12 @@ export class MsSql {
   }
 
   async query(sql) {
+    const start = Date.now();
     const result = await this.#pool.request().query(sql);
+    const end = Date.now();
+
     return {
+      duration: `${end - start}ms`,
       total: result.rowsAffected[0],
       rows: result.recordset ?? [],
     };

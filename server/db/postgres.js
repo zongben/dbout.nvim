@@ -17,8 +17,12 @@ export class Postgres {
   async query(sql) {
     const client = await this.#pool.connect();
     try {
+      const start = Date.now();
       const result = await client.query(sql);
+      const end = Date.now();
+
       return {
+        duration: `${end - start}ms`,
         total: result.rowCount,
         rows: result.rows,
       };
