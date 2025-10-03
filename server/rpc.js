@@ -72,7 +72,7 @@ export class RPC {
   static ok(id, result) {
     return {
       jsonrpc: "2.0",
-      result,
+      result: JSON.stringify(result),
       id,
     };
   }

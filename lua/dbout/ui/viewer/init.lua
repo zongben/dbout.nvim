@@ -6,13 +6,13 @@ local M = {}
 
 M.buffer_mappings = nil
 
-M.open_viewer = function(json_data)
+M.open_viewer = function(data)
   if viewer_bufnr == nil then
     viewer_bufnr = vim.api.nvim_create_buf(false, true)
     vim.api.nvim_set_option_value("filetype", "json", { buf = viewer_bufnr })
   end
 
-  local formatted = vim.fn.system({ "jq", "-S", ".", "-M" }, vim.fn.json_encode(json_data))
+  local formatted = vim.fn.system({ "jq", ".", "-M" }, data)
   local lines = vim.split(formatted, "\n", { plain = true })
   vim.api.nvim_buf_set_lines(viewer_bufnr, 0, -1, false, lines)
 
