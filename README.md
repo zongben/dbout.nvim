@@ -81,7 +81,7 @@ For users with Telescope, you can call `:Dbout` to open the database connection 
 
 Alternatively, you can use user commands to perform the same actions:
 
-`:Dbout CreateConnection`  
+`:Dbout NewConnection`  
 `:Dbout DeleteConnection`  
 `:Dbout EditConnection`  
 `:Dbout OpenConnection`  
