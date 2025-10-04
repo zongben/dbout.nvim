@@ -10,7 +10,7 @@ const DB_TYPE = {
   MYSQL: "mysql",
 };
 
-const DRIVER_MAP = {
+const DB_MAP = {
   [DB_TYPE.MSSQL]: MsSql,
   [DB_TYPE.SQLITE]: Sqlite,
   [DB_TYPE.POSTGRES]: Postgres,
@@ -25,12 +25,12 @@ class Driver {
       return "connected";
     }
 
-    const Driver = DRIVER_MAP[db_type];
-    if (!Driver) {
+    const db = DB_MAP[db_type];
+    if (!db) {
       throw new Error(`${db_type} is not supported`);
     }
 
-    const conn = await Driver.createConnection(conn_str);
+    const conn = await db.createConnection(conn_str);
     this.#connections.set(id, conn);
     return "connected";
   }
