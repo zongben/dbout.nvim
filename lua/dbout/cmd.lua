@@ -2,7 +2,7 @@ local rpc = require("dbout.rpc")
 local conn = require("dbout.connection")
 
 local args = {
-  create_connection = "CreateConnection",
+  new_connection = "NewConnection",
   edit_connection = "EditConnection",
   delete_connection = "DeleteConnection",
   open_connection = "OpenConnection",
@@ -22,6 +22,32 @@ local select_connection = function(cb)
   end)
 end
 
+local new_connection = function()
+  conn.create_connection({}, function(c)
+    conn.add_connection(c)
+  end)
+end
+
+local edit_connection = function()
+  select_connection(function(c)
+    conn.create_connection(c, function(cn)
+      conn.update_connection(cn)
+    end)
+  end)
+end
+
+local delete_connection = function()
+  select_connection(function(c)
+    conn.remove_connection(c.id)
+  end)
+end
+
+local open_connection = function()
+  select_connection(function(c)
+    conn.open_connection(c)
+  end)
+end
+
 local M = {}
 
 M.init = function(enable_telescope)
@@ -36,24 +62,14 @@ M.init = function(enable_telescope)
     end
 
     local cmd = opts.args
-    if cmd == args.create_connection then
-      conn.create_connection({}, function(c)
-        conn.add_connection(c)
-      end)
+    if cmd == args.new_connection then
+      new_connection()
     elseif cmd == args.edit_connection then
-      select_connection(function(c)
-        conn.create_connection(c, function(cn)
-          conn.update_connection(cn)
-        end)
-      end)
+      edit_connection()
     elseif cmd == args.delete_connection then
-      select_connection(function(c)
-        conn.remove_connection(c.id)
-      end)
+      delete_connection()
     elseif cmd == args.open_connection then
-      select_connection(function(c)
-        conn.open_connection(c)
-      end)
+      open_connection()
     end
   end, {
     nargs = "?",
