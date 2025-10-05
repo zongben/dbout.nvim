@@ -1,7 +1,6 @@
 local saver = require("dbout.saver")
 local utils = require("dbout.utils")
 local rpc = require("dbout.rpc")
-local queryer = require("dbout.ui.queryer")
 
 local connections = {}
 local supported_db = { "sqlite3", "postgresql", "mysql", "mssql" }
@@ -134,8 +133,6 @@ M.open_connection = function(connection, cb)
     if cb then
       cb()
     end
-
-    queryer.create_buf(connection)
     M.start_lsp(connection)
   end)
 end

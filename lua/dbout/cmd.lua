@@ -1,5 +1,6 @@
 local rpc = require("dbout.rpc")
 local conn = require("dbout.connection")
+local queryer = require("dbout.ui.queryer")
 
 local args = {
   new_connection = "NewConnection",
@@ -44,7 +45,9 @@ end
 
 local open_connection = function()
   select_connection(function(c)
-    conn.open_connection(c)
+    conn.open_connection(c, function()
+      queryer.create_buf(c)
+    end)
   end)
 end
 
