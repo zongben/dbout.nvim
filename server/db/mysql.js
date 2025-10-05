@@ -35,7 +35,7 @@ export class MySql {
 
   async getTableList() {
     const sql = `
-      SELECT table_name AS name
+      SELECT TABLE_NAME as table_name
       FROM information_schema.tables
       WHERE table_schema = DATABASE()
         AND table_type = 'BASE TABLE';

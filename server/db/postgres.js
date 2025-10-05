@@ -33,7 +33,7 @@ export class Postgres {
 
   async getTableList() {
     const sql = `
-      SELECT table_name AS name
+      SELECT table_name
       FROM information_schema.tables
       WHERE table_schema = 'public'
         AND table_type = 'BASE TABLE';
