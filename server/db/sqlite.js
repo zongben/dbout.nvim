@@ -34,7 +34,24 @@ export class Sqlite {
   }
 
   getTableList() {
-    const sql = `SELECT name as table_name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name;`;
+    const sql = `
+      SELECT name as table_name 
+      FROM sqlite_master 
+      WHERE type='table' 
+      AND name NOT LIKE 'sqlite_%' 
+      ORDER BY name;
+    `;
+    return this.query(sql);
+  }
+
+  getViewList() {
+    const sql = `
+      SELECT name as view_name
+      FROM sqlite_master 
+      WHERE type='view' 
+      AND name NOT LIKE 'sqlite_%' 
+      ORDER BY name;
+    `;
     return this.query(sql);
   }
 }

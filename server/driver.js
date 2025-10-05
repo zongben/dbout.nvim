@@ -44,6 +44,11 @@ class Driver {
     const conn = this.#connections.get(id);
     return await conn.getTableList();
   }
+
+  async getViewList(id) {
+    const conn = this.#connections.get(id);
+    return await conn.getViewList();
+  }
 }
 
 export const driver = new Driver();

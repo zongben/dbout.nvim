@@ -38,7 +38,19 @@ export class MySql {
       SELECT TABLE_NAME as table_name
       FROM information_schema.tables
       WHERE table_schema = DATABASE()
-        AND table_type = 'BASE TABLE';
+      AND table_type = 'BASE TABLE'
+      ORDER BY TABLE_NAME
+    `;
+    return await this.query(sql);
+  }
+
+  async getViewList() {
+    const sql = `
+      SELECT TABLE_NAME as view_name
+      FROM information_schema.tables
+      WHERE table_schema = DATABASE()
+      AND table_type = 'VIEW'
+      ORDER BY TABLE_NAME
     `;
     return await this.query(sql);
   }

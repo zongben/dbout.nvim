@@ -27,7 +27,22 @@ export class MsSql {
   }
 
   async getTableList() {
-    const sql = `SELECT TABLE_NAME as table_name FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'`;
+    const sql = `
+      SELECT TABLE_NAME as table_name 
+      FROM INFORMATION_SCHEMA.TABLES 
+      WHERE TABLE_TYPE = 'BASE TABLE' 
+      ORDER BY TABLE_NAME
+    `;
+    return await this.query(sql);
+  }
+
+  async getViewList() {
+    const sql = `
+      SELECT TABLE_NAME as view_name 
+      FROM INFORMATION_SCHEMA.TABLES 
+      WHERE TABLE_TYPE = 'VIEW' 
+      ORDER BY TABLE_NAME
+    `;
     return await this.query(sql);
   }
 }
