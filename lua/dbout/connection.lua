@@ -93,47 +93,13 @@ M.update_connection = function(conn)
   end
 end
 
-M.start_lsp = function(conn)
-  local lsp_name = "sqls" .. "_" .. conn.db_type .. "_" .. conn.name
-  vim.lsp.config[lsp_name] = {
-    cmd = { "sqls" },
-    filetypes = { "sql" },
-    root_dir = function(bufnr, on_dir)
-      local ok, buf_connection_name = pcall(vim.api.nvim_buf_get_var, bufnr, "connection_name")
-      if ok and buf_connection_name == conn.name then
-        on_dir()
-      end
-    end,
-    settings = {
-      sqls = {
-        connections = {
-          {
-            driver = conn.db_type,
-            dataSourceName = conn.connstr,
-          },
-        },
-      },
-    },
-  }
-  vim.lsp.enable(lsp_name, true)
-end
-
-M.connect = function(conn, cb)
+M.open_connection = function(conn, cb)
   rpc.send_jsonrpc("create_connection", {
     id = conn.id,
     dbType = conn.db_type,
     connStr = conn.connstr,
   }, function()
     cb()
-  end)
-end
-
-M.open_connection = function(connection, cb)
-  M.connect(connection, function()
-    if cb then
-      cb()
-    end
-    M.start_lsp(connection)
   end)
 end
 

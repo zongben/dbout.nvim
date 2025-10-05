@@ -18,6 +18,7 @@ M.init = function(keymap, enable_telescope)
       tele_map("n", t.new_connection, tele.new_connection)
       tele_map("n", t.delete_connection, tele.delete_connection)
       tele_map("n", t.edit_connection, tele.edit_connection)
+      tele_map("n", t.conn_connection, tele.conn_connection)
     end
   end
 

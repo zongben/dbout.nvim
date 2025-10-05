@@ -2,42 +2,76 @@ local utils = require("dbout.utils")
 local rpc = require("dbout.rpc")
 local viewer = require("dbout.ui.viewer")
 
-local current_buffer = {
-  connection_id = nil,
-}
+local buffer_connection = {}
 
 local M = {}
 
 M.buffer_mappings = nil
 
-M.create_buf = function(connection)
-  local bufnr = vim.api.nvim_create_buf(true, false)
-  vim.api.nvim_set_option_value("filetype", "sql", { buf = bufnr })
-  vim.api.nvim_buf_set_var(bufnr, "connection_id", connection.id)
-  vim.api.nvim_buf_set_var(bufnr, "connection_name", connection.name)
+local start_lsp = function(conn)
+  local lsp_name = "sqls" .. "_" .. conn.db_type .. "_" .. conn.name
+  vim.lsp.config[lsp_name] = {
+    cmd = { "sqls" },
+    filetypes = { "sql" },
+    root_dir = function(bufnr, on_dir)
+      if buffer_connection[bufnr] and buffer_connection[bufnr].name == conn.name then
+        on_dir()
+      end
+    end,
+    settings = {
+      sqls = {
+        connections = {
+          {
+            driver = conn.db_type,
+            dataSourceName = conn.connstr,
+          },
+        },
+      },
+    },
+  }
+  vim.lsp.enable(lsp_name, true)
+end
 
-  M.buffer_mappings(bufnr)
-
+M.init = function()
   vim.api.nvim_create_autocmd("BufEnter", {
-    buffer = bufnr,
     callback = function(args)
-      local connection_id = vim.api.nvim_buf_get_var(args.buf, "connection_id")
-      current_buffer = {
-        connection_id = connection_id,
-      }
+      local conn = buffer_connection[args.buf]
+      if not conn then
+        return
+      end
 
-      local connection_name = vim.api.nvim_buf_get_var(args.buf, "connection_name")
-      vim.wo.winbar = connection_name
+      M.buffer_mappings(args.buf)
+      vim.wo.winbar = conn.name
     end,
   })
+end
 
+local set_connection_buf = function(connection, bufnr)
+  vim.api.nvim_set_option_value("filetype", "sql", { buf = bufnr })
+
+  M.buffer_mappings(bufnr)
+  buffer_connection[bufnr] = connection
+
+  if vim.api.nvim_get_current_buf() == bufnr then
+    vim.wo.winbar = connection.name
+  end
+end
+
+M.create_buf = function(connection)
+  local bufnr = vim.api.nvim_create_buf(true, false)
+  set_connection_buf(connection, bufnr)
+  utils.switch_win_to_buf(bufnr)
+  start_lsp(connection)
+end
+
+M.conn_buf = function(connection, bufnr)
+  set_connection_buf(connection, bufnr)
   utils.switch_win_to_buf(bufnr)
 end
 
 M.query = function()
   local win = vim.api.nvim_get_current_win()
   local bufnr = vim.api.nvim_win_get_buf(win)
-  local connection_id = vim.api.nvim_buf_get_var(bufnr, "connection_id")
 
   local start_row, end_row
   if vim.fn.mode():match("[vV\22]") then
@@ -59,7 +93,7 @@ M.query = function()
 
   local sql = table.concat(vim.api.nvim_buf_get_lines(bufnr, start_row, end_row, false), "\n")
   rpc.send_jsonrpc("query", {
-    id = connection_id,
+    id = buffer_connection[bufnr].id,
     sql = sql,
   }, function(data)
     viewer.open_viewer(data)
@@ -67,8 +101,11 @@ M.query = function()
 end
 
 M.table_list = function()
+  local win = vim.api.nvim_get_current_win()
+  local bufnr = vim.api.nvim_win_get_buf(win)
+
   rpc.send_jsonrpc("get_table_list", {
-    id = current_buffer.connection_id,
+    id = buffer_connection[bufnr].id,
   }, function(data)
     viewer.open_viewer(data)
   end)

@@ -104,4 +104,12 @@ M.edit_connection = function(prompt_bufnr)
   end)
 end
 
+M.conn_connection = function(prompt_bufnr)
+  local connection = action_state.get_selected_entry().value
+  conn.open_connection(connection, function()
+    actions.close(prompt_bufnr)
+    queryer.conn_buf(connection, vim.api.nvim_get_current_buf())
+  end)
+end
+
 return M
