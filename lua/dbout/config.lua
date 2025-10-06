@@ -7,7 +7,7 @@ M.defaults = {
       new_connection = "n",
       delete_connection = "d",
       edit_connection = "e",
-      conn_connection = "c",
+      attach_connection = "a",
     },
     queryer = {
       query = "<F5>",

@@ -74,7 +74,7 @@ M.create_buf = function(connection)
   start_lsp(connection)
 end
 
-M.conn_buf = function(connection, bufnr)
+M.attach_buf = function(connection, bufnr)
   buf_detach_lsp(bufnr)
   set_connection_buf(connection, bufnr)
   utils.switch_win_to_buf(bufnr)
