@@ -59,6 +59,7 @@ The default configuration is as follows:
       new_connection = "n",
       delete_connection = "d",
       edit_connection = "e",
+      conn_connection = "c",
     },
     queryer = {
       query = "<F5>",
@@ -75,9 +76,11 @@ The default configuration is as follows:
 
 For users with Telescope, you can call `:Dbout` to open the database connection manager:
 
+`<CR>` - Open a new buffer and connect to selected database connection
 `n` – Create a new database connection  
 `d` – Delete an existing connection  
 `e` – Edit an existing connection  
+`c` – Connect to selected connection in the current buffer
 
 Alternatively, you can use user commands to perform the same actions:
 
@@ -85,6 +88,7 @@ Alternatively, you can use user commands to perform the same actions:
 `:Dbout DeleteConnection`  
 `:Dbout EditConnection`  
 `:Dbout OpenConnection`  
+`:Dbout ConnConnection`
 
 After open a connection, a buffer for that database connection will be opened.  
 Inside the connection buffer:  
