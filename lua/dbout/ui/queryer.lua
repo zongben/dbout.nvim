@@ -6,7 +6,7 @@ local buffer_connection = {}
 
 local M = {}
 
-M.buffer_mappings = nil
+M.buffer_keymappings = nil
 
 local start_lsp = function(conn)
   local lsp_name = "sqls" .. "_" .. conn.name
@@ -50,7 +50,7 @@ M.init = function()
         return
       end
 
-      M.buffer_mappings(args.buf)
+      M.buffer_keymappings(args.buf)
       vim.wo.winbar = conn.name
     end,
   })
@@ -59,7 +59,7 @@ end
 local set_connection_buf = function(connection, bufnr)
   vim.api.nvim_set_option_value("filetype", "sql", { buf = bufnr })
 
-  M.buffer_mappings(bufnr)
+  M.buffer_keymappings(bufnr)
   buffer_connection[bufnr] = connection
 
   if vim.api.nvim_get_current_buf() == bufnr then

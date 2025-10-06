@@ -4,7 +4,7 @@ local viewer_bufnr
 
 local M = {}
 
-M.buffer_mappings = nil
+M.buffer_keymappings = nil
 
 M.open_viewer = function(data)
   if viewer_bufnr == nil then
@@ -16,7 +16,7 @@ M.open_viewer = function(data)
   local lines = vim.split(formatted, "\n", { plain = true })
   vim.api.nvim_buf_set_lines(viewer_bufnr, 0, -1, false, lines)
 
-  M.buffer_mappings(viewer_bufnr)
+  M.buffer_keymappings(viewer_bufnr)
 
   local wins = vim.fn.win_findbuf(viewer_bufnr)
   local winnr

@@ -22,13 +22,13 @@ M.init = function(keymap, enable_telescope)
     end
   end
 
-  queryer.buffer_mappings = function(buf)
+  queryer.buffer_keymappings = function(buf)
     local q = keymap.queryer
     map(buf, { "n", "i", "v" }, q.query, queryer.query)
     map(buf, { "n", "i" }, q.table_list, queryer.table_list)
   end
 
-  viewer.buffer_mappings = function(buf)
+  viewer.buffer_keymappings = function(buf)
     local v = keymap.viewer
     map(buf, { "n" }, v.close, function()
       viewer.close_viewer()
