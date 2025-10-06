@@ -7,6 +7,7 @@ local args = {
   edit_connection = "EditConnection",
   delete_connection = "DeleteConnection",
   open_connection = "OpenConnection",
+  conn_connection = "ConnConnection",
 }
 
 local select_connection = function(cb)
@@ -51,6 +52,14 @@ local open_connection = function()
   end)
 end
 
+local conn_connection = function()
+  select_connection(function(c)
+    conn.open_connection(c, function()
+      queryer.conn_buf(c, vim.api.nvim_get_current_buf())
+    end)
+  end)
+end
+
 local M = {}
 
 M.init = function(enable_telescope)
@@ -73,6 +82,8 @@ M.init = function(enable_telescope)
       delete_connection()
     elseif cmd == args.open_connection then
       open_connection()
+    elseif cmd == args.conn_connection then
+      conn_connection()
     end
   end, {
     nargs = "?",
