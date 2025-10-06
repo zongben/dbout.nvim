@@ -76,7 +76,7 @@ The default configuration is as follows:
 
 For users with Telescope, you can call `:Dbout` to open the database connection manager:
 
-`<CR>` - Open a new buffer and connect to selected database connection
+`<CR>` – Open a new buffer and connect to selected database connection  
 `n` – Create a new database connection  
 `d` – Delete an existing connection  
 `e` – Edit an existing connection  
