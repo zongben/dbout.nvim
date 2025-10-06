@@ -80,17 +80,17 @@ For users with Telescope, you can call `:Dbout` to open the database connection 
 `n` – Create a new database connection  
 `d` – Delete an existing connection  
 `e` – Edit an existing connection  
-`c` – Connect to selected connection in the current buffer
+`a` – Attach to selected connection in the current buffer (this is very useful after opening a .sql file)
 
 Alternatively, you can use user commands to perform the same actions:
 
+`:Dbout OpenConnection`  
 `:Dbout NewConnection`  
 `:Dbout DeleteConnection`  
 `:Dbout EditConnection`  
-`:Dbout OpenConnection`  
-`:Dbout ConnConnection`
+`:Dbout AttachConnection`  
 
-After open a connection, a buffer for that database connection will be opened.  
+After open/attach a connection, a buffer for that database connection will be connected.  
 Inside the connection buffer:  
 
 `F5` – Execute the current SQL query  
