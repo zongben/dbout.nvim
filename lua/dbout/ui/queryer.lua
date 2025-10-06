@@ -9,7 +9,7 @@ local M = {}
 M.buffer_mappings = nil
 
 local start_lsp = function(conn)
-  local lsp_name = "sqls" .. "_" .. conn.db_type .. "_" .. conn.name
+  local lsp_name = "sqls" .. "_" .. conn.name
   vim.lsp.config[lsp_name] = {
     cmd = { "sqls" },
     filetypes = { "sql" },
@@ -30,6 +30,16 @@ local start_lsp = function(conn)
     },
   }
   vim.lsp.enable(lsp_name, true)
+end
+
+local buf_detach_lsp = function(bufnr)
+  local clients = vim.lsp.get_clients({ bufnr = bufnr })
+  for _, client in ipairs(clients) do
+    if client.name:match("^sqls") then
+      buffer_connection[bufnr] = nil
+      vim.lsp.buf_detach_client(bufnr, client.id)
+    end
+  end
 end
 
 M.init = function()
@@ -65,8 +75,10 @@ M.create_buf = function(connection)
 end
 
 M.conn_buf = function(connection, bufnr)
+  buf_detach_lsp(bufnr)
   set_connection_buf(connection, bufnr)
   utils.switch_win_to_buf(bufnr)
+  start_lsp(connection)
 end
 
 M.query = function()
