@@ -58,11 +58,10 @@ end
 
 local set_connection_buf = function(connection, bufnr)
   vim.api.nvim_set_option_value("filetype", "sql", { buf = bufnr })
-
-  M.buffer_keymappings(bufnr)
   buffer_connection[bufnr] = connection
 
   if vim.api.nvim_get_current_buf() == bufnr then
+    M.buffer_keymappings(bufnr)
     vim.wo.winbar = connection.name
   end
 end
