@@ -8,7 +8,6 @@ local tabs = {
   "Views",
   "StoreProcedures",
   "Functions",
-  "Triggers",
 }
 
 local set_winbar = function(winnr)
