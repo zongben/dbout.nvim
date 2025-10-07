@@ -12,53 +12,54 @@ local tabs = {
   "Functions",
 }
 
-local get_table_list = function()
+local get_table_list = function(cb)
   rpc.send_jsonrpc("get_table_list", {
     id = conn_id,
   }, function(jsonstr)
-    local lines = utils.format_json(jsonstr)
-    utils.set_buf_lines(inspector_bufnr, lines)
+    cb(jsonstr)
   end)
 end
 
-local get_view_list = function()
+local get_view_list = function(cb)
   rpc.send_jsonrpc("get_view_list", {
     id = conn_id,
   }, function(jsonstr)
-    local lines = utils.format_json(jsonstr)
-    utils.set_buf_lines(inspector_bufnr, lines)
+    cb(jsonstr)
   end)
 end
 
-local get_store_procedure_list = function()
+local get_store_procedure_list = function(cb)
   rpc.send_jsonrpc("get_store_procedure_list", {
     id = conn_id,
   }, function(jsonstr)
-    local lines = utils.format_json(jsonstr)
-    utils.set_buf_lines(inspector_bufnr, lines)
+    cb(jsonstr)
   end)
 end
 
-local get_function_list = function()
+local get_function_list = function(cb)
   rpc.send_jsonrpc("get_function_list", {
     id = conn_id,
   }, function(jsonstr)
-    local lines = utils.format_json(jsonstr)
-    utils.set_buf_lines(inspector_bufnr, lines)
+    cb(jsonstr)
   end)
 end
 
 local set_inspector_buf = function()
   local tab = tabs[current_tab_index]
 
+  local fn = function(jsonstr)
+    local lines = utils.format_json(jsonstr)
+    utils.set_buf_lines(inspector_bufnr, lines)
+  end
+
   if tab == "Tables" then
-    get_table_list()
+    get_table_list(fn)
   elseif tab == "Views" then
-    get_view_list()
+    get_view_list(fn)
   elseif tab == "StoreProcedures" then
-    get_store_procedure_list()
+    get_store_procedure_list(fn)
   elseif tab == "Functions" then
-    get_function_list()
+    get_function_list(fn)
   end
 end
 
