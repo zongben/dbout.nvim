@@ -39,6 +39,7 @@ M.init = function(keymap, enable_telescope)
     map(buf, { "n" }, i.close, inspector.close_inspector)
     map(buf, { "n" }, i.next_tab, inspector.next_tab)
     map(buf, { "n" }, i.previous_tab, inspector.previous_tab)
+    map(buf, { "n" }, i.inspect_detail, inspector.inspect_detail)
   end
 end
 

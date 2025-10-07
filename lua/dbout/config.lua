@@ -20,6 +20,7 @@ M.defaults = {
       close = "q",
       next_tab = "L",
       previous_tab = "H",
+      inspect_detail = "I",
     },
   },
 }

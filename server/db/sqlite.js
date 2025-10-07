@@ -55,11 +55,21 @@ export class Sqlite {
     return this.query(sql);
   }
 
-  async getStoreProcedureList() {
+  getStoreProcedureList() {
     return "Not Supported";
   }
 
-  async getFunctionList() {
+  getFunctionList() {
     return "Not Supported";
+  }
+
+  getView(view_name) {
+    const sql = `
+      SELECT sql as 'definition'
+      FROM sqlite_master
+      WHERE type = 'view'
+      AND name = '${view_name}'
+    `;
+    return this.query(sql);
   }
 }

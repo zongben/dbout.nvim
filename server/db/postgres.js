@@ -78,4 +78,13 @@ export class Postgres {
     `;
     return await this.query(sql);
   }
+
+  async getView(view_name) {
+    const sql = `
+      SELECT definition as 'definition'
+      FROM pg_views
+      WHERE viewname = '${view_name}'
+    `;
+    return await this.query(sql);
+  }
 }

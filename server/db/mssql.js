@@ -69,4 +69,13 @@ export class MsSql {
     `;
     return await this.query(sql);
   }
+
+  async getView(view_name) {
+    const sql = `
+      SELECT VIEW_DEFINITION as 'definition'
+      FROM INFORMATION_SCHEMA.VIEWS
+      WHERE TABLE_NAME = '${view_name}'
+    `;
+    return await this.query(sql);
+  }
 }

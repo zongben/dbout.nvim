@@ -118,7 +118,7 @@ end
 M.open_inspector = function()
   local win = vim.api.nvim_get_current_win()
   local bufnr = vim.api.nvim_win_get_buf(win)
-  inspector.open_inspector(buffer_connection[bufnr].id)
+  inspector.open_inspector(buffer_connection[bufnr].id, bufnr)
 end
 
 return M

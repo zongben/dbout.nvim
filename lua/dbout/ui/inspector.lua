@@ -3,6 +3,7 @@ local rpc = require("dbout.rpc")
 
 local inspector_bufnr
 local conn_id
+local queryer_bufnr
 
 local current_tab_index = 1
 local tabs = {
@@ -12,36 +13,30 @@ local tabs = {
   "Functions",
 }
 
-local get_table_list = function(cb)
-  rpc.send_jsonrpc("get_table_list", {
-    id = conn_id,
-  }, function(jsonstr)
+local send_rpc = function(method, param, cb)
+  rpc.send_jsonrpc(method, param, function(jsonstr)
     cb(jsonstr)
   end)
+end
+
+local get_table_list = function(cb)
+  send_rpc("get_table_list", { id = conn_id }, cb)
 end
 
 local get_view_list = function(cb)
-  rpc.send_jsonrpc("get_view_list", {
-    id = conn_id,
-  }, function(jsonstr)
-    cb(jsonstr)
-  end)
+  send_rpc("get_view_list", { id = conn_id }, cb)
+end
+
+local get_view = function(view_name, cb)
+  send_rpc("get_view", { id = conn_id, view_name = view_name }, cb)
 end
 
 local get_store_procedure_list = function(cb)
-  rpc.send_jsonrpc("get_store_procedure_list", {
-    id = conn_id,
-  }, function(jsonstr)
-    cb(jsonstr)
-  end)
+  send_rpc("get_store_procedure_list", { id = conn_id }, cb)
 end
 
 local get_function_list = function(cb)
-  rpc.send_jsonrpc("get_function_list", {
-    id = conn_id,
-  }, function(jsonstr)
-    cb(jsonstr)
-  end)
+  send_rpc("get_function_list", { id = conn_id }, cb)
 end
 
 local set_inspector_buf = function()
@@ -77,18 +72,41 @@ local set_winbar = function(winnr)
   set_inspector_buf()
 end
 
+local inspect_views_detail = function()
+  get_view_list(function(jsonstr)
+    local data = vim.fn.json_decode(jsonstr)
+    vim.ui.select(data.rows, {
+      prompt = "Inspect a view",
+      format_item = function(item)
+        return item.view_name
+      end,
+    }, function(view)
+      if not view then
+        return
+      end
+      get_view(view.view_name, function(v_jsonstr)
+        local v = vim.fn.json_decode(v_jsonstr).rows[1].definition
+        local lines = vim.split(v, "\r?\n")
+        utils.set_buf_lines(queryer_bufnr, lines)
+      end)
+    end)
+  end)
+end
+
 local M = {}
 
 M.buffer_keymappings = nil
 
-M.open_inspector = function(connection_id)
+M.open_inspector = function(connection_id, bufnr)
   conn_id = connection_id
+  queryer_bufnr = bufnr
 
   if inspector_bufnr == nil then
     inspector_bufnr = vim.api.nvim_create_buf(false, true)
     vim.api.nvim_set_option_value("filetype", "json", { buf = inspector_bufnr })
-    M.buffer_keymappings(inspector_bufnr)
   end
+
+  M.buffer_keymappings(inspector_bufnr)
 
   local winnr = utils.get_buf_win(inspector_bufnr)
   if not winnr then
@@ -120,6 +138,15 @@ M.previous_tab = function()
 
   local winnr = utils.get_buf_win(inspector_bufnr)
   set_winbar(winnr)
+end
+
+M.inspect_detail = function()
+  local tab = tabs[current_tab_index]
+
+  if tab == "Tables" then
+  elseif tab == "Views" then
+    inspect_views_detail()
+  end
 end
 
 return M
