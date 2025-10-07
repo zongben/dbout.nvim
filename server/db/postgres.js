@@ -65,4 +65,17 @@ export class Postgres {
     `;
     return await this.query(sql);
   }
+
+  async getFunctionList() {
+    const sql = `
+      SELECT 
+        routine_schema AS schema_name,
+        routine_name AS function_name
+      FROM information_schema.routines
+      WHERE routine_type = 'FUNCTION'
+        AND routine_schema NOT IN ('pg_catalog', 'information_schema')
+      ORDER BY routine_schema, routine_name;
+    `;
+    return await this.query(sql);
+  }
 }

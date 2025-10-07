@@ -5,6 +5,7 @@ const METHODS = {
   GET_TABLE_LIST: "get_table_list",
   GET_VIEW_LIST: "get_view_list",
   GET_STORE_PROCEDURE_LIST: "get_store_procedure_list",
+  GET_FUNCTION_LIST: "get_function_list",
   QUERY: "query",
 };
 
@@ -15,6 +16,7 @@ const handlers = {
   [METHODS.QUERY]: (params) => Consumer.query(params),
   [METHODS.GET_STORE_PROCEDURE_LIST]: (params) =>
     Consumer.getStoreProcedureList(params),
+  [METHODS.GET_FUNCTION_LIST]: (params) => Consumer.getFunctionList(params),
 };
 
 export class RPC {

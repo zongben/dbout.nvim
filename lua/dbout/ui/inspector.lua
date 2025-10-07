@@ -39,6 +39,15 @@ local get_store_procedure_list = function()
   end)
 end
 
+local get_function_list = function()
+  rpc.send_jsonrpc("get_function_list", {
+    id = conn_id,
+  }, function(jsonstr)
+    local lines = utils.format_json(jsonstr)
+    utils.set_buf_lines(inspector_bufnr, lines)
+  end)
+end
+
 local set_inspector_buf = function()
   local tab = tabs[current_tab_index]
 
@@ -48,6 +57,8 @@ local set_inspector_buf = function()
     get_view_list()
   elseif tab == "StoreProcedures" then
     get_store_procedure_list()
+  elseif tab == "Functions" then
+    get_function_list()
   end
 end
 

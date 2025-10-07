@@ -57,4 +57,16 @@ export class MsSql {
     `;
     return await this.query(sql);
   }
+
+  async getFunctionList() {
+    const sql = `
+      SELECT 
+        ROUTINE_SCHEMA as schema_name,
+        ROUTINE_NAME as function_name
+      FROM INFORMATION_SCHEMA.ROUTINES
+      WHERE ROUTINE_TYPE = 'FUNCTION'
+      ORDER BY ROUTINE_SCHEMA, ROUTINE_NAME;
+    `;
+    return await this.query(sql);
+  }
 }

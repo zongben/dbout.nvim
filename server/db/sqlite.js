@@ -58,4 +58,8 @@ export class Sqlite {
   async getStoreProcedureList() {
     return "Not Supported";
   }
+
+  async getFunctionList() {
+    return "Not Supported";
+  }
 }
