@@ -7,7 +7,7 @@ local map = function(bufnr, mode, key, cb)
   if key == "" then
     return
   end
-  vim.keymap.set(mode, key, cb, { buffer = bufnr })
+  vim.keymap.set(mode, key, cb, { buffer = bufnr, noremap = true, silent = true })
 end
 
 M.init = function(keymap, enable_telescope)
@@ -24,8 +24,8 @@ M.init = function(keymap, enable_telescope)
 
   queryer.buffer_keymappings = function(buf)
     local q = keymap.queryer
-    map(buf, { "n", "i", "v" }, q.query, queryer.query)
-    map(buf, { "n", "i" }, q.table_list, queryer.table_list)
+    map(buf, { "i", "v", "n" }, q.query, queryer.query)
+    map(buf, { "i", "n" }, q.table_list, queryer.table_list)
   end
 
   viewer.buffer_keymappings = function(buf)
