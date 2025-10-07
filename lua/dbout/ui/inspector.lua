@@ -5,7 +5,7 @@ local inspector_bufnr
 local conn
 local queryer_bufnr
 
-local current_tab_index = 1
+local tab_index = 1
 local tabs = {
   "Tables",
   "Views",
@@ -52,7 +52,7 @@ local get_table = function(table_name, cb)
 end
 
 local set_inspector_buf = function()
-  local tab = tabs[current_tab_index]
+  local tab = tabs[tab_index]
 
   local fn = function(jsonstr)
     local lines = utils.format_json(jsonstr)
@@ -73,7 +73,7 @@ end
 local set_winbar = function(winnr)
   local bar = {}
   for index, tab in ipairs(tabs) do
-    if index == current_tab_index then
+    if index == tab_index then
       table.insert(bar, "%#Title#[" .. tab .. "]%*")
     else
       table.insert(bar, tab)
@@ -195,9 +195,9 @@ M.close_inspector = function()
 end
 
 M.next_tab = function()
-  current_tab_index = current_tab_index + 1
-  if current_tab_index > #tabs then
-    current_tab_index = 1
+  tab_index = tab_index + 1
+  if tab_index > #tabs then
+    tab_index = 1
   end
 
   local winnr = utils.get_buf_win(inspector_bufnr)
@@ -205,9 +205,9 @@ M.next_tab = function()
 end
 
 M.previous_tab = function()
-  current_tab_index = current_tab_index - 1
-  if current_tab_index < 1 then
-    current_tab_index = #tabs
+  tab_index = tab_index - 1
+  if tab_index < 1 then
+    tab_index = #tabs
   end
 
   local winnr = utils.get_buf_win(inspector_bufnr)
@@ -215,7 +215,7 @@ M.previous_tab = function()
 end
 
 M.inspect = function()
-  local tab = tabs[current_tab_index]
+  local tab = tabs[tab_index]
 
   if tab == "Tables" then
     inspect_table()
