@@ -2,36 +2,22 @@ local utils = require("dbout.utils")
 
 local inspector_bufnr
 
+local current_tab_index = 1
 local tabs = {
-  {
-    display = "Tables",
-    active = true,
-  },
-  {
-    display = "Views",
-    active = false,
-  },
-  {
-    display = "StoreProcedures",
-    active = false,
-  },
-  {
-    display = "Functions",
-    active = false,
-  },
-  {
-    display = "Triggers",
-    active = false,
-  },
+  "Tables",
+  "Views",
+  "StoreProcedures",
+  "Functions",
+  "Triggers",
 }
 
 local set_winbar = function(winnr)
   local bar = {}
-  for _, tab in ipairs(tabs) do
-    if tab.active then
-      table.insert(bar, "%#Title#[" .. tab.display .. "]%*")
+  for index, tab in ipairs(tabs) do
+    if index == current_tab_index then
+      table.insert(bar, "%#Title#[" .. tab .. "]%*")
     else
-      table.insert(bar, tab.display)
+      table.insert(bar, tab)
     end
   end
   vim.api.nvim_set_option_value("winbar", table.concat(bar, "|"), { win = winnr })
@@ -58,6 +44,26 @@ end
 
 M.close_inspector = function()
   utils.close_buf_win(inspector_bufnr)
+end
+
+M.next_tab = function()
+  current_tab_index = current_tab_index + 1
+  if current_tab_index > #tabs then
+    current_tab_index = 1
+  end
+
+  local winnr = utils.get_buf_win(inspector_bufnr)
+  set_winbar(winnr)
+end
+
+M.previous_tab = function()
+  current_tab_index = current_tab_index - 1
+  if current_tab_index < 1 then
+    current_tab_index = #tabs
+  end
+
+  local winnr = utils.get_buf_win(inspector_bufnr)
+  set_winbar(winnr)
 end
 
 return M

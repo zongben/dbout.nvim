@@ -18,6 +18,8 @@ M.defaults = {
     },
     inspector = {
       close = "q",
+      next_tab = "L",
+      previous_tab = "H",
     },
   },
 }

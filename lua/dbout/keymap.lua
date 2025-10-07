@@ -37,6 +37,8 @@ M.init = function(keymap, enable_telescope)
   inspector.buffer_keymappings = function(buf)
     local i = keymap.inspector
     map(buf, { "n" }, i.close, inspector.close_inspector)
+    map(buf, { "n" }, i.next_tab, inspector.next_tab)
+    map(buf, { "n" }, i.previous_tab, inspector.previous_tab)
   end
 end
 
