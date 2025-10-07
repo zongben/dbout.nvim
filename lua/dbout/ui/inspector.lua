@@ -72,6 +72,7 @@ local set_winbar = function(winnr)
     end
   end
   vim.api.nvim_set_option_value("winbar", table.concat(bar, "|"), { win = winnr })
+  vim.api.nvim_win_set_cursor(winnr, { 1, 0 })
   set_inspector_buf()
 end
 
