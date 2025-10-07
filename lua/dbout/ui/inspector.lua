@@ -21,11 +21,22 @@ local get_table_list = function()
   end)
 end
 
+local get_view_list = function()
+  rpc.send_jsonrpc("get_view_list", {
+    id = conn_id,
+  }, function(jsonstr)
+    local lines = utils.format_json(jsonstr)
+    utils.set_buf_lines(inspector_bufnr, lines)
+  end)
+end
+
 local set_inspector_buf = function()
   local tab = tabs[current_tab_index]
 
   if tab == "Tables" then
     get_table_list()
+  elseif tab == "Views" then
+    get_view_list()
   end
 end
 
