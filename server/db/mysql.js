@@ -54,4 +54,17 @@ export class MySql {
     `;
     return await this.query(sql);
   }
+
+  async getStoreProcedureList() {
+    const sql = `
+      SELECT 
+        ROUTINE_SCHEMA as schema_name,
+        ROUTINE_NAME as procedure_name
+      FROM INFORMATION_SCHEMA.ROUTINES
+      WHERE ROUTINE_TYPE = 'PROCEDURE'
+        AND ROUTINE_SCHEMA = DATABASE()
+      ORDER BY ROUTINE_NAME;
+    `;
+    return await this.query(sql);
+  }
 }

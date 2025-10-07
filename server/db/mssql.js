@@ -45,4 +45,16 @@ export class MsSql {
     `;
     return await this.query(sql);
   }
+
+  async getStoreProcedureList() {
+    const sql = `
+      SELECT 
+        ROUTINE_SCHEMA as schema_name,
+        ROUTINE_NAME as procedure_name
+      FROM INFORMATION_SCHEMA.ROUTINES
+      WHERE ROUTINE_TYPE = 'PROCEDURE'
+      ORDER BY ROUTINE_SCHEMA, ROUTINE_NAME;
+    `;
+    return await this.query(sql);
+  }
 }

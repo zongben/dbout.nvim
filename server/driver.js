@@ -49,6 +49,11 @@ class Driver {
     const conn = this.#connections.get(id);
     return await conn.getViewList();
   }
+
+  async getStoreProcedureList(id) {
+    const conn = this.#connections.get(id);
+    return await conn.getStoreProcedureList();
+  }
 }
 
 export const driver = new Driver();

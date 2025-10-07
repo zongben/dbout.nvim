@@ -54,4 +54,8 @@ export class Sqlite {
     `;
     return this.query(sql);
   }
+
+  async getStoreProcedureList() {
+    return "Not Supported";
+  }
 }

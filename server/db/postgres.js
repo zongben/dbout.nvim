@@ -52,4 +52,17 @@ export class Postgres {
     `;
     return await this.query(sql);
   }
+
+  async getStoreProcedureList() {
+    const sql = `
+      SELECT 
+        routine_schema AS schema_name,
+        routine_name AS procedure_name
+      FROM information_schema.routines
+      WHERE routine_type = 'PROCEDURE'
+        AND routine_schema NOT IN ('pg_catalog', 'information_schema')
+      ORDER BY routine_schema, routine_name;
+    `;
+    return await this.query(sql);
+  }
 }
