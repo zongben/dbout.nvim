@@ -31,4 +31,17 @@ M.close_buf_win = function(bufnr)
   end
 end
 
+M.get_buf_win = function(bufnr)
+  local wins = vim.fn.win_findbuf(bufnr)
+  if #wins == 0 then
+    return nil
+  end
+  return wins[1]
+end
+
+M.create_right_win = function()
+  vim.cmd("botright vsplit")
+  return vim.api.nvim_get_current_win()
+end
+
 return M

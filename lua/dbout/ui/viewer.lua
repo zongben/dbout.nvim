@@ -15,13 +15,9 @@ local open_viewer = function(fn)
 
   fn()
 
-  local wins = vim.fn.win_findbuf(viewer_bufnr)
-  local winnr
-  if #wins == 0 then
-    vim.cmd("botright vsplit")
-    winnr = vim.api.nvim_get_current_win()
-  else
-    winnr = wins[1]
+  local winnr = utils.get_buf_win(viewer_bufnr)
+  if not winnr then
+    winnr = utils.create_right_win()
   end
   vim.api.nvim_win_set_buf(winnr, viewer_bufnr)
 end
