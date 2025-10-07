@@ -1,6 +1,8 @@
 local utils = require("dbout.utils")
+local rpc = require("dbout.rpc")
 
 local inspector_bufnr
+local conn_id
 
 local current_tab_index = 1
 local tabs = {
@@ -9,6 +11,23 @@ local tabs = {
   "StoreProcedures",
   "Functions",
 }
+
+local get_table_list = function()
+  rpc.send_jsonrpc("get_table_list", {
+    id = conn_id,
+  }, function(jsonstr)
+    local lines = utils.format_json(jsonstr)
+    utils.set_buf_lines(inspector_bufnr, lines)
+  end)
+end
+
+local set_inspector_buf = function()
+  local tab = tabs[current_tab_index]
+
+  if tab == "Tables" then
+    get_table_list()
+  end
+end
 
 local set_winbar = function(winnr)
   local bar = {}
@@ -20,13 +39,16 @@ local set_winbar = function(winnr)
     end
   end
   vim.api.nvim_set_option_value("winbar", table.concat(bar, "|"), { win = winnr })
+  set_inspector_buf()
 end
 
 local M = {}
 
 M.buffer_keymappings = nil
 
-M.open_inspector = function()
+M.open_inspector = function(connection_id)
+  conn_id = connection_id
+
   if inspector_bufnr == nil then
     inspector_bufnr = vim.api.nvim_create_buf(false, true)
     vim.api.nvim_set_option_value("filetype", "json", { buf = inspector_bufnr })

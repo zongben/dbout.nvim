@@ -26,7 +26,7 @@ M.init = function(keymap, enable_telescope)
   queryer.buffer_keymappings = function(buf)
     local q = keymap.queryer
     map(buf, { "i", "v", "n" }, q.query, queryer.query)
-    map(buf, { "i", "n" }, q.inspect, inspector.open_inspector)
+    map(buf, { "i", "n" }, q.inspect, queryer.open_inspector)
   end
 
   viewer.buffer_keymappings = function(buf)

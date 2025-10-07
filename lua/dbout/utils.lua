@@ -44,4 +44,13 @@ M.create_right_win = function()
   return vim.api.nvim_get_current_win()
 end
 
+M.format_json = function(jsonstr)
+  local formatted = vim.fn.system({ "jq", ".", "-M" }, jsonstr)
+  return vim.split(formatted, "\n", { plain = true })
+end
+
+M.set_buf_lines = function(buf, lines)
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+end
+
 return M

@@ -1,6 +1,7 @@
 local utils = require("dbout.utils")
 local rpc = require("dbout.rpc")
 local viewer = require("dbout.ui.viewer")
+local inspector = require("dbout.ui.inspector")
 
 local buffer_connection = {}
 
@@ -109,9 +110,15 @@ M.query = function()
   rpc.send_jsonrpc("query", {
     id = buffer_connection[bufnr].id,
     sql = sql,
-  }, function(data)
-    viewer.open_query_result(data)
+  }, function(jsonstr)
+    viewer.open_viewer(jsonstr)
   end)
+end
+
+M.open_inspector = function()
+  local win = vim.api.nvim_get_current_win()
+  local bufnr = vim.api.nvim_win_get_buf(win)
+  inspector.open_inspector(buffer_connection[bufnr].id)
 end
 
 return M
