@@ -80,4 +80,32 @@ export class Sqlite {
   getFunction() {
     return "Not Supported";
   }
+
+  getTable(table_name) {
+    const indexes = this.query(`PRAGMA index_list('${table_name}');`);
+
+    const indexMap = {};
+    for (const idx of indexes.rows) {
+      if (idx.unique) {
+        const cols = this.query(`PRAGMA index_info('${idx.name}')`);
+        for (const col of cols.rows) {
+          indexMap[col.name] = idx.name;
+        }
+      }
+    }
+
+    const result = this.query(`PRAGMA table_info('${table_name}');`);
+    result.rows = result.rows.map((item) => {
+      return {
+        column_name: item.name,
+        data_type: item.type,
+        max_length: null,
+        is_nullable: item.notnull === 1 ? true : false,
+        default_value: item.dflt_value,
+        is_pk: item.pk === 1 ? true : false,
+        is_unique: indexMap[item.column_name] ? true : false,
+      };
+    });
+    return result;
+  }
 }

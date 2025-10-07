@@ -45,4 +45,9 @@ export class Consumer {
     const { id, sql } = params;
     return await driver.query(id, sql);
   }
+
+  static async getTable(params) {
+    const { id, table_name } = params;
+    return await driver.getTable(id, table_name);
+  }
 }

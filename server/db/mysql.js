@@ -112,4 +112,35 @@ export class MySql {
     `;
     return await this.query(sql);
   }
+
+  async getTable(table_name) {
+    const sql = `
+      SELECT 
+        ORDINAL_POSITION AS column_id,
+        COLUMN_NAME AS column_name,
+        DATA_TYPE AS data_type,
+        CHARACTER_MAXIMUM_LENGTH AS max_length,
+        (IS_NULLABLE = 'YES') AS is_nullable,
+        COLUMN_DEFAULT AS default_value,
+        (COLUMN_KEY = 'PRI') AS is_pk,
+        (COLUMN_KEY = 'UNI') AS is_unique
+      FROM INFORMATION_SCHEMA.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+        AND TABLE_NAME = '${table_name}'
+      ORDER BY ORDINAL_POSITION;
+    `;
+    const result = await this.query(sql);
+    result.rows = result.rows.map((item) => {
+      return {
+        column_name: item.column_name,
+        data_type: item.data_type,
+        max_length: item.max_length,
+        is_nullable: item.is_nullable == "1" ? true : false,
+        default_value: item.default_value,
+        is_pk: item.is_pk === "1" ? true : false,
+        is_unique: item.is_unique === "1" ? true : false,
+      };
+    });
+    return result;
+  }
 }

@@ -9,6 +9,7 @@ const METHODS = {
   GET_VIEW: "get_view",
   GET_STORE_PROCEDURE: "get_store_procedure",
   GET_FUNCTION: "get_function",
+  GET_TABLE: "get_table",
   QUERY: "query",
 };
 
@@ -23,6 +24,7 @@ const handlers = {
   [METHODS.GET_VIEW]: (params) => Consumer.getView(params),
   [METHODS.GET_STORE_PROCEDURE]: (params) => Consumer.getStoreProcedure(params),
   [METHODS.GET_FUNCTION]: (params) => Consumer.getFunction(params),
+  [METHODS.GET_TABLE]: (params) => Consumer.getTable(params),
 };
 
 export class RPC {

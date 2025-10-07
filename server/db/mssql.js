@@ -102,4 +102,46 @@ export class MsSql {
     `;
     return await this.query(sql);
   }
+
+  async getTable(table_name) {
+    const sql = `
+      SELECT 
+        c.column_id AS column_id,
+        c.name AS column_name,
+        t.name AS data_type,
+        c.max_length AS max_length,
+        c.is_nullable AS is_nullable,
+        dc.definition AS default_value,
+        MAX(CAST(CASE WHEN i.is_primary_key = 1 THEN 1 ELSE 0 END AS int)) AS is_pk,
+        MAX(CAST(CASE WHEN i.is_unique = 1 THEN 1 ELSE 0 END AS int)) AS is_unique
+      FROM sys.columns c
+      LEFT JOIN sys.types t 
+        ON t.system_type_id = c.system_type_id 
+        AND t.user_type_id = t.system_type_id
+      LEFT JOIN sys.default_constraints dc 
+        ON dc.object_id = c.default_object_id
+      LEFT JOIN sys.index_columns ic 
+        ON ic.object_id = c.object_id 
+        AND c.column_id = ic.column_id
+      LEFT JOIN sys.indexes i 
+        ON i.object_id = c.object_id 
+        AND i.index_id = ic.index_id
+      WHERE OBJECT_NAME(c.object_id) = '${table_name}'
+      GROUP BY c.column_id, c.name, t.name, c.max_length, c.is_nullable, dc.definition
+      ORDER BY c.column_id;
+    `;
+    const result = await this.query(sql);
+    result.rows = result.rows.map((item) => {
+      return {
+        column_name: item.column_name,
+        data_type: item.data_type,
+        max_length: item.max_length,
+        is_nullable: item.is_nullable,
+        default_value: item.default_value,
+        is_pk: item.is_pk === "1" ? true : false,
+        is_unique: item.is_unique === "1" ? true : false,
+      };
+    });
+    return result;
+  }
 }

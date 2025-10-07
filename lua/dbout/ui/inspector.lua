@@ -47,6 +47,10 @@ local get_function = function(function_name, cb)
   send_rpc("get_function", { id = conn.id, function_name = function_name }, cb)
 end
 
+local get_table = function(table_name, cb)
+  send_rpc("get_table", { id = conn.id, table_name = table_name }, cb)
+end
+
 local set_inspector_buf = function()
   local tab = tabs[current_tab_index]
 
@@ -143,6 +147,26 @@ local inspect_function = function()
   end)
 end
 
+local inspect_table = function()
+  get_table_list(function(jsonstr)
+    local data = vim.fn.json_decode(jsonstr)
+    vim.ui.select(data.rows, {
+      prompt = "Inspect a table",
+      format_item = function(item)
+        return item.table_name
+      end,
+    }, function(t)
+      if not t then
+        return
+      end
+      get_table(t.table_name, function(t_jsonstr)
+        local lines = utils.format_json(t_jsonstr)
+        utils.set_buf_lines(inspector_bufnr, lines)
+      end)
+    end)
+  end)
+end
+
 local M = {}
 
 M.buffer_keymappings = nil
@@ -194,6 +218,7 @@ M.inspect = function()
   local tab = tabs[current_tab_index]
 
   if tab == "Tables" then
+    inspect_table()
   elseif tab == "Views" then
     inspect_view()
   elseif tab == "StoreProcedures" then

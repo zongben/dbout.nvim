@@ -111,4 +111,44 @@ export class Postgres {
     `;
     return await this.query(sql);
   }
+
+  async getTable(table_name) {
+    const sql = `
+      SELECT 
+        a.attnum AS column_id,
+        a.attname AS column_name,
+        format_type(a.atttypid, a.atttypmod) AS data_type,
+        col.character_maximum_length AS max_length,
+        NOT a.attnotnull AS is_nullable,
+        pg_get_expr(ad.adbin, ad.adrelid) AS default_value,
+        CASE WHEN ct.contype = 'p' THEN 1 ELSE 0 END AS is_pk,
+        CASE WHEN ct.contype = 'u' THEN 1 ELSE 0 END AS is_unique
+      FROM pg_attribute a
+      JOIN pg_class c ON a.attrelid = c.oid
+      JOIN pg_namespace n ON n.oid = c.relnamespace
+      LEFT JOIN information_schema.columns col 
+        ON col.table_schema = n.nspname AND col.table_name = c.relname AND col.column_name = a.attname
+      LEFT JOIN pg_attrdef ad ON ad.adrelid = a.attrelid AND ad.adnum = a.attnum
+      LEFT JOIN pg_constraint ct ON ct.conrelid = c.oid AND a.attnum = ANY(ct.conkey)
+      WHERE c.relname = '${table_name}'
+        AND a.attnum > 0
+        AND NOT a.attisdropped
+      GROUP BY a.attnum, a.attname, format_type(a.atttypid, a.atttypmod), 
+               col.character_maximum_length, a.attnotnull, ad.adbin, ad.adrelid, ct.contype
+      ORDER BY a.attnum;
+    `;
+    const result = await this.query(sql);
+    result.rows = result.rows.map((item) => {
+      return {
+        column_name: item.column_name,
+        data_type: item.data_type,
+        max_length: item.max_length,
+        is_nullable: item.is_nullable,
+        default_value: item.default_value,
+        is_pk: item.is_pk === "1" ? true : false,
+        is_unique: item.is_unique === "1" ? true : false,
+      };
+    });
+    return result;
+  }
 }
