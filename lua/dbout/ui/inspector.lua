@@ -72,7 +72,7 @@ local set_winbar = function(winnr)
   set_inspector_buf()
 end
 
-local inspect_views_detail = function()
+local inspect_view = function()
   get_view_list(function(jsonstr)
     local data = vim.fn.json_decode(jsonstr)
     vim.ui.select(data.rows, {
@@ -140,12 +140,12 @@ M.previous_tab = function()
   set_winbar(winnr)
 end
 
-M.inspect_detail = function()
+M.inspect = function()
   local tab = tabs[current_tab_index]
 
   if tab == "Tables" then
   elseif tab == "Views" then
-    inspect_views_detail()
+    inspect_view()
   end
 end
 
