@@ -4,6 +4,10 @@ local viewer = require("dbout.ui.viewer")
 
 local buffer_connection = {}
 
+local set_winbar = function(name)
+  return "%#Title#Database:[" .. name .. "]%*"
+end
+
 local M = {}
 
 M.buffer_keymappings = nil
@@ -49,7 +53,7 @@ M.init = function()
       if not conn then
         return
       end
-      vim.wo.winbar = conn.name
+      vim.wo.winbar = set_winbar(conn.name)
     end,
   })
 end
@@ -61,7 +65,7 @@ local set_connection_buf = function(connection, bufnr)
   M.buffer_keymappings(bufnr)
 
   if vim.api.nvim_get_current_buf() == bufnr then
-    vim.wo.winbar = connection.name
+    vim.wo.winbar = set_winbar(connection.name)
   end
 end
 
