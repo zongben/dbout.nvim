@@ -1,5 +1,6 @@
 local viewer = require("dbout.ui.viewer")
 local queryer = require("dbout.ui.queryer")
+local inspector = require("dbout.ui.inspector")
 
 local M = {}
 
@@ -25,14 +26,17 @@ M.init = function(keymap, enable_telescope)
   queryer.buffer_keymappings = function(buf)
     local q = keymap.queryer
     map(buf, { "i", "v", "n" }, q.query, queryer.query)
-    map(buf, { "i", "n" }, q.table_list, queryer.table_list)
+    map(buf, { "i", "n" }, q.inspect, inspector.open_inspector)
   end
 
   viewer.buffer_keymappings = function(buf)
     local v = keymap.viewer
-    map(buf, { "n" }, v.close, function()
-      viewer.close_viewer()
-    end)
+    map(buf, { "n" }, v.close, viewer.close_viewer)
+  end
+
+  inspector.buffer_keymappings = function(buf)
+    local i = keymap.inspector
+    map(buf, { "n" }, i.close, inspector.close_inspector)
   end
 end
 

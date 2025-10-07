@@ -11,9 +11,12 @@ M.defaults = {
     },
     queryer = {
       query = "<F5>",
-      table_list = "<F12>",
+      inspect = "<F12>",
     },
     viewer = {
+      close = "q",
+    },
+    inspector = {
       close = "q",
     },
   },

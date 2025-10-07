@@ -110,15 +110,4 @@ M.query = function()
   end)
 end
 
-M.table_list = function()
-  local win = vim.api.nvim_get_current_win()
-  local bufnr = vim.api.nvim_win_get_buf(win)
-
-  rpc.send_jsonrpc("get_table_list", {
-    id = buffer_connection[bufnr].id,
-  }, function(data)
-    viewer.open_query_result(data)
-  end)
-end
-
 return M
