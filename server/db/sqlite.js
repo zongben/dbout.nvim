@@ -76,4 +76,8 @@ export class Sqlite {
   getStoreProcedure() {
     return "Not Supported";
   }
+
+  getFunction() {
+    return "Not Supported";
+  }
 }

@@ -101,4 +101,15 @@ export class MySql {
     `;
     return await this.query(sql);
   }
+
+  async getFunction(function_name) {
+    const sql = `
+      SELECT 
+        ROUTINE_DEFINITION as 'definition'
+      FROM information_schema.ROUTINES
+      WHERE ROUTINE_NAME = '${function_name}'
+      AND ROUTINE_TYPE = 'FUNCTION';
+    `;
+    return await this.query(sql);
+  }
 }

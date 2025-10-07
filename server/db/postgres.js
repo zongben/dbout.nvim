@@ -99,4 +99,16 @@ export class Postgres {
     `;
     return await this.query(sql);
   }
+
+  async getFunction(function_name) {
+    const sql = `
+      SELECT 
+        pg_get_functiondef(p.oid) AS definition
+      FROM pg_proc p
+      JOIN pg_namespace n ON n.oid = p.pronamespace
+      WHERE p.prokind = 'f'
+      AND p.proname = '${function_name}';
+    `;
+    return await this.query(sql);
+  }
 }

@@ -43,6 +43,10 @@ local get_function_list = function(cb)
   send_rpc("get_function_list", { id = conn.id }, cb)
 end
 
+local get_function = function(function_name, cb)
+  send_rpc("get_function", { id = conn.id, function_name = function_name }, cb)
+end
+
 local set_inspector_buf = function()
   local tab = tabs[current_tab_index]
 
@@ -118,6 +122,27 @@ local inspect_store_procedure = function()
   end)
 end
 
+local inspect_function = function()
+  get_function_list(function(jsonstr)
+    local data = vim.fn.json_decode(jsonstr)
+    vim.ui.select(data.rows, {
+      prompt = "Inspect a function",
+      format_item = function(item)
+        return item.function_name
+      end,
+    }, function(f)
+      if not f then
+        return
+      end
+      get_function(f.function_name, function(f_jsonstr)
+        local sp = vim.fn.json_decode(f_jsonstr).rows[1].definition
+        local lines = vim.split(sp, "\r?\n")
+        utils.set_buf_lines(queryer_bufnr, lines)
+      end)
+    end)
+  end)
+end
+
 local M = {}
 
 M.buffer_keymappings = nil
@@ -176,6 +201,11 @@ M.inspect = function()
       return
     end
     inspect_store_procedure()
+  elseif tab == "Functions" then
+    if conn.db_type == "sqlite3" then
+      return
+    end
+    inspect_function()
   end
 end
 
