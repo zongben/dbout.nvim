@@ -5,6 +5,7 @@ local inspector_bufnr
 local conn
 local queryer_bufnr
 
+local tab_type = 0
 local tab_index = 1
 local tabs = {
   "Tables",
@@ -12,6 +13,13 @@ local tabs = {
   "StoreProcedures",
   "Functions",
 }
+
+local create_table_sub_tab = function(table_name)
+  return {
+    table_name,
+    "Triggers",
+  }
+end
 
 local send_rpc = function(method, param, cb)
   rpc.send_jsonrpc(method, param, function(jsonstr)
