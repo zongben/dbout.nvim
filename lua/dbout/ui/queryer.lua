@@ -106,7 +106,7 @@ M.query = function()
     id = buffer_connection[bufnr].id,
     sql = sql,
   }, function(data)
-    viewer.open_viewer(data)
+    viewer.open_query_result(data)
   end)
 end
 
@@ -117,7 +117,7 @@ M.table_list = function()
   rpc.send_jsonrpc("get_table_list", {
     id = buffer_connection[bufnr].id,
   }, function(data)
-    viewer.open_viewer(data)
+    viewer.open_query_result(data)
   end)
 end
 

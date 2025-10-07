@@ -6,27 +6,32 @@ local M = {}
 
 M.buffer_keymappings = nil
 
-M.open_viewer = function(data)
+local open_viewer = function(fn)
   if viewer_bufnr == nil then
     viewer_bufnr = vim.api.nvim_create_buf(false, true)
     vim.api.nvim_set_option_value("filetype", "json", { buf = viewer_bufnr })
+    M.buffer_keymappings(viewer_bufnr)
   end
 
-  local formatted = vim.fn.system({ "jq", ".", "-M" }, data)
-  local lines = vim.split(formatted, "\n", { plain = true })
-  vim.api.nvim_buf_set_lines(viewer_bufnr, 0, -1, false, lines)
-
-  M.buffer_keymappings(viewer_bufnr)
+  fn()
 
   local wins = vim.fn.win_findbuf(viewer_bufnr)
   local winnr
   if #wins == 0 then
     vim.cmd("botright vsplit")
-    winnr = 0
+    winnr = vim.api.nvim_get_current_win()
   else
     winnr = wins[1]
   end
   vim.api.nvim_win_set_buf(winnr, viewer_bufnr)
+end
+
+M.open_query_result = function(data)
+  open_viewer(function()
+    local formatted = vim.fn.system({ "jq", ".", "-M" }, data)
+    local lines = vim.split(formatted, "\n", { plain = true })
+    vim.api.nvim_buf_set_lines(viewer_bufnr, 0, -1, false, lines)
+  end)
 end
 
 M.close_viewer = function()
