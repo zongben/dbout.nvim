@@ -83,9 +83,21 @@ export class MySql {
 
   async getView(view_name) {
     const sql = `
-      SELECT VIEW_DEFINITION as 'definition'
+      SELECT 
+        VIEW_DEFINITION as 'definition'
       FROM INFORMATION_SCHEMA.VIEWS
       WHERE TABLE_NAME = '${view_name}'
+    `;
+    return await this.query(sql);
+  }
+
+  async getStoreProcedure(procedure_name) {
+    const sql = `
+      SELECT 
+        ROUTINE_DEFINITION as 'definition'
+      FROM information_schema.ROUTINES
+      WHERE ROUTINE_NAME = '${procedure_name}'
+      AND ROUTINE_TYPE = 'PROCEDURE';
     `;
     return await this.query(sql);
   }

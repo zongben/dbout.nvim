@@ -87,4 +87,16 @@ export class Postgres {
     `;
     return await this.query(sql);
   }
+
+  async getStoreProcedure(procedure_name) {
+    const sql = `
+      SELECT 
+        pg_get_functiondef(p.oid) AS definition
+      FROM pg_proc p
+      JOIN pg_namespace n ON n.oid = p.pronamespace
+      WHERE p.prokind = 'p'
+      AND p.proname = '${procedure_name}';
+    `;
+    return await this.query(sql);
+  }
 }

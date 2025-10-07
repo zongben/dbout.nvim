@@ -78,4 +78,15 @@ export class MsSql {
     `;
     return await this.query(sql);
   }
+
+  async getStoreProcedure(procedure_name) {
+    const sql = `
+      SELECT 
+        m.definition AS definition
+      FROM sys.procedures p
+      INNER JOIN sys.sql_modules m ON p.object_id = m.object_id
+      WHERE p.name = '${procedure_name}';
+    `;
+    return await this.query(sql);
+  }
 }

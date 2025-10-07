@@ -72,4 +72,8 @@ export class Sqlite {
     `;
     return this.query(sql);
   }
+
+  getStoreProcedure() {
+    return "Not Supported";
+  }
 }

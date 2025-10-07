@@ -31,6 +31,11 @@ export class Consumer {
     return await driver.getView(id, view_name);
   }
 
+  static async getStoreProcedure(params) {
+    const { id, procedure_name } = params;
+    return await driver.getStoreProcedure(id, procedure_name);
+  }
+
   static async query(params) {
     const { id, sql } = params;
     return await driver.query(id, sql);

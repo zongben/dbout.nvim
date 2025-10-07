@@ -2,7 +2,7 @@ local utils = require("dbout.utils")
 local rpc = require("dbout.rpc")
 
 local inspector_bufnr
-local conn_id
+local conn
 local queryer_bufnr
 
 local current_tab_index = 1
@@ -20,23 +20,27 @@ local send_rpc = function(method, param, cb)
 end
 
 local get_table_list = function(cb)
-  send_rpc("get_table_list", { id = conn_id }, cb)
+  send_rpc("get_table_list", { id = conn.id }, cb)
 end
 
 local get_view_list = function(cb)
-  send_rpc("get_view_list", { id = conn_id }, cb)
+  send_rpc("get_view_list", { id = conn.id }, cb)
 end
 
 local get_view = function(view_name, cb)
-  send_rpc("get_view", { id = conn_id, view_name = view_name }, cb)
+  send_rpc("get_view", { id = conn.id, view_name = view_name }, cb)
+end
+
+local get_store_procedure = function(procedure_name, cb)
+  send_rpc("get_store_procedure", { id = conn.id, procedure_name = procedure_name }, cb)
 end
 
 local get_store_procedure_list = function(cb)
-  send_rpc("get_store_procedure_list", { id = conn_id }, cb)
+  send_rpc("get_store_procedure_list", { id = conn.id }, cb)
 end
 
 local get_function_list = function(cb)
-  send_rpc("get_function_list", { id = conn_id }, cb)
+  send_rpc("get_function_list", { id = conn.id }, cb)
 end
 
 local set_inspector_buf = function()
@@ -93,12 +97,33 @@ local inspect_view = function()
   end)
 end
 
+local inspect_store_procedure = function()
+  get_store_procedure_list(function(jsonstr)
+    local data = vim.fn.json_decode(jsonstr)
+    vim.ui.select(data.rows, {
+      prompt = "Inspect a store procedure",
+      format_item = function(item)
+        return item.procedure_name
+      end,
+    }, function(procedure)
+      if not procedure then
+        return
+      end
+      get_store_procedure(procedure.procedure_name, function(sp_jsonstr)
+        local sp = vim.fn.json_decode(sp_jsonstr).rows[1].definition
+        local lines = vim.split(sp, "\r?\n")
+        utils.set_buf_lines(queryer_bufnr, lines)
+      end)
+    end)
+  end)
+end
+
 local M = {}
 
 M.buffer_keymappings = nil
 
-M.open_inspector = function(connection_id, bufnr)
-  conn_id = connection_id
+M.open_inspector = function(connection, bufnr)
+  conn = connection
   queryer_bufnr = bufnr
 
   if inspector_bufnr == nil then
@@ -146,6 +171,11 @@ M.inspect = function()
   if tab == "Tables" then
   elseif tab == "Views" then
     inspect_view()
+  elseif tab == "StoreProcedures" then
+    if conn.db_type == "sqlite3" then
+      return
+    end
+    inspect_store_procedure()
   end
 end
 
