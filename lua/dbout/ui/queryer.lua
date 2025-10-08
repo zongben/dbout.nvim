@@ -82,6 +82,7 @@ M.attach_buf = function(connection, bufnr)
   set_connection_buf(connection, bufnr)
   utils.switch_win_to_buf(bufnr)
   start_lsp(connection)
+  inspector.reset()
 end
 
 M.query = function()

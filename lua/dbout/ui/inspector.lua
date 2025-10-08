@@ -239,6 +239,16 @@ M.open_inspector = function(connection, bufnr)
   set_winbar(winnr)
 end
 
+M.reset = function()
+  utils.close_buf_win(inspector_bufnr)
+  tab_switch = 1
+  tab_state[1].index = 1
+  tab_state[2] = {
+    index = 1,
+    tabs = {},
+  }
+end
+
 M.close_inspector = function()
   utils.close_buf_win(inspector_bufnr)
 end
@@ -286,7 +296,7 @@ M.inspect = function()
   end
 end
 
-M.back = function ()
+M.back = function()
   if tab_switch == 1 then
     return
   end
