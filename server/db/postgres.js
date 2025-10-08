@@ -145,8 +145,8 @@ export class Postgres {
         max_length: item.max_length,
         is_nullable: item.is_nullable,
         default_value: item.default_value,
-        is_pk: item.is_pk === "1" ? true : false,
-        is_unique: item.is_unique === "1" ? true : false,
+        is_pk: item.is_pk === 1 ? true : false,
+        is_unique: item.is_unique === 1 ? true : false,
       };
     });
     return result;
