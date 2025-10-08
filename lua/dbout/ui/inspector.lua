@@ -1,20 +1,10 @@
 local utils = require("dbout.utils")
 local rpc = require("dbout.rpc")
+local winbar = require("dbout.ui.winbar")
 
 local inspector_bufnr
 local conn
 local queryer_bufnr
-
-local tab_switch = 1
-local tab_state = {
-  { index = 1, tabs = {
-    "Tables",
-    "Views",
-    "StoreProcedures",
-    "Functions",
-  } },
-  { index = 1, tabs = {} },
-}
 
 local send_rpc = function(method, param, cb)
   rpc.send_jsonrpc(method, param, function(jsonstr)
@@ -55,8 +45,7 @@ local get_table = function(table_name, cb)
 end
 
 local set_inspector_buf = function()
-  local state = tab_state[tab_switch]
-  local tab = state.tabs[state.index]
+  local tab, extra = winbar.get_current_tab()
 
   local fn = function(jsonstr)
     local lines = utils.format_json(jsonstr)
@@ -71,62 +60,8 @@ local set_inspector_buf = function()
     get_store_procedure_list(fn)
   elseif tab == "Functions" then
     get_function_list(fn)
-  elseif tab_switch == 2 and state.index == 1 then
-    get_table(tab, fn)
-  end
-end
-
-local set_top_winbar = function(winnr)
-  local state = tab_state[1]
-  local tab_index = state.index
-  local tabs = state.tabs
-
-  local bar = {}
-  for index, tab in ipairs(tabs) do
-    if index == tab_index then
-      table.insert(bar, "%#Title#[" .. tab .. "]%*")
-    else
-      table.insert(bar, tab)
-    end
-  end
-  vim.api.nvim_set_option_value("winbar", table.concat(bar, "|"), { win = winnr })
-  vim.api.nvim_win_set_cursor(winnr, { 1, 0 })
-  set_inspector_buf()
-end
-
-local create_sub_tab = function(table_name)
-  tab_switch = 2
-  local state = tab_state[2]
-  state.tabs = {
-    table_name,
-    "Triggers",
-  }
-end
-
-local set_sub_winbar = function(winnr)
-  tab_switch = 2
-  local state = tab_state[2]
-
-  local bar = {}
-  table.insert(bar, "<--Back")
-  for index, tab in ipairs(state.tabs) do
-    if index == state.index then
-      table.insert(bar, "%#Title#[" .. tab .. "]%*")
-    else
-      table.insert(bar, tab)
-    end
-  end
-
-  vim.api.nvim_set_option_value("winbar", table.concat(bar, "|"), { win = winnr })
-  vim.api.nvim_win_set_cursor(winnr, { 1, 0 })
-  set_inspector_buf()
-end
-
-local set_winbar = function(winnr)
-  if tab_switch == 1 then
-    set_top_winbar(winnr)
-  elseif tab_switch == 2 then
-    set_sub_winbar(winnr)
+  elseif tab == "TableColumns" then
+    get_table(extra, fn)
   end
 end
 
@@ -210,8 +145,9 @@ local inspect_table = function()
         winnr = utils.create_right_win()
       end
       vim.api.nvim_win_set_buf(winnr, inspector_bufnr)
-      create_sub_tab(t.table_name)
-      set_winbar(winnr)
+      winbar.create_sub_tab(t.table_name)
+      winbar.set_winbar(winnr)
+      set_inspector_buf()
     end)
   end)
 end
@@ -236,17 +172,13 @@ M.open_inspector = function(connection, bufnr)
     winnr = utils.create_right_win()
   end
   vim.api.nvim_win_set_buf(winnr, inspector_bufnr)
-  set_winbar(winnr)
+  winbar.set_winbar(winnr)
+  set_inspector_buf()
 end
 
 M.reset = function()
   utils.close_buf_win(inspector_bufnr)
-  tab_switch = 1
-  tab_state[1].index = 1
-  tab_state[2] = {
-    index = 1,
-    tabs = {},
-  }
+  winbar.reset()
 end
 
 M.close_inspector = function()
@@ -254,30 +186,21 @@ M.close_inspector = function()
 end
 
 M.next_tab = function()
-  local state = tab_state[tab_switch]
-  state.index = state.index + 1
-  if state.index > #state.tabs then
-    state.index = 1
-  end
-
+  winbar.next_tab()
   local winnr = utils.get_buf_win(inspector_bufnr)
-  set_winbar(winnr)
+  winbar.set_winbar(winnr)
+  set_inspector_buf()
 end
 
 M.previous_tab = function()
-  local state = tab_state[tab_switch]
-  state.index = state.index - 1
-  if state.index < 1 then
-    state.index = #state.tabs
-  end
-
+  winbar.previous_tab()
   local winnr = utils.get_buf_win(inspector_bufnr)
-  set_winbar(winnr)
+  winbar.set_winbar(winnr)
+  set_inspector_buf()
 end
 
 M.inspect = function()
-  local state = tab_state[tab_switch]
-  local tab = state.tabs[state.index]
+  local tab = winbar.get_current_tab()
 
   if tab == "Tables" then
     inspect_table()
@@ -297,13 +220,10 @@ M.inspect = function()
 end
 
 M.back = function()
-  if tab_switch == 1 then
-    return
-  end
-  tab_switch = tab_switch - 1
-
+  winbar.back()
   local winnr = utils.get_buf_win(inspector_bufnr)
-  set_winbar(winnr)
+  winbar.set_winbar(winnr)
+  set_inspector_buf()
 end
 
 return M
