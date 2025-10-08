@@ -21,6 +21,7 @@ M.defaults = {
       next_tab = "L",
       previous_tab = "H",
       inspect = "I",
+      back = "<BS>"
     },
   },
 }

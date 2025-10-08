@@ -286,4 +286,14 @@ M.inspect = function()
   end
 end
 
+M.back = function ()
+  if tab_switch == 1 then
+    return
+  end
+  tab_switch = tab_switch - 1
+
+  local winnr = utils.get_buf_win(inspector_bufnr)
+  set_winbar(winnr)
+end
+
 return M
