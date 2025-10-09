@@ -3,12 +3,12 @@ import Database from "better-sqlite3";
 export class Sqlite {
   #db;
 
-  constructor(filePath) {
-    this.#db = new Database(filePath);
+  constructor(file_path) {
+    this.#db = new Database(file_path);
   }
 
-  static async createConnection(filePath) {
-    return new Sqlite(filePath);
+  static async createConnection(file_path) {
+    return new Sqlite(file_path);
   }
 
   query(sql) {
