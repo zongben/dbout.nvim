@@ -44,6 +44,14 @@ M.create_right_win = function()
   return vim.api.nvim_get_current_win()
 end
 
+M.get_or_create_buf_win = function(bufnr)
+  local winnr = M.get_buf_win(bufnr)
+  if not winnr then
+    winnr = M.create_right_win()
+  end
+  return winnr
+end
+
 M.format_json = function(jsonstr)
   local formatted = vim.fn.system({ "jq", ".", "-M" }, jsonstr)
   return vim.split(formatted, "\n", { plain = true })

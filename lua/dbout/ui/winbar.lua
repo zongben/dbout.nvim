@@ -27,7 +27,6 @@ local set_top_winbar = function(winnr)
 end
 
 local set_sub_winbar = function(winnr)
-  tab_switch = 2
   local state = tab_state[2]
 
   local bar = {}
@@ -47,7 +46,6 @@ end
 local M = {}
 
 M.create_sub_tab = function(table_name)
-  tab_switch = 2
   local state = tab_state[2]
   state.tabs = {
     table_name,
@@ -61,6 +59,10 @@ M.set_winbar = function(winnr)
   elseif tab_switch == 2 then
     set_sub_winbar(winnr)
   end
+end
+
+M.tab_switch = function(tabnr)
+  tab_switch = tabnr
 end
 
 M.next_tab = function()
@@ -92,15 +94,8 @@ M.get_current_tab = function()
   return tab, extra
 end
 
-M.back = function()
-  if tab_switch == 1 then
-    return
-  end
-  tab_switch = tab_switch - 1
-end
-
 M.reset = function()
-  tab_switch = 1
+  M.tab_switch(1)
   tab_state[1].index = 1
   tab_state[2] = {
     index = 1,

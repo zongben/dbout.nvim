@@ -140,12 +140,10 @@ local inspect_table = function()
       if not t then
         return
       end
-      local winnr = utils.get_buf_win(inspector_bufnr)
-      if not winnr then
-        winnr = utils.create_right_win()
-      end
+      local winnr = utils.get_or_create_buf_win(inspector_bufnr)
       vim.api.nvim_win_set_buf(winnr, inspector_bufnr)
       winbar.create_sub_tab(t.table_name)
+      winbar.tab_switch(2)
       winbar.set_winbar(winnr)
       set_inspector_buf()
     end)
@@ -167,10 +165,7 @@ M.open_inspector = function(connection, bufnr)
 
   M.buffer_keymappings(inspector_bufnr)
 
-  local winnr = utils.get_buf_win(inspector_bufnr)
-  if not winnr then
-    winnr = utils.create_right_win()
-  end
+  local winnr = utils.get_or_create_buf_win(inspector_bufnr)
   vim.api.nvim_win_set_buf(winnr, inspector_bufnr)
   winbar.set_winbar(winnr)
   set_inspector_buf()
@@ -220,7 +215,7 @@ M.inspect = function()
 end
 
 M.back = function()
-  winbar.back()
+  winbar.tab_switch(1)
   local winnr = utils.get_buf_win(inspector_bufnr)
   winbar.set_winbar(winnr)
   set_inspector_buf()
