@@ -135,6 +135,33 @@ local inspect_trigger = function()
   end)
 end
 
+local inspect_column = function()
+  local methods = {
+    "SELECT",
+    "INSERT",
+    "UPDATE",
+  }
+  vim.ui.select(methods, {
+    prompt = "Inspect a method",
+  }, function(m)
+    if not m then
+      return
+    end
+    local fn = function(s_jsonstr)
+      local sql = vim.fn.json_decode(s_jsonstr)
+      local lines = vim.split(sql, "\r?\n")
+      utils.set_buf_lines(queryer_bufnr, lines)
+    end
+    if m == "SELECT" then
+      client.generate_select_sql(conn.id, winbar.get_sub_tab_table(), fn)
+    elseif m == "UPDATE" then
+      client.generate_update_sql(conn.id, winbar.get_sub_tab_table(), fn)
+    elseif m == "INSERT" then
+      client.generate_insert_sql(conn.id, winbar.get_sub_tab_table(), fn)
+    end
+  end)
+end
+
 local M = {}
 
 M.buffer_keymappings = nil
@@ -198,6 +225,8 @@ M.inspect = function()
     inspect_function()
   elseif tab == "Triggers" then
     inspect_trigger()
+  elseif tab == "Columns" then
+    inspect_column()
   end
 end
 

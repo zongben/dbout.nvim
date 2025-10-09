@@ -60,4 +60,19 @@ export class Consumer {
     const { id, table_name } = params;
     return await driver.getTriggerList(id, table_name);
   }
+
+  static async generateSelectSQL(params) {
+    const { id, table_name } = params;
+    return await driver.generateSelectSQL(id, table_name);
+  }
+
+  static async generateInsertSQL(params) {
+    const { id, table_name } = params;
+    return await driver.generateInsertSQL(id, table_name);
+  }
+
+  static async generateUpdateSQL(params) {
+    const { id, table_name } = params;
+    return await driver.generateUpdateSQL(id, table_name);
+  }
 }

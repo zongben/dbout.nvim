@@ -12,6 +12,9 @@ const METHODS = {
   GET_TABLE: "get_table",
   GET_TRIGGER: "get_trigger",
   GET_TRIGGER_LIST: "get_trigger_list",
+  GENERATE_SELECT_SQL: "generate_select_sql",
+  GENERATE_INSERT_SQL: "generate_insert_sql",
+  GENERATE_UPDATE_SQL: "generate_update_sql",
   QUERY: "query",
 };
 
@@ -29,6 +32,9 @@ const handlers = {
   [METHODS.GET_TABLE]: (params) => Consumer.getTable(params),
   [METHODS.GET_TRIGGER]: (params) => Consumer.getTrigger(params),
   [METHODS.GET_TRIGGER_LIST]: (params) => Consumer.getTriggerList(params),
+  [METHODS.GENERATE_SELECT_SQL]: (params) => Consumer.generateSelectSQL(params),
+  [METHODS.GENERATE_INSERT_SQL]: (params) => Consumer.generateInsertSQL(params),
+  [METHODS.GENERATE_UPDATE_SQL]: (params) => Consumer.generateUpdateSQL(params),
 };
 
 export class RPC {

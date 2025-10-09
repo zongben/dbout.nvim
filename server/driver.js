@@ -89,6 +89,54 @@ class Driver {
     const conn = this.#connections.get(id);
     return await conn.getTriggerList(table_name);
   }
+
+  async generateSelectSQL(id, table_name) {
+    const conn = this.#connections.get(id);
+    const table = await conn.getTable(table_name);
+    const columns = table.rows.map((col) => {
+      return col.column_name;
+    });
+    const pkey = table.rows
+      .filter((col) => col.is_pk)
+      .map((col) => {
+        return `${col.column_name} = @${col.column_name}`;
+      });
+
+    const sql = `SELECT\n  ${columns.join(",\n  ")}\nFROM ${table_name}\nWHERE ${pkey.join(" AND ")}`;
+    return sql;
+  }
+
+  async generateUpdateSQL(id, table_name) {
+    const conn = this.#connections.get(id);
+    const table = await conn.getTable(table_name);
+    const columns = table.rows
+      .filter((col) => !col.is_pk)
+      .map((col) => {
+        return `${col.column_name} = @${col.column_name}`;
+      });
+    const pkey = table.rows
+      .filter((col) => col.is_pk)
+      .map((col) => {
+        return `${col.column_name} = @${col.column_name}`;
+      });
+
+    const sql = `UPDATE ${table_name} SET\n  ${columns.join(",\n  ")}\nWHERE ${pkey.join(" AND ")}`;
+    return sql;
+  }
+
+  async generateInsertSQL(id, table_name) {
+    const conn = this.#connections.get(id);
+    const table = await conn.getTable(table_name);
+    const columns = table.rows.map((col) => {
+      return col.column_name;
+    });
+    const values = table.rows.map((col) => {
+      return `@${col.column_name}`;
+    });
+
+    const sql = `INSERT INTO(\n  ${columns.join(",\n  ")}\n)\nVALUES (\n  ${values.join(",\n  ")}\n)`;
+    return sql;
+  }
 }
 
 export const driver = new Driver();

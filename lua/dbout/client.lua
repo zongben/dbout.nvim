@@ -48,6 +48,18 @@ M.get_trigger = function(id, trig_name, cb)
   send_rpc("get_trigger", { id = id, trig_name = trig_name }, cb)
 end
 
+M.generate_select_sql = function(id, table_name, cb)
+  send_rpc("generate_select_sql", { id = id, table_name = table_name }, cb)
+end
+
+M.generate_update_sql = function(id, table_name, cb)
+  send_rpc("generate_update_sql", { id = id, table_name = table_name }, cb)
+end
+
+M.generate_insert_sql = function(id, table_name, cb)
+  send_rpc("generate_insert_sql", { id = id, table_name = table_name }, cb)
+end
+
 M.query = function(id, sql, cb)
   send_rpc("query", { id = id, sql = sql }, cb)
 end
