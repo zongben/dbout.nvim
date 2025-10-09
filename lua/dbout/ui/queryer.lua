@@ -1,5 +1,5 @@
 local utils = require("dbout.utils")
-local rpc = require("dbout.rpc")
+local client = require("dbout.client")
 local viewer = require("dbout.ui.viewer")
 local inspector = require("dbout.ui.inspector")
 
@@ -39,10 +39,10 @@ end
 
 local buf_detach_lsp = function(bufnr)
   local clients = vim.lsp.get_clients({ bufnr = bufnr })
-  for _, client in ipairs(clients) do
-    if client.name:match("^sqls") then
+  for _, c in ipairs(clients) do
+    if c.name:match("^sqls") then
       buffer_connection[bufnr] = nil
-      vim.lsp.buf_detach_client(bufnr, client.id)
+      vim.lsp.buf_detach_client(bufnr, c.id)
     end
   end
 end
@@ -108,10 +108,7 @@ M.query = function()
   end
 
   local sql = table.concat(vim.api.nvim_buf_get_lines(bufnr, start_row, end_row, false), "\n")
-  rpc.send_jsonrpc("query", {
-    id = buffer_connection[bufnr].id,
-    sql = sql,
-  }, function(jsonstr)
+  client.query(buffer_connection[bufnr].id, sql, function(jsonstr)
     viewer.open_viewer(jsonstr)
   end)
 end
