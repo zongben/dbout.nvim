@@ -47,8 +47,8 @@ export class Postgres {
       SELECT table_name as view_name
       FROM information_schema.tables
       WHERE table_schema = 'public'
-      AND table_type = 'VIEW';
-      ORDER BY table_name
+      AND table_type = 'VIEW'
+      ORDER BY table_name;
     `;
     return await this.query(sql);
   }
