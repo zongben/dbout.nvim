@@ -151,4 +151,29 @@ export class Postgres {
     });
     return result;
   }
+
+  async getTriggerList(table_name) {
+    const sql = `
+      SELECT tg.tgname AS trigger_name
+      FROM pg_trigger tg
+      JOIN pg_class tbl ON tg.tgrelid = tbl.oid
+      JOIN pg_namespace ns ON tbl.relnamespace = ns.oid
+      WHERE tbl.relname = '${table_name}'
+      AND ns.nspname = 'public'
+      AND NOT tg.tgisinternal;
+    `;
+    return await this.query(sql);
+  }
+
+  async getTrigger(trig_name) {
+    const sql = `
+      SELECT pg_get_triggerdef(t.oid, true) AS definition
+      FROM pg_trigger t
+      JOIN pg_class c ON t.tgrelid = c.oid
+      JOIN pg_namespace n ON c.relnamespace = n.oid
+      WHERE t.tgname = '${trig_name}'
+      AND NOT t.tgisinternal;
+    `;
+    return await this.query(sql);
+  }
 }

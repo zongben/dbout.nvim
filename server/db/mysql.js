@@ -143,4 +143,24 @@ export class MySql {
     });
     return result;
   }
+
+  async getTriggerList(table_name) {
+    const sql = `
+      SELECT TRIGGER_NAME as trigger_name
+      FROM information_schema.triggers
+      WHERE EVENT_OBJECT_TABLE = '${table_name}'
+      AND TRIGGER_SCHEMA = DATABASE();
+    `;
+    return await this.query(sql);
+  }
+
+  async getTrigger(trig_name) {
+    const sql = `
+      SELECT ACTION_STATEMENT AS definition
+      FROM information_schema.triggers
+      WHERE TRIGGER_NAME = '${trig_name}'
+      AND TRIGGER_SCHEMA = DATABASE();
+    `;
+    return await this.query(sql);
+  }
 }

@@ -32,12 +32,20 @@ M.get_function_list = function(id, cb)
   send_rpc("get_function_list", { id = id }, cb)
 end
 
+M.get_trigger_list = function(id, table_name, cb)
+  send_rpc("get_trigger_list", { id = id, table_name = table_name }, cb)
+end
+
 M.get_function = function(id, function_name, cb)
   send_rpc("get_function", { id = id, function_name = function_name }, cb)
 end
 
 M.get_table = function(id, table_name, cb)
   send_rpc("get_table", { id = id, table_name = table_name }, cb)
+end
+
+M.get_trigger = function(id, trig_name, cb)
+  send_rpc("get_trigger", { id = id, trig_name = trig_name }, cb)
 end
 
 M.query = function(id, sql, cb)

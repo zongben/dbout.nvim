@@ -79,6 +79,16 @@ class Driver {
     const conn = this.#connections.get(id);
     return await conn.getTable(table_name);
   }
+
+  async getTrigger(id, trig_name) {
+    const conn = this.#connections.get(id);
+    return await conn.getTrigger(trig_name);
+  }
+
+  async getTriggerList(id, table_name) {
+    const conn = this.#connections.get(id);
+    return await conn.getTriggerList(table_name);
+  }
 }
 
 export const driver = new Driver();

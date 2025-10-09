@@ -50,4 +50,14 @@ export class Consumer {
     const { id, table_name } = params;
     return await driver.getTable(id, table_name);
   }
+
+  static async getTrigger(params) {
+    const { id, trig_name } = params;
+    return await driver.getTrigger(id, trig_name);
+  }
+
+  static async getTriggerList(params) {
+    const { id, table_name } = params;
+    return await driver.getTriggerList(id, table_name);
+  }
 }

@@ -108,4 +108,24 @@ export class Sqlite {
     });
     return result;
   }
+
+  getTriggerList(table_name) {
+    const sql = `
+      SELECT name AS trigger_name
+      FROM sqlite_master
+      WHERE type = 'trigger'
+      AND tbl_name = '${table_name}';
+    `;
+    return this.query(sql);
+  }
+
+  getTrigger(trig_name) {
+    const sql = `
+      SELECT sql AS definition
+      FROM sqlite_master
+      WHERE type = 'trigger'
+      AND name = '${trig_name}';
+    `;
+    return this.query(sql);
+  }
 }

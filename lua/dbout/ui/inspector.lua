@@ -24,6 +24,8 @@ local set_inspector_buf = function()
     client.get_function_list(conn.id, fn)
   elseif tab == "Columns" then
     client.get_table(conn.id, winbar.get_sub_tab_table(), fn)
+  elseif tab == "Triggers" then
+    client.get_trigger_list(conn.id, winbar.get_sub_tab_table(), fn)
   end
 end
 
@@ -112,6 +114,27 @@ local inspect_table = function()
   end)
 end
 
+local inspect_trigger = function()
+  client.get_trigger_list(conn.id, winbar.get_sub_tab_table(), function(jsonstr)
+    local data = vim.fn.json_decode(jsonstr)
+    vim.ui.select(data.rows, {
+      prompt = "Inspect a trigger",
+      format_item = function(item)
+        return item.trigger_name
+      end,
+    }, function(t)
+      if not t then
+        return
+      end
+      client.get_trigger(conn.id, t.trigger_name, function(t_jsonstr)
+        local sp = vim.fn.json_decode(t_jsonstr).rows[1].definition
+        local lines = vim.split(sp, "\r?\n")
+        utils.set_buf_lines(queryer_bufnr, lines)
+      end)
+    end)
+  end)
+end
+
 local M = {}
 
 M.buffer_keymappings = nil
@@ -173,6 +196,8 @@ M.inspect = function()
       return
     end
     inspect_function()
+  elseif tab == "Triggers" then
+    inspect_trigger()
   end
 end
 

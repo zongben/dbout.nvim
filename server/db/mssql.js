@@ -144,4 +144,23 @@ export class MsSql {
     });
     return result;
   }
+
+  async getTrigger(trig_name) {
+    const sql = `
+      SELECT m.definition
+      FROM sys.sql_modules m
+      JOIN sys.triggers t ON m.object_id = t.object_id
+      WHERE t.name = '${trig_name}';
+    `;
+    return await this.query(sql);
+  }
+
+  async getTriggerList(table_name) {
+    const sql = `
+      SELECT t.name AS trigger_name
+      FROM sys.triggers t
+      WHERE t.parent_id = OBJECT_ID('${table_name}');
+    `;
+    return await this.query(sql);
+  }
 }

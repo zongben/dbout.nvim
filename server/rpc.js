@@ -10,6 +10,8 @@ const METHODS = {
   GET_STORE_PROCEDURE: "get_store_procedure",
   GET_FUNCTION: "get_function",
   GET_TABLE: "get_table",
+  GET_TRIGGER: "get_trigger",
+  GET_TRIGGER_LIST: "get_trigger_list",
   QUERY: "query",
 };
 
@@ -25,6 +27,8 @@ const handlers = {
   [METHODS.GET_STORE_PROCEDURE]: (params) => Consumer.getStoreProcedure(params),
   [METHODS.GET_FUNCTION]: (params) => Consumer.getFunction(params),
   [METHODS.GET_TABLE]: (params) => Consumer.getTable(params),
+  [METHODS.GET_TRIGGER]: (params) => Consumer.getTrigger(params),
+  [METHODS.GET_TRIGGER_LIST]: (params) => Consumer.getTriggerList(params),
 };
 
 export class RPC {
