@@ -12,6 +12,7 @@ M.defaults = {
     queryer = {
       query = "<F5>",
       open_inspector = "<F12>",
+      format = "<F11>",
     },
     viewer = {
       close = "q",
@@ -21,7 +22,7 @@ M.defaults = {
       next_tab = "L",
       previous_tab = "H",
       inspect = "I",
-      back = "<BS>"
+      back = "<BS>",
     },
   },
 }

@@ -64,4 +64,8 @@ M.query = function(id, sql, cb)
   send_rpc("query", { id = id, sql = sql }, cb)
 end
 
+M.format = function(id, sql, cb)
+  send_rpc("format", { id = id, sql = sql }, cb)
+end
+
 return M

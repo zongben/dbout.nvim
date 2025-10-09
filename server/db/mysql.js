@@ -1,4 +1,5 @@
 import mysql from "mysql2/promise";
+import { format } from "sql-formatter";
 
 export class MySql {
   #pool;
@@ -31,6 +32,12 @@ export class MySql {
       total,
       rows,
     };
+  }
+
+  format(sql) {
+    return format(sql, {
+      language: "mysql",
+    });
   }
 
   async getTableList() {

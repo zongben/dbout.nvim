@@ -1,4 +1,5 @@
 import Database from "better-sqlite3";
+import { format } from "sql-formatter";
 
 export class Sqlite {
   #db;
@@ -31,6 +32,12 @@ export class Sqlite {
       total,
       rows,
     };
+  }
+
+  format(sql) {
+    return format(sql, {
+      language: "sqlite",
+    });
   }
 
   getTableList() {

@@ -75,4 +75,9 @@ export class Consumer {
     const { id, table_name } = params;
     return await driver.generateUpdateSQL(id, table_name);
   }
+
+  static async format(params) {
+    const { id, sql } = params;
+    return await driver.format(id, sql);
+  }
 }

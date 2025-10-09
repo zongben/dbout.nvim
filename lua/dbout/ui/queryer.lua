@@ -9,6 +9,27 @@ local set_winbar = function(name)
   return "%#Title#Database:[" .. name .. "]%*"
 end
 
+local visual_select = function()
+  local start_row, end_row
+  if vim.fn.mode():match("[vV\22]") then
+    local v_row = vim.fn.getpos("v")[2]
+    local c_row = vim.fn.getpos(".")[2]
+
+    if v_row < c_row then
+      start_row = v_row
+      end_row = c_row
+    else
+      start_row = c_row
+      end_row = v_row
+    end
+    start_row = start_row - 1
+  else
+    start_row = 0
+    end_row = -1
+  end
+  return start_row, end_row
+end
+
 local M = {}
 
 M.buffer_keymappings = nil
@@ -89,23 +110,7 @@ M.query = function()
   local win = vim.api.nvim_get_current_win()
   local bufnr = vim.api.nvim_win_get_buf(win)
 
-  local start_row, end_row
-  if vim.fn.mode():match("[vV\22]") then
-    local v_row = vim.fn.getpos("v")[2]
-    local c_row = vim.fn.getpos(".")[2]
-
-    if v_row < c_row then
-      start_row = v_row
-      end_row = c_row
-    else
-      start_row = c_row
-      end_row = v_row
-    end
-    start_row = start_row - 1
-  else
-    start_row = 0
-    end_row = -1
-  end
+  local start_row, end_row = visual_select()
 
   local sql = table.concat(vim.api.nvim_buf_get_lines(bufnr, start_row, end_row, false), "\n")
   client.query(buffer_connection[bufnr].id, sql, function(jsonstr)
@@ -117,6 +122,21 @@ M.open_inspector = function()
   local win = vim.api.nvim_get_current_win()
   local bufnr = vim.api.nvim_win_get_buf(win)
   inspector.open_inspector(buffer_connection[bufnr], bufnr)
+end
+
+M.format = function()
+  local win = vim.api.nvim_get_current_win()
+  local bufnr = vim.api.nvim_win_get_buf(win)
+
+  local start_row, end_row = visual_select()
+
+  local sql = table.concat(vim.api.nvim_buf_get_lines(bufnr, start_row, end_row, false), "\n")
+  client.format(buffer_connection[bufnr].id, sql, function(jsonstr)
+    local str = vim.fn.json_decode(jsonstr)
+    local lines = vim.split(str, "\r?\n")
+    utils.set_buf_lines(bufnr, lines)
+    vim.api.nvim_win_set_buf(win, bufnr)
+  end)
 end
 
 return M

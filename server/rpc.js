@@ -16,6 +16,7 @@ const METHODS = {
   GENERATE_INSERT_SQL: "generate_insert_sql",
   GENERATE_UPDATE_SQL: "generate_update_sql",
   QUERY: "query",
+  FORMAT: "format",
 };
 
 const handlers = {
@@ -35,6 +36,7 @@ const handlers = {
   [METHODS.GENERATE_SELECT_SQL]: (params) => Consumer.generateSelectSQL(params),
   [METHODS.GENERATE_INSERT_SQL]: (params) => Consumer.generateInsertSQL(params),
   [METHODS.GENERATE_UPDATE_SQL]: (params) => Consumer.generateUpdateSQL(params),
+  [METHODS.FORMAT]: (params) => Consumer.format(params),
 };
 
 export class RPC {

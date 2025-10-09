@@ -1,4 +1,6 @@
 import pkg from "pg";
+import { format } from "sql-formatter";
+
 const { Pool } = pkg;
 
 export class Postgres {
@@ -29,6 +31,12 @@ export class Postgres {
     } finally {
       client.release();
     }
+  }
+
+  format(sql) {
+    return format(sql, {
+      language: "postgresql",
+    });
   }
 
   async getTableList() {

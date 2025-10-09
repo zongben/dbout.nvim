@@ -1,4 +1,5 @@
 import sql from "mssql";
+import { format } from "sql-formatter";
 
 export class MsSql {
   #pool;
@@ -12,6 +13,12 @@ export class MsSql {
     const instance = new MsSql();
     await instance.#init(config);
     return instance;
+  }
+
+  format(sql) {
+    return format(sql, {
+      language: "tsql",
+    });
   }
 
   async query(sql) {

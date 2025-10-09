@@ -137,6 +137,11 @@ class Driver {
     const sql = `INSERT INTO(\n  ${columns.join(",\n  ")}\n)\nVALUES (\n  ${values.join(",\n  ")}\n)`;
     return sql;
   }
+
+  format(id, sql) {
+    const conn = this.#connections.get(id);
+    return conn.format(sql);
+  }
 }
 
 export const driver = new Driver();
