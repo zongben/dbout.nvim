@@ -96,10 +96,7 @@ end
 M.reset = function()
   M.tab_switch(1)
   tab_state[1].index = 1
-  tab_state[2] = {
-    index = 1,
-    tabs = {},
-  }
+  tab_state[2].index = 1
 end
 
 return M
