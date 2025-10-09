@@ -9,9 +9,10 @@ M.buffer_keymappings = nil
 M.open_viewer = function(jsonstr)
   if viewer_bufnr == nil then
     viewer_bufnr = vim.api.nvim_create_buf(false, true)
-    vim.api.nvim_set_option_value("filetype", "json", { buf = viewer_bufnr })
     M.buffer_keymappings(viewer_bufnr)
   end
+  vim.api.nvim_set_option_value("filetype", "json", { buf = viewer_bufnr })
+
 
   local lines = utils.format_json(jsonstr)
   utils.set_buf_lines(viewer_bufnr, lines)

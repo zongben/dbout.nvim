@@ -172,10 +172,9 @@ M.open_inspector = function(connection, bufnr)
 
   if inspector_bufnr == nil then
     inspector_bufnr = vim.api.nvim_create_buf(false, true)
-    vim.api.nvim_set_option_value("filetype", "json", { buf = inspector_bufnr })
+    M.buffer_keymappings(inspector_bufnr)
   end
-
-  M.buffer_keymappings(inspector_bufnr)
+  vim.api.nvim_set_option_value("filetype", "json", { buf = inspector_bufnr })
 
   local winnr = utils.get_or_create_buf_win(inspector_bufnr)
   vim.api.nvim_win_set_buf(winnr, inspector_bufnr)
