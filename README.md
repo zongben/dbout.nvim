@@ -63,12 +63,20 @@ The default configuration is as follows:
     },
     queryer = {
       query = "<F5>",
-      table_list = "<F12>",
+      format = "<F11>",
+      open_inspector = "<F12>",
     },
     viewer = {
       close = "q",
     },
-  }
+    inspector = {
+      close = "q",
+      next_tab = "L",
+      previous_tab = "H",
+      inspect = "I",
+      back = "<BS>",
+    },
+  },
 }
 ```
 
@@ -90,8 +98,15 @@ Alternatively, you can use user commands to perform the same actions:
 `:Dbout EditConnection`  
 `:Dbout AttachConnection`  
 
-After open/attach a connection, a buffer for that database connection will be connected.  
-Inside the connection buffer:  
+After opening or attaching a connection, a buffer for that database connection is created, named Queryer.  
+Inside the Queryer buffer:
 
 `F5` – Execute the current SQL query  
-`F12` – List all tables in the database  
+`F11` – Format SQL  
+`F12` – Open Inspector  
+
+The Inspector is a buffer used for inspecting database objects.  
+Within the Inspector buffer:
+
+`H` and `L` – Switch between tabs  
+`I` – Inspect more details, such as table columns, triggers, views, etc.  
