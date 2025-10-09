@@ -16,11 +16,9 @@ M.open_viewer = function(jsonstr)
   local lines = utils.format_json(jsonstr)
   utils.set_buf_lines(viewer_bufnr, lines)
 
-  local winnr = utils.get_buf_win(viewer_bufnr)
-  if not winnr then
-    winnr = utils.create_right_win()
-  end
+  local winnr = utils.get_or_create_buf_win(viewer_bufnr)
   vim.api.nvim_win_set_buf(winnr, viewer_bufnr)
+  vim.api.nvim_set_option_value("winbar", "%#Title#[Query Result]%*", { win = winnr })
 end
 
 M.close_viewer = function()
