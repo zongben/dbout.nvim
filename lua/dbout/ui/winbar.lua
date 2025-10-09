@@ -6,8 +6,12 @@ local tab_state = {
     "StoreProcedures",
     "Functions",
   } },
-  { index = 1, tabs = {} },
+  { index = 1, tabs = {
+    "Columns",
+    "Triggers",
+  } },
 }
+local sub_tab_table_name
 
 local set_top_winbar = function(winnr)
   local state = tab_state[1]
@@ -31,6 +35,8 @@ local set_sub_winbar = function(winnr)
 
   local bar = {}
   table.insert(bar, "<--Back")
+  table.insert(bar, " %#Directory#" .. sub_tab_table_name .. "%* ")
+
   for index, tab in ipairs(state.tabs) do
     if index == state.index then
       table.insert(bar, "%#Title#[" .. tab .. "]%*")
@@ -45,12 +51,12 @@ end
 
 local M = {}
 
-M.create_sub_tab = function(table_name)
-  local state = tab_state[2]
-  state.tabs = {
-    table_name,
-    "Triggers",
-  }
+M.set_sub_tab_table = function(table_name)
+  sub_tab_table_name = table_name
+end
+
+M.get_sub_tab_table = function()
+  return sub_tab_table_name
 end
 
 M.set_winbar = function(winnr)
@@ -84,14 +90,7 @@ end
 M.get_current_tab = function()
   local state = tab_state[tab_switch]
   local tab = state.tabs[state.index]
-  local extra = nil
-
-  if state.index == 1 and tab_switch == 2 then
-    --tab here is a table name
-    return "TableColumns", tab
-  end
-
-  return tab, extra
+  return tab
 end
 
 M.reset = function()

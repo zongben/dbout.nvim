@@ -7,7 +7,7 @@ local conn
 local queryer_bufnr
 
 local set_inspector_buf = function()
-  local tab, extra = winbar.get_current_tab()
+  local tab = winbar.get_current_tab()
 
   local fn = function(jsonstr)
     local lines = utils.format_json(jsonstr)
@@ -22,8 +22,8 @@ local set_inspector_buf = function()
     client.get_store_procedure_list(conn.id, fn)
   elseif tab == "Functions" then
     client.get_function_list(conn.id, fn)
-  elseif tab == "TableColumns" then
-    client.get_table(conn.id, extra, fn)
+  elseif tab == "Columns" then
+    client.get_table(conn.id, winbar.get_sub_tab_table(), fn)
   end
 end
 
@@ -104,7 +104,7 @@ local inspect_table = function()
       end
       local winnr = utils.get_or_create_buf_win(inspector_bufnr)
       vim.api.nvim_win_set_buf(winnr, inspector_bufnr)
-      winbar.create_sub_tab(t.table_name)
+      winbar.set_sub_tab_table(t.table_name)
       winbar.tab_switch(2)
       winbar.set_winbar(winnr)
       set_inspector_buf()
