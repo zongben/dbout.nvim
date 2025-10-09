@@ -102,8 +102,8 @@ class Driver {
         return `${col.column_name} = @${col.column_name}`;
       });
 
-    const sql = `SELECT\n  ${columns.join(",\n  ")}\nFROM ${table_name}\nWHERE ${pkey.join(" AND ")}`;
-    return sql;
+    const sql = `SELECT ${columns.join(",")} FROM ${table_name} WHERE ${pkey.join(" AND ")}`;
+    return conn.format(sql);
   }
 
   async generateUpdateSQL(id, table_name) {
@@ -120,8 +120,8 @@ class Driver {
         return `${col.column_name} = @${col.column_name}`;
       });
 
-    const sql = `UPDATE ${table_name} SET\n  ${columns.join(",\n  ")}\nWHERE ${pkey.join(" AND ")}`;
-    return sql;
+    const sql = `UPDATE ${table_name} SET ${columns.join(",")} WHERE ${pkey.join(" AND ")}`;
+    return conn.format(sql);
   }
 
   async generateInsertSQL(id, table_name) {
@@ -134,8 +134,8 @@ class Driver {
       return `@${col.column_name}`;
     });
 
-    const sql = `INSERT INTO(\n  ${columns.join(",\n  ")}\n)\nVALUES (\n  ${values.join(",\n  ")}\n)`;
-    return sql;
+    const sql = `INSERT INTO(${columns.join(",")}) VALUES (${values.join(",")})`;
+    return conn.format(sql);
   }
 
   format(id, sql) {
