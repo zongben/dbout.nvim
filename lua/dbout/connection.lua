@@ -18,7 +18,7 @@ end
 M.create_connection = function(connection, cb)
   local fn = function(db_type)
     local name = vim.fn.input("Enter name: ", connection.name or "")
-    if not name then
+    if name == "" then
       return
     end
 
@@ -28,7 +28,7 @@ M.create_connection = function(connection, cb)
     end
 
     local connstr = vim.fn.input("Enter " .. db_type .. " connection string: ", connection.connstr or "")
-    if not connstr then
+    if connstr == "" then
       return
     end
 
