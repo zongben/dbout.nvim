@@ -62,7 +62,7 @@ M.is_conn_exists = function(id, name)
 end
 
 M.get_connections = function()
-  return connections
+  return connections or {}
 end
 
 M.get_supported_db = function()
