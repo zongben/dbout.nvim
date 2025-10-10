@@ -12,7 +12,7 @@ local save = function()
 end
 
 M.init = function()
-  connections = saver.load()
+  connections = saver.load() or {}
 end
 
 M.create_connection = function(connection, cb)
@@ -62,7 +62,7 @@ M.is_conn_exists = function(id, name)
 end
 
 M.get_connections = function()
-  return connections or {}
+  return connections
 end
 
 M.get_supported_db = function()
