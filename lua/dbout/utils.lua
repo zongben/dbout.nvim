@@ -52,9 +52,8 @@ M.get_or_create_buf_win = function(bufnr)
   return winnr
 end
 
-M.format_json = function(jsonstr)
-  local formatted = vim.fn.system({ "jq", ".", "-M" }, jsonstr)
-  return vim.split(formatted, "\n", { plain = true })
+M.split_json = function(jsonstr)
+  return vim.split(jsonstr, "\n", { plain = true })
 end
 
 M.set_buf_lines = function(buf, lines)

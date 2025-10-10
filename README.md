@@ -27,7 +27,6 @@ https://github.com/user-attachments/assets/21d4295a-897b-422a-aa69-2d6cde4e555d
 Requirements:
 
 * [Nodejs](https://github.com/nodejs/node)
-* [jq](https://github.com/jqlang/jq)
 * [sqls](https://github.com/sqls-server/sqls)
 
 `sqls` is recommended to be installed via [mason.nvim](https://github.com/mason-org/mason.nvim). If you are not using mason, make sure sqls is installed and available in your system PATH.

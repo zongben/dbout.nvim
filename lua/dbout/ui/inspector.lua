@@ -10,7 +10,7 @@ local set_inspector_buf = function()
   local tab = winbar.get_current_tab()
 
   local fn = function(jsonstr)
-    local lines = utils.format_json(jsonstr)
+    local lines = utils.split_json(jsonstr)
     utils.set_buf_lines(inspector_bufnr, lines)
   end
 

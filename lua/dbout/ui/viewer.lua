@@ -14,7 +14,7 @@ M.open_viewer = function(jsonstr)
   vim.api.nvim_set_option_value("filetype", "json", { buf = viewer_bufnr })
 
 
-  local lines = utils.format_json(jsonstr)
+  local lines = utils.split_json(jsonstr)
   utils.set_buf_lines(viewer_bufnr, lines)
 
   local winnr = utils.get_or_create_buf_win(viewer_bufnr)
