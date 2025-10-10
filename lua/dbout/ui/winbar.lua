@@ -99,4 +99,9 @@ M.reset = function()
   tab_state[2].index = 1
 end
 
+M.back = function()
+  M.tab_switch(1)
+  tab_state[2].index = 1
+end
+
 return M

@@ -230,7 +230,7 @@ M.inspect = function()
 end
 
 M.back = function()
-  winbar.tab_switch(1)
+  winbar.back()
   local winnr = utils.get_buf_win(inspector_bufnr)
   winbar.set_winbar(winnr)
   set_inspector_buf()
