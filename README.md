@@ -36,6 +36,8 @@ With lazy.nvim:
 ```lua
 {
   "zongben/dbout.nvim",
+  cmd = { "Dbout" },
+  lazy = "VeryLazy",
   build = "npm install",
   --this is optional if you disable telescope
   dependencies = {
