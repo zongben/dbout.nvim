@@ -92,6 +92,8 @@ Within the Inspector buffer:
 `H` and `L` - Switch between tabs  
 `I` - Inspect more details, such as table columns, triggers, views, etc.  
 
+### Telescope Extension
+
 For users with Telescope installed, you can load the dbout extension for easier database connection management:
 
 ```lua
@@ -114,3 +116,28 @@ require("telescope").setup({
 ```
 
 Then, you can open the database connection picker by calling `:Telescope dbout` or `require("telescope").extensions.dbout.dbout()`
+
+### Snacks Sources
+
+For users with Snacks installed, dbout automatically registers its sources.
+You can open the database connection manager simply by running the `Dbout` command:
+
+```lua
+--default config
+require("dbout.snacks").setup({
+  keymaps = {
+    open_connection = "<cr>",
+    new_connection = "n",
+    delete_connection = "d",
+    edit_connection = "e",
+    attach_connection = "a",
+  },
+})
+
+-- You can also configure the source:
+Snacks.picker.sources.dbout = {
+  -- your options here
+  -- For more details, see:
+  -- https://github.com/folke/snacks.nvim/blob/main/docs/picker.md
+}
+```

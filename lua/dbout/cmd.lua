@@ -69,6 +69,11 @@ M.init = function()
     end
 
     local cmd = opts.args
+
+    if Snacks and cmd == "" then
+      require("dbout.snacks").open_picker()
+    end
+
     if cmd == args.new_connection then
       new_connection()
     elseif cmd == args.edit_connection then
