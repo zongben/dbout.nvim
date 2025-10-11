@@ -1,14 +1,7 @@
 local M = {}
 
 M.defaults = {
-  enable_telescope = true,
-  keymap = {
-    telescope = {
-      new_connection = "n",
-      delete_connection = "d",
-      edit_connection = "e",
-      attach_connection = "a",
-    },
+  keymaps = {
     queryer = {
       query = "<F5>",
       open_inspector = "<F12>",
