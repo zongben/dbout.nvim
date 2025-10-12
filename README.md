@@ -120,7 +120,7 @@ Then, you can open the database connection picker by calling `:Telescope dbout` 
 ### Snacks Sources
 
 For users with Snacks installed, dbout automatically registers its sources.
-You can open the database connection manager simply by running the `Dbout` command:
+You can open the database connection manager simply by calling `:Dbout`
 
 ```lua
 --default config
