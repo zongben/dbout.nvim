@@ -141,3 +141,32 @@ Snacks.picker.sources.dbout = {
   -- https://github.com/folke/snacks.nvim/blob/main/docs/picker.md
 }
 ```
+
+## NOTES
+
+When opening a connection, you might see an **Sqls connection error**. 
+However, based on my tests, Sqls is actually connecting to the server successfully. 
+This error message seems to be an issue with Sqls itself. For now, I’m not sure how to disable it, so I suggest simply ignoring this error message.
+
+--
+
+If you’re using [mason-lspconfig](https://github.com/mason-org/mason-lspconfig.nvim) to automatically start LSP servers, I recommend excluding sqls from it.
+dbout will automatically start sqls for you.
+
+```lua
+require("mason-lspconfig").setup({
+  automatic_enable = {
+    exclude = {
+      "sqls",
+    },
+  },
+})
+```
+
+## TODO
+
+- [ ] CSV output
+- [ ] query history
+- [ ] layout system
+- [ ] better LSP and tree sitting support
+- [ ] mongodb support
