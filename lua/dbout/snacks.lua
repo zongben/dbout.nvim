@@ -49,7 +49,7 @@ M.open_picker = function()
     end,
     format = function(item)
       return {
-        { string.format("%-15s", truncate(item.name, 15)), "SnacksPickerLabel" },
+        { string.format("%-15s", truncate(item.name, 15)) },
         { item.db_type .. ":" .. item.connstr, "SnacksPickerComment" },
       }
     end,
