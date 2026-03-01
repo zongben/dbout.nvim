@@ -12,7 +12,11 @@ export class Postgres {
 
   static async createConnection(conn_str) {
     const instance = new Postgres();
-    await instance.#init({ connectionString: conn_str });
+    await instance.#init({
+      connectionString: conn_str,
+      ssl: { rejectUnauthorized: false },
+    });
+
     return instance;
   }
 
