@@ -1,6 +1,8 @@
 local conn = require("dbout.connection")
 local queryer = require("dbout.ui.queryer")
 
+local empty_msg = "No Connections"
+
 local function truncate(text, width)
   if #text > width then
     return text:sub(1, width - 1) .. "…"
@@ -30,6 +32,7 @@ M.open_picker = function()
     source = "dbout",
     title = "Connections",
     preview = "none",
+    ui_select = true,
     layout = {
       preset = "select",
     },
@@ -45,9 +48,22 @@ M.open_picker = function()
           db_type = value.db_type,
         })
       end
+
+      if vim.tbl_count(items) == 0 then
+        table.insert(items, {
+          connstr = empty_msg,
+        })
+      end
+
       return items
     end,
     format = function(item)
+      if item.connstr == empty_msg then
+        return {
+          { item.connstr, "SnacksPickerComment" },
+        }
+      end
+
       return {
         { string.format("%-15s", truncate(item.name, 15)) },
         { item.db_type .. ":" .. item.connstr, "SnacksPickerComment" },
@@ -84,6 +100,10 @@ M.open_picker = function()
         end)
       end,
       open_connection = function(picker, item)
+        if item.connstr == empty_msg then
+          return
+        end
+
         conn.open_connection(item, function()
           picker:close()
           queryer.create_buf(item)
@@ -97,7 +117,6 @@ M.open_picker = function()
       end,
     },
   }
-
   Snacks.picker.pick(config)
 end
 
