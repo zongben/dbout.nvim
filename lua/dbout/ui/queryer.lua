@@ -45,7 +45,7 @@ local start_lsp = function(conn)
       end
     end,
     settings = {
-      sqls = {
+      [lsp_name] = {
         connections = {
           {
             driver = conn.db_type,
