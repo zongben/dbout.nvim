@@ -168,5 +168,5 @@ require("mason-lspconfig").setup({
 - [ ] CSV output
 - [ ] query history
 - [ ] layout system
-- [ ] better LSP support
+- [ ] custom prestore scripts
 - [ ] mongodb support
