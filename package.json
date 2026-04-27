@@ -5,10 +5,10 @@
   },
   "type": "module",
   "dependencies": {
-    "better-sqlite3": "^12.6.2",
-    "mssql": "^12.2.0",
-    "mysql2": "^3.18.2",
+    "better-sqlite3": "^12.9.0",
+    "mssql": "^12.5.0",
+    "mysql2": "^3.22.3",
     "pg": "^8.20.0",
-    "sql-formatter": "^15.7.2"
+    "sql-formatter": "^15.7.3"
   }
 }
