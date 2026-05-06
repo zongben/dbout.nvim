@@ -11,7 +11,6 @@ https://github.com/user-attachments/assets/21d4295a-897b-422a-aa69-2d6cde4e555d
 
 - **JSON Result Display**: View query results in a structured JSON format for easy reading and further processing.
 - **No More Connection Strings In Your Neovim Config**: All your database connections are securely saved locally on your machine.
-- **LSP Support**: Use `sqls` as the SQL language server, and spins up separate LSP instances per database connection to avoid mixing completions across different databases.
 
 ## Supported Databases
 
