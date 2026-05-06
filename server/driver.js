@@ -35,6 +35,11 @@ class Driver {
     return "connected";
   }
 
+  async getConnectionInfo(id) {
+    const conn = this.#connections.get(id);
+    return await conn.getConnectionInfo();
+  }
+
   async query(id, sql) {
     const conn = this.#connections.get(id);
     return await conn.query(sql);

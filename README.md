@@ -25,9 +25,6 @@ https://github.com/user-attachments/assets/21d4295a-897b-422a-aa69-2d6cde4e555d
 Requirements:
 
 - [Nodejs](https://github.com/nodejs/node)
-- [sqls](https://github.com/sqls-server/sqls)
-
-`sqls` is recommended to be installed via [mason.nvim](https://github.com/mason-org/mason.nvim). If you are not using mason, make sure sqls is installed and available in your system PATH.
 
 With lazy.nvim:
 
@@ -66,6 +63,15 @@ The default configuration is as follows:
       back = "<BS>",
     },
   },
+  -- Called when a buffer attaches to a connection.
+  -- Use this to configure your preferred LSP.
+  -- This function provides connection details to help set up the LSP.
+  on_attach = function(conn, bufnr)
+    -- conn is a table
+    -- {
+    --   name, db_type, host, port, user, password, database, connstr
+    -- }
+  end
 }
 ```
 
@@ -140,27 +146,6 @@ Snacks.picker.sources.dbout = {
   -- For more details, see:
   -- https://github.com/folke/snacks.nvim/blob/main/docs/picker.md
 }
-```
-
-## NOTES
-
-When opening a connection, you might see an **Sqls connection error**. 
-However, based on my tests, Sqls is actually connecting to the server successfully. 
-This error message seems to be an issue with Sqls itself. For now, I’m not sure how to disable it, so I suggest simply ignoring this error message.
-
---
-
-If you’re using [mason-lspconfig](https://github.com/mason-org/mason-lspconfig.nvim) to automatically start LSP servers, I recommend excluding sqls from it.
-dbout will automatically start sqls for you.
-
-```lua
-require("mason-lspconfig").setup({
-  automatic_enable = {
-    exclude = {
-      "sqls",
-    },
-  },
-})
 ```
 
 ## TODO

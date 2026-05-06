@@ -18,6 +18,7 @@ M.defaults = {
       back = "<BS>",
     },
   },
+  on_attach = nil,
 }
 
 return M

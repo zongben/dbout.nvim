@@ -30,45 +30,22 @@ local visual_select = function()
   return start_row, end_row
 end
 
+local _on_attach = nil
+
 local M = {}
 
 M.buffer_keymappings = nil
 
-local start_lsp = function(conn)
-  local lsp_name = "sqls" .. "_" .. conn.name
-  vim.lsp.config[lsp_name] = {
-    cmd = { "sqls" },
-    filetypes = { "sql" },
-    root_dir = function(bufnr, on_dir)
-      if buffer_connection[bufnr] and buffer_connection[bufnr].name == conn.name then
-        on_dir()
-      end
-    end,
-    settings = {
-      sqls = {
-        connections = {
-          {
-            driver = conn.db_type,
-            dataSourceName = conn.connstr,
-          },
-        },
-      },
-    },
-  }
-  vim.lsp.enable(lsp_name, true)
-end
-
 local buf_detach_lsp = function(bufnr)
+  buffer_connection[bufnr] = nil
   local clients = vim.lsp.get_clients({ bufnr = bufnr })
   for _, c in ipairs(clients) do
-    if c.name:match("^sqls") then
-      buffer_connection[bufnr] = nil
-      vim.lsp.buf_detach_client(bufnr, c.id)
-    end
+    vim.lsp.buf_detach_client(bufnr, c.id)
   end
 end
 
-M.init = function()
+M.init = function(on_attach)
+  _on_attach = on_attach
   vim.api.nvim_create_autocmd("BufEnter", {
     callback = function(args)
       local conn = buffer_connection[args.buf]
@@ -91,18 +68,34 @@ local set_connection_buf = function(connection, bufnr)
   end
 end
 
-M.create_buf = function(connection)
-  local bufnr = vim.api.nvim_create_buf(true, false)
+local attach_connection = function(connection, bufnr)
   set_connection_buf(connection, bufnr)
   utils.switch_win_to_buf(bufnr)
-  start_lsp(connection)
+  if _on_attach then
+    client.get_connection_info(connection.id, function(jsonstr)
+      local info = vim.fn.json_decode(jsonstr)
+      _on_attach({
+        name = connection.name,
+        db_type = connection.db_type,
+        host = info.host,
+        port = info.port,
+        user = info.user,
+        password = info.password,
+        database = info.database,
+        connstr = connection.connstr,
+      }, bufnr)
+    end)
+  end
+end
+
+M.create_buf = function(connection)
+  local bufnr = vim.api.nvim_create_buf(true, false)
+  attach_connection(connection, bufnr)
 end
 
 M.attach_buf = function(connection, bufnr)
   buf_detach_lsp(bufnr)
-  set_connection_buf(connection, bufnr)
-  utils.switch_win_to_buf(bufnr)
-  start_lsp(connection)
+  attach_connection(connection, bufnr)
   inspector.reset()
 end
 

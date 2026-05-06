@@ -17,6 +17,7 @@ const METHODS = {
   GENERATE_UPDATE_SQL: "generate_update_sql",
   QUERY: "query",
   FORMAT: "format",
+  GET_CONNECTION_INFO: "get_connection_info",
 };
 
 const handlers = {
@@ -37,6 +38,7 @@ const handlers = {
   [METHODS.GENERATE_INSERT_SQL]: (params) => Consumer.generateInsertSQL(params),
   [METHODS.GENERATE_UPDATE_SQL]: (params) => Consumer.generateUpdateSQL(params),
   [METHODS.FORMAT]: (params) => Consumer.format(params),
+  [METHODS.GET_CONNECTION_INFO]: (params) => Consumer.getConnectionInfo(params),
 };
 
 export class RPC {

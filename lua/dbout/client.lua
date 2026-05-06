@@ -68,4 +68,8 @@ M.format = function(id, sql, cb)
   send_rpc("format", { id = id, sql = sql }, cb)
 end
 
+M.get_connection_info = function(id, cb)
+  send_rpc("get_connection_info", { id = id }, cb)
+end
+
 return M

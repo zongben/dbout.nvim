@@ -12,6 +12,12 @@ export class Sqlite {
     return new Sqlite(file_path);
   }
 
+  async getConnectionInfo() {
+    return {
+      database: this.#db.name,
+    };
+  }
+
   query(sql) {
     const stmt = this.#db.prepare(sql);
 

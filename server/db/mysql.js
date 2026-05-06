@@ -2,6 +2,9 @@ import mysql from "mysql2/promise";
 import { format } from "sql-formatter";
 
 export class MySql {
+  /**
+   * @type {mysql.Pool}
+   */
   #pool;
 
   async #init(config) {
@@ -12,6 +15,17 @@ export class MySql {
     const instance = new MySql();
     await instance.#init(conn_str);
     return instance;
+  }
+
+  async getConnectionInfo() {
+    const config = this.#pool.config;
+    return {
+      host: config.host,
+      port: config.port,
+      user: config.user,
+      password: config.password,
+      database: config.database,
+    };
   }
 
   async query(sql) {

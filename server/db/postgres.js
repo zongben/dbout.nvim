@@ -4,6 +4,9 @@ import { format } from "sql-formatter";
 const { Pool } = pkg;
 
 export class Postgres {
+  /**
+   * @type {pkg.Pool}
+   */
   #pool;
 
   async #init(config) {
@@ -14,6 +17,20 @@ export class Postgres {
     const instance = new Postgres();
     await instance.#init({ connectionString: conn_str });
     return instance;
+  }
+
+  async getConnectionInfo() {
+    const opt = this.#pool.options;
+    return {
+      host: opt.host,
+      port: opt.port,
+      user: opt.user,
+      password:
+        typeof opt.password === "function"
+          ? await opt.password()
+          : opt.password,
+      database: opt.database,
+    };
   }
 
   async query(sql) {

@@ -3,8 +3,13 @@ import { format } from "sql-formatter";
 
 export class MsSql {
   #pool;
+  /**
+   * @type {sql.config}
+   */
+  #config;
 
   async #init(config) {
+    this.#config = config;
     this.#pool = await new sql.ConnectionPool(config).connect();
   }
 
@@ -13,6 +18,16 @@ export class MsSql {
     const instance = new MsSql();
     await instance.#init(config);
     return instance;
+  }
+
+  async getConnectionInfo() {
+    return {
+      host: this.#config.server,
+      port: this.#config.port,
+      user: this.#config.user,
+      password: this.#config.password,
+      database: this.#config.database,
+    };
   }
 
   format(sql) {
