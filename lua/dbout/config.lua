@@ -2,16 +2,15 @@ local M = {}
 
 M.defaults = {
   keymaps = {
+    global = {
+      open_inspector = "<F12>",
+      close = "q",
+    },
     queryer = {
       query = "<F5>",
-      open_inspector = "<F12>",
       format = "<F11>",
     },
-    viewer = {
-      close = "q",
-    },
     inspector = {
-      close = "q",
       next_tab = "L",
       previous_tab = "H",
       inspect = "I",

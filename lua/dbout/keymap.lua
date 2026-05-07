@@ -12,21 +12,22 @@ local map = function(bufnr, mode, key, cb)
 end
 
 M.init = function(keymaps)
+  local g = keymaps.global
+  map(nil, { "i", "n" }, g.open_inspector, queryer.open_inspector)
+
   queryer.buffer_keymappings = function(buf)
     local q = keymaps.queryer
     map(buf, { "i", "v", "n" }, q.query, queryer.query)
     map(buf, { "i", "v", "n" }, q.format, queryer.format)
-    map(buf, { "i", "n" }, q.open_inspector, queryer.open_inspector)
   end
 
   viewer.buffer_keymappings = function(buf)
-    local v = keymaps.viewer
-    map(buf, { "n" }, v.close, viewer.close_viewer)
+    map(buf, { "n" }, g.close, viewer.close_viewer)
   end
 
   inspector.buffer_keymappings = function(buf)
     local i = keymaps.inspector
-    map(buf, { "n" }, i.close, inspector.close_inspector)
+    map(buf, { "n" }, g.close, inspector.close_inspector)
     map(buf, { "n" }, i.next_tab, inspector.next_tab)
     map(buf, { "n" }, i.previous_tab, inspector.previous_tab)
     map(buf, { "n" }, i.inspect, inspector.inspect)
