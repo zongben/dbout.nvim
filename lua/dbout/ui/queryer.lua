@@ -1,7 +1,6 @@
 local utils = require("dbout.utils")
 local client = require("dbout.client")
 local viewer = require("dbout.ui.viewer")
-local inspector = require("dbout.ui.inspector")
 
 local set_winbar = function(name)
   return "%#Title#Database:[" .. name .. "]%*"
@@ -97,7 +96,10 @@ M.open_inspector = function()
   local conn = _state.conn
   local bufnr = _state.bufnr
 
-  inspector.open_inspector(conn, bufnr)
+  if not _state.inspector then
+    _state.inspector = require("dbout.ui.inspector").new()
+  end
+  _state.inspector.open_inspector(conn, bufnr)
 end
 
 M.query = function()

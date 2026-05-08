@@ -25,13 +25,13 @@ M.init = function(keymaps)
     map(buf, { "n" }, g.close, viewer.close_viewer)
   end
 
-  inspector.buffer_keymappings = function(buf)
+  inspector.buffer_keymappings = function(buf, actions)
     local i = keymaps.inspector
-    map(buf, { "n" }, g.close, inspector.close_inspector)
-    map(buf, { "n" }, i.next_tab, inspector.next_tab)
-    map(buf, { "n" }, i.previous_tab, inspector.previous_tab)
-    map(buf, { "n" }, i.inspect, inspector.inspect)
-    map(buf, { "n" }, i.back, inspector.back)
+    map(buf, { "n" }, g.close, actions.close_inspector)
+    map(buf, { "n" }, i.next_tab, actions.next_tab)
+    map(buf, { "n" }, i.previous_tab, actions.previous_tab)
+    map(buf, { "n" }, i.inspect, actions.inspect)
+    map(buf, { "n" }, i.back, actions.back)
   end
 end
 
