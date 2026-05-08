@@ -2,6 +2,7 @@ local saver = require("dbout.saver")
 local utils = require("dbout.utils")
 local rpc = require("dbout.rpc")
 
+--- @type Connection[]
 local connections = {}
 local supported_db = { "sqlite3", "postgresql", "mysql", "mssql" }
 
@@ -15,6 +16,9 @@ M.init = function()
   connections = saver.load() or {}
 end
 
+--- @param connection Connection
+--- @param cb fun(conn: Connection)
+--- @return nil
 M.create_connection = function(connection, cb)
   local fn = function(db_type)
     local name = vim.fn.input("Enter name: ", connection.name or "")
@@ -55,12 +59,16 @@ M.create_connection = function(connection, cb)
   end)
 end
 
+--- @param id string
+--- @param name string
+--- @return boolean
 M.is_conn_exists = function(id, name)
   return #vim.tbl_filter(function(c)
     return c.id ~= id and c.name == name
   end, connections) > 0
 end
 
+--- @return Connection[]
 M.get_connections = function()
   return connections
 end
@@ -69,11 +77,15 @@ M.get_supported_db = function()
   return supported_db
 end
 
+--- @param conn Connection
+--- @return nil
 M.add_connection = function(conn)
   table.insert(connections, conn)
   save()
 end
 
+--- @param id string
+--- @return nil
 M.remove_connection = function(id)
   connections = vim.tbl_filter(function(c)
     return c.id ~= id
@@ -81,6 +93,8 @@ M.remove_connection = function(id)
   save()
 end
 
+--- @param conn Connection
+--- @return nil
 M.update_connection = function(conn)
   for _, c in ipairs(connections) do
     if c.id == conn.id then
@@ -93,6 +107,8 @@ M.update_connection = function(conn)
   end
 end
 
+--- @param conn Connection
+--- @param cb fun()
 M.open_connection = function(conn, cb)
   rpc.send_jsonrpc("create_connection", {
     id = conn.id,

@@ -1,5 +1,6 @@
 local M = {}
 
+--- @return Winbar
 M.new = function()
   local tab_switch = 1
   local tab_state = {
@@ -52,6 +53,8 @@ M.new = function()
     vim.api.nvim_win_set_cursor(winnr, { 1, 0 })
   end
 
+  --- @type Winbar
+  ---@diagnostic disable-next-line: missing-fields
   local m = {}
 
   m.set_sub_tab_table = function(table_name)

@@ -5,13 +5,18 @@ local M = {}
 
 M.buffer_keymappings = nil
 
+--- @return Inspector
 M.new = function()
   local winbar = require("dbout.ui.winbar").new()
   local inspector_bufnr
   local conn
   local queryer_bufnr
 
+  ---@type Inspector
+  ---@diagnostic disable-next-line: missing-fields
   local m = {}
+
+  m.bufnr = inspector_bufnr
 
   local set_inspector_buf = function()
     local tab = winbar.get_current_tab()
@@ -185,10 +190,11 @@ M.new = function()
     end
     vim.api.nvim_set_option_value("filetype", "json", { buf = inspector_bufnr })
 
+    set_inspector_buf()
+
     local winnr = utils.get_or_create_buf_win(inspector_bufnr)
     vim.api.nvim_win_set_buf(winnr, inspector_bufnr)
     winbar.set_winbar(winnr)
-    set_inspector_buf()
   end
 
   m.reset = function()
@@ -203,6 +209,10 @@ M.new = function()
   m.next_tab = function()
     winbar.next_tab()
     local winnr = utils.get_buf_win(inspector_bufnr)
+    if not winnr then
+      vim.notify("No inspector window found", vim.log.levels.ERROR)
+      return
+    end
     winbar.set_winbar(winnr)
     set_inspector_buf()
   end
@@ -210,6 +220,10 @@ M.new = function()
   m.previous_tab = function()
     winbar.previous_tab()
     local winnr = utils.get_buf_win(inspector_bufnr)
+    if not winnr then
+      vim.notify("No inspector window found", vim.log.levels.ERROR)
+      return
+    end
     winbar.set_winbar(winnr)
     set_inspector_buf()
   end
@@ -241,6 +255,10 @@ M.new = function()
   m.back = function()
     winbar.back()
     local winnr = utils.get_buf_win(inspector_bufnr)
+    if not winnr then
+      vim.notify("No inspector window found", vim.log.levels.ERROR)
+      return
+    end
     winbar.set_winbar(winnr)
     set_inspector_buf()
   end

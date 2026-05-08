@@ -1,5 +1,6 @@
 local queryer = require("dbout.ui.queryer")
 
+--- @type Container
 local container = {}
 
 local attach_buf = function(conn, bufnr)

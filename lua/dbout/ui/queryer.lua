@@ -6,11 +6,8 @@ local set_winbar = function(name)
   return "%#Title#Database:[" .. name .. "]%*"
 end
 
---- @class QueryerState
---- @field conn table
---- @field bufnr integer
---- @field inspector table
---- @field viewer table
+--- @type Queryer
+---@diagnostic disable-next-line: missing-fields
 local _state = {}
 
 local visual_select = function()
@@ -58,6 +55,7 @@ M.init = function(on_attach)
   })
 end
 
+--- @param state Queryer
 M.set_state = function(state)
   _state = state
 end
