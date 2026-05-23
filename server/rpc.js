@@ -41,114 +41,112 @@ const handlers = {
   [METHODS.GET_CONNECTION_INFO]: (params) => Consumer.getConnectionInfo(params),
 };
 
-export class RPC {
-  static parseData(data) {
-    try {
-      return JSON.parse(data);
-    } catch (err) {
-      throw this.parseError(err);
-    }
-  }
+export const makeRPC = () => {
+  const responses = {
+    ok: (id, result) => {
+      return {
+        jsonrpc: "2.0",
+        result: JSON.stringify(result, null, 2),
+        id,
+      };
+    },
+    methodNotFound: (id, data) => {
+      return {
+        jsonrpc: "2.0",
+        id,
+        error: {
+          code: -32601,
+          message: "Method not found",
+          data,
+        },
+      };
+    },
+    parseError: (data) => {
+      return {
+        jsonrpc: "2.0",
+        error: {
+          code: -32700,
+          message: "Parse error",
+          data,
+        },
+      };
+    },
+    invalidRequest: (data) => {
+      return {
+        jsonrpc: "2.0",
+        error: {
+          code: -32600,
+          message: "Invalid Request",
+          data,
+        },
+      };
+    },
+    internalError: (id, data) => {
+      return {
+        jsonrpc: "2.0",
+        id,
+        error: {
+          code: -32603,
+          message: "Internal error",
+          data,
+        },
+      };
+    },
+  };
+  return {
+    parseData: (data) => {
+      try {
+        return JSON.parse(data);
+      } catch (err) {
+        throw responses.parseError(err);
+      }
+    },
+    validRequest: (decoded) => {
+      if (!decoded.jsonrpc) {
+        throw responses.invalidRequest("jsonrpc is required");
+      }
 
-  static validRequest(decoded) {
-    if (!decoded.jsonrpc) {
-      throw this.invalidRequest("jsonrpc is required");
-    }
+      if (decoded.jsonrpc != "2.0") {
+        throw responses.invalidRequest("jsonrpc 2.0 only supported");
+      }
 
-    if (decoded.jsonrpc != "2.0") {
-      throw this.invalidRequest("jsonrpc 2.0 only supported");
-    }
+      if (!decoded.method) {
+        throw responses.invalidRequest("method is required");
+      }
 
-    if (!decoded.method) {
-      throw this.invalidRequest("method is required");
-    }
+      if (typeof decoded.method !== "string") {
+        throw responses.invalidRequest("method must be a string");
+      }
 
-    if (typeof decoded.method !== "string") {
-      throw this.invalidRequest("method must be a string");
-    }
-
-    if (decoded.params !== undefined && typeof decoded.params !== "object") {
-      throw this.invalidRequest(
-        "params must be an array or object if provided",
-      );
-    }
-
-    if (decoded.id !== undefined) {
-      const t = typeof decoded.id;
-      if (!(t === "string" || t === "number" || decoded.id === null)) {
-        throw this.invalidRequest(
-          "id must be string, number, or null if provided",
+      if (decoded.params !== undefined && typeof decoded.params !== "object") {
+        throw responses.invalidRequest(
+          "params must be an array or object if provided",
         );
       }
-    }
-  }
 
-  static async exec(req) {
-    const { id, method, params } = req;
-
-    if (!handlers[method]) throw this.methodNotFound(id, `${method} not found`);
-
-    try {
-      const data = await handlers[method](params);
-      if (data) {
-        return this.ok(id, data);
+      if (decoded.id !== undefined) {
+        const t = typeof decoded.id;
+        if (!(t === "string" || t === "number" || decoded.id === null)) {
+          throw responses.invalidRequest(
+            "id must be string, number, or null if provided",
+          );
+        }
       }
-    } catch (err) {
-      throw this.internalError(req.id, err.stack);
-    }
-  }
+    },
+    exec: async (req) => {
+      const { id, method, params } = req;
 
-  static ok(id, result) {
-    return {
-      jsonrpc: "2.0",
-      result: JSON.stringify(result, null, 2),
-      id,
-    };
-  }
+      if (!handlers[method])
+        throw responses.methodNotFound(id, `${method} not found`);
 
-  static methodNotFound(id, data) {
-    return {
-      jsonrpc: "2.0",
-      id,
-      error: {
-        code: -32601,
-        message: "Method not found",
-        data,
-      },
-    };
-  }
-
-  static parseError(data) {
-    return {
-      jsonrpc: "2.0",
-      error: {
-        code: -32700,
-        message: "Parse error",
-        data,
-      },
-    };
-  }
-
-  static invalidRequest(data) {
-    return {
-      jsonrpc: "2.0",
-      error: {
-        code: -32600,
-        message: "Invalid Request",
-        data,
-      },
-    };
-  }
-
-  static internalError(id, data) {
-    return {
-      jsonrpc: "2.0",
-      id,
-      error: {
-        code: -32603,
-        message: "Internal error",
-        data,
-      },
-    };
-  }
-}
+      try {
+        const data = await handlers[method](params);
+        if (data) {
+          return responses.ok(id, data);
+        }
+      } catch (err) {
+        throw responses.internalError(req.id, err.stack);
+      }
+    },
+  };
+};
