@@ -31,7 +31,7 @@ export const makeDriver = () => {
         throw new Error(`${db_type} is not supported`);
       }
 
-      const conn = await db.createConnection(conn_str);
+      const conn = await db.makeConnection(conn_str);
       connections.set(id, conn);
       return "connected";
     },
