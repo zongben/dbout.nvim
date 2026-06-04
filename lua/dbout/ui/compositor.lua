@@ -5,16 +5,20 @@ local set_winbar = function(name)
 end
 
 --- @type Compositor
-local compositor = {}
+local compositor = {
+  queryer = {},
+}
 
 local attach_buf = function(conn, bufnr)
-  compositor[bufnr] = {
+  local state = {
     conn = conn,
     bufnr = bufnr,
     inspector = nil,
     viewer = nil,
   }
-  queryer.set_state(compositor[bufnr])
+
+  compositor.queryer[bufnr] = state
+  queryer.set_state(state)
   queryer.attach_connection()
 end
 
@@ -25,9 +29,9 @@ M.init = function(on_attach)
 
   vim.api.nvim_create_autocmd("BufWinEnter", {
     callback = function(args)
-      local _state = compositor[args.buf]
-      if _state and _state.conn then
-        queryer.set_state(_state)
+      local state = compositor.queryer[args.buf]
+      if state and state.conn then
+        queryer.set_state(state)
       end
     end,
   })
