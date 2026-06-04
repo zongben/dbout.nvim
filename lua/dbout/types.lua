@@ -12,6 +12,7 @@
 --- @class Inspector
 --- @field bufnr integer
 --- @field open_inspector fun(conn: Connection, bufnr: integer): nil
+--- @field set_winbar fun(winnr: integer): nil
 --- @field close_inspector fun(): nil
 --- @field next_tab fun(): nil
 --- @field previous_tab fun(): nil

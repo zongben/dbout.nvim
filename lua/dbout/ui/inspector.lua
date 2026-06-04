@@ -202,7 +202,10 @@ M.new = function()
 
     set_inspector_buf()
 
-    local winnr = utils.get_or_create_buf_win(inspector_bufnr)
+    return inspector_bufnr
+  end
+
+  m.set_winbar = function(winnr)
     vim.api.nvim_win_set_buf(winnr, inspector_bufnr)
     winbar.set_winbar(winnr)
   end

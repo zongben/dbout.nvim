@@ -7,6 +7,24 @@ end
 --- @type Compositor
 local compositor = {
   queryer = {},
+  inspector_winnr = nil,
+  api = {},
+}
+
+compositor.api = {
+  set_or_create_inspector = function(inspector_bufnr)
+    if compositor.inspector_winnr and vim.api.nvim_win_is_valid(compositor.inspector_winnr) then
+      vim.api.nvim_win_set_buf(compositor.inspector_winnr, inspector_bufnr)
+    else
+      local winnr = vim.api.nvim_open_win(inspector_bufnr, true, {
+        split = "right",
+        win = -1,
+      })
+      compositor.inspector_winnr = winnr
+    end
+
+    return compositor.inspector_winnr
+  end,
 }
 
 local attach_buf = function(conn, bufnr)
@@ -25,7 +43,7 @@ end
 local M = {}
 
 M.init = function(on_attach)
-  queryer.init(on_attach)
+  queryer.init(on_attach, compositor.api)
 
   vim.api.nvim_create_autocmd("BufWinEnter", {
     callback = function(args)

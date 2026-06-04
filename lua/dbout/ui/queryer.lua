@@ -6,6 +6,8 @@ local viewer = require("dbout.ui.viewer")
 ---@diagnostic disable-next-line: missing-fields
 local _state = {}
 
+local _comp_api
+
 local visual_select = function()
   local start_row, end_row
   if vim.fn.mode():match("[vV\22]") then
@@ -33,9 +35,9 @@ local M = {}
 
 M.buffer_keymappings = nil
 
-M.init = function(on_attach)
+M.init = function(on_attach, comp_api)
   _on_attach = on_attach
-
+  _comp_api = comp_api
 end
 
 --- @param state Queryer
@@ -75,7 +77,10 @@ M.open_inspector = function()
   if not _state.inspector then
     _state.inspector = require("dbout.ui.inspector").new()
   end
-  _state.inspector.open_inspector(conn, bufnr)
+
+  local inspector_bufnr = _state.inspector.open_inspector(conn, bufnr)
+  local winnr = _comp_api.set_or_create_inspector(inspector_bufnr)
+  _state.inspector.set_winbar(winnr)
 end
 
 M.query = function()
