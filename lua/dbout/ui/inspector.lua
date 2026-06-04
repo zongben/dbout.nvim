@@ -12,6 +12,12 @@ M.new = function()
   local conn
   local queryer_bufnr
 
+  local updateInspector = function(fn)
+    vim.api.nvim_set_option_value("modifiable", true, { buf = inspector_bufnr })
+    fn()
+    vim.api.nvim_set_option_value("modifiable", false, { buf = inspector_bufnr })
+  end
+
   ---@type Inspector
   ---@diagnostic disable-next-line: missing-fields
   local m = {}
@@ -23,7 +29,9 @@ M.new = function()
 
     local fn = function(jsonstr)
       local lines = utils.split_json(jsonstr)
-      utils.set_buf_lines(inspector_bufnr, lines)
+      updateInspector(function()
+        utils.set_buf_lines(inspector_bufnr, lines)
+      end)
     end
 
     if tab == "Tables" then
@@ -188,7 +196,9 @@ M.new = function()
         back = m.back,
       })
     end
+
     vim.api.nvim_set_option_value("filetype", "json", { buf = inspector_bufnr })
+    vim.api.nvim_set_option_value("modifiable", false, { buf = inspector_bufnr })
 
     set_inspector_buf()
 
