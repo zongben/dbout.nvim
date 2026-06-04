@@ -50,6 +50,19 @@ M.init = function(on_attach)
       local state = compositor.queryer[args.buf]
       if state and state.conn then
         queryer.set_state(state)
+
+        if compositor.inspector_winnr and vim.api.nvim_win_is_valid(compositor.inspector_winnr) then
+          queryer.open_inspector()
+        end
+      end
+    end,
+  })
+
+  vim.api.nvim_create_autocmd("BufDelete", {
+    callback = function(args)
+      if compositor.queryer[args.buf] then
+        compositor.queryer[args.buf] = nil
+        queryer.set_state(nil)
       end
     end,
   })

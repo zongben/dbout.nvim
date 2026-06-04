@@ -206,8 +206,10 @@ M.new = function()
   end
 
   m.set_winbar = function(winnr)
-    vim.api.nvim_win_set_buf(winnr, inspector_bufnr)
-    winbar.set_winbar(winnr)
+    if winnr and vim.api.nvim_win_is_valid(winnr) then
+      vim.api.nvim_win_set_buf(winnr, inspector_bufnr)
+      winbar.set_winbar(winnr)
+    end
   end
 
   m.reset = function()

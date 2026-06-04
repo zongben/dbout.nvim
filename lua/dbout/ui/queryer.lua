@@ -2,9 +2,8 @@ local utils = require("dbout.utils")
 local client = require("dbout.client")
 local viewer = require("dbout.ui.viewer")
 
---- @type Queryer
----@diagnostic disable-next-line: missing-fields
-local _state = {}
+--- @type Queryer | nil
+local _state = nil
 
 local _comp_api
 
@@ -40,12 +39,16 @@ M.init = function(on_attach, comp_api)
   _comp_api = comp_api
 end
 
---- @param state Queryer
+--- @param state Queryer | nil
 M.set_state = function(state)
   _state = state
 end
 
 M.attach_connection = function()
+  if not _state then
+    return
+  end
+
   local conn = _state.conn
   local bufnr = _state.bufnr
 
@@ -71,6 +74,10 @@ M.attach_connection = function()
 end
 
 M.open_inspector = function()
+  if not _state then
+    return
+  end
+
   local conn = _state.conn
   local bufnr = _state.bufnr
 
@@ -84,6 +91,10 @@ M.open_inspector = function()
 end
 
 M.query = function()
+  if not _state then
+    return
+  end
+
   local conn = _state.conn
   local bufnr = _state.bufnr
 
@@ -96,6 +107,10 @@ M.query = function()
 end
 
 M.format = function()
+  if not _state then
+    return
+  end
+
   local win = vim.api.nvim_get_current_win()
   local bufnr = vim.api.nvim_win_get_buf(win)
 
