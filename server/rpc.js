@@ -1,4 +1,6 @@
-import { Consumer } from "./consumer.js";
+import { makeConsumer } from "./consumer.js";
+
+const consumer = makeConsumer();
 
 const METHODS = {
   CREATE_CONNECTION: "create_connection",
@@ -21,24 +23,24 @@ const METHODS = {
 };
 
 const handlers = {
-  [METHODS.CREATE_CONNECTION]: (params) => Consumer.createConnection(params),
-  [METHODS.GET_TABLE_LIST]: (params) => Consumer.getTableList(params),
-  [METHODS.GET_VIEW_LIST]: (params) => Consumer.getViewList(params),
-  [METHODS.QUERY]: (params) => Consumer.query(params),
+  [METHODS.CREATE_CONNECTION]: (params) => consumer.createConnection(params),
+  [METHODS.GET_TABLE_LIST]: (params) => consumer.getTableList(params),
+  [METHODS.GET_VIEW_LIST]: (params) => consumer.getViewList(params),
+  [METHODS.QUERY]: (params) => consumer.query(params),
   [METHODS.GET_STORE_PROCEDURE_LIST]: (params) =>
-    Consumer.getStoreProcedureList(params),
-  [METHODS.GET_FUNCTION_LIST]: (params) => Consumer.getFunctionList(params),
-  [METHODS.GET_VIEW]: (params) => Consumer.getView(params),
-  [METHODS.GET_STORE_PROCEDURE]: (params) => Consumer.getStoreProcedure(params),
-  [METHODS.GET_FUNCTION]: (params) => Consumer.getFunction(params),
-  [METHODS.GET_TABLE]: (params) => Consumer.getTable(params),
-  [METHODS.GET_TRIGGER]: (params) => Consumer.getTrigger(params),
-  [METHODS.GET_TRIGGER_LIST]: (params) => Consumer.getTriggerList(params),
-  [METHODS.GENERATE_SELECT_SQL]: (params) => Consumer.generateSelectSQL(params),
-  [METHODS.GENERATE_INSERT_SQL]: (params) => Consumer.generateInsertSQL(params),
-  [METHODS.GENERATE_UPDATE_SQL]: (params) => Consumer.generateUpdateSQL(params),
-  [METHODS.FORMAT]: (params) => Consumer.format(params),
-  [METHODS.GET_CONNECTION_INFO]: (params) => Consumer.getConnectionInfo(params),
+    consumer.getStoreProcedureList(params),
+  [METHODS.GET_FUNCTION_LIST]: (params) => consumer.getFunctionList(params),
+  [METHODS.GET_VIEW]: (params) => consumer.getView(params),
+  [METHODS.GET_STORE_PROCEDURE]: (params) => consumer.getStoreProcedure(params),
+  [METHODS.GET_FUNCTION]: (params) => consumer.getFunction(params),
+  [METHODS.GET_TABLE]: (params) => consumer.getTable(params),
+  [METHODS.GET_TRIGGER]: (params) => consumer.getTrigger(params),
+  [METHODS.GET_TRIGGER_LIST]: (params) => consumer.getTriggerList(params),
+  [METHODS.GENERATE_SELECT_SQL]: (params) => consumer.generateSelectSQL(params),
+  [METHODS.GENERATE_INSERT_SQL]: (params) => consumer.generateInsertSQL(params),
+  [METHODS.GENERATE_UPDATE_SQL]: (params) => consumer.generateUpdateSQL(params),
+  [METHODS.FORMAT]: (params) => consumer.format(params),
+  [METHODS.GET_CONNECTION_INFO]: (params) => consumer.getConnectionInfo(params),
 };
 
 export const makeRPC = () => {
