@@ -2,10 +2,6 @@ local utils = require("dbout.utils")
 local client = require("dbout.client")
 local viewer = require("dbout.ui.viewer")
 
-local set_winbar = function(name)
-  return "%#Title#Database:[" .. name .. "]%*"
-end
-
 --- @type Queryer
 ---@diagnostic disable-next-line: missing-fields
 local _state = {}
@@ -40,19 +36,6 @@ M.buffer_keymappings = nil
 M.init = function(on_attach)
   _on_attach = on_attach
 
-  vim.api.nvim_create_autocmd("BufWinEnter", {
-    callback = function(args)
-      if args.buf ~= _state.bufnr then
-        return
-      end
-
-      local conn = _state.conn
-      if not conn then
-        return
-      end
-      vim.wo.winbar = set_winbar(conn.name)
-    end,
-  })
 end
 
 --- @param state Queryer
@@ -68,11 +51,6 @@ M.attach_connection = function()
 
   M.buffer_keymappings(bufnr)
 
-  if vim.api.nvim_get_current_buf() == bufnr then
-    vim.wo.winbar = set_winbar(conn.name)
-  end
-
-  utils.switch_win_to_buf(bufnr)
   if _on_attach then
     client.get_connection_info(conn.id, function(jsonstr)
       local info = vim.fn.json_decode(jsonstr)
