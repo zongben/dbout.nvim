@@ -1,4 +1,6 @@
-import { driver } from "./driver.js";
+import { makeDriver } from "./driver.js";
+
+const driver = makeDriver();
 
 export const makeConsumer = () => {
   return {

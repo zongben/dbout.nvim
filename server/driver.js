@@ -17,136 +17,120 @@ const DB_MAP = {
   [DB_TYPE.MYSQL]: MySql,
 };
 
-class Driver {
-  #connections = new Map();
+export const makeDriver = () => {
+  const connections = new Map();
 
-  async createConnection(id, db_type, conn_str) {
-    if (this.#connections.has(id)) {
+  return {
+    createConnection: async (id, db_type, conn_str) => {
+      if (connections.has(id)) {
+        return "connected";
+      }
+
+      const db = DB_MAP[db_type];
+      if (!db) {
+        throw new Error(`${db_type} is not supported`);
+      }
+
+      const conn = await db.createConnection(conn_str);
+      connections.set(id, conn);
       return "connected";
-    }
+    },
+    getConnectionInfo: async (id) => {
+      const conn = connections.get(id);
+      return await conn.getConnectionInfo();
+    },
+    query: async (id, sql) => {
+      const conn = connections.get(id);
+      return await conn.query(sql);
+    },
+    getTableList: async (id) => {
+      const conn = connections.get(id);
+      return await conn.getTableList();
+    },
+    getViewList: async (id) => {
+      const conn = connections.get(id);
+      return await conn.getViewList();
+    },
+    getStoreProcedureList: async (id) => {
+      const conn = connections.get(id);
+      return await conn.getStoreProcedureList();
+    },
+    getFunctionList: async (id) => {
+      const conn = connections.get(id);
+      return await conn.getFunctionList();
+    },
+    getView: async (id, view_name) => {
+      const conn = connections.get(id);
+      return await conn.getView(view_name);
+    },
+    getStoreProcedure: async (id, procedure_name) => {
+      const conn = connections.get(id);
+      return await conn.getStoreProcedure(procedure_name);
+    },
+    getFunction: async (id, function_name) => {
+      const conn = connections.get(id);
+      return await conn.getFunction(function_name);
+    },
+    getTable: async (id, table_name) => {
+      const conn = connections.get(id);
+      return await conn.getTable(table_name);
+    },
+    getTrigger: async (id, trig_name) => {
+      const conn = connections.get(id);
+      return await conn.getTrigger(trig_name);
+    },
+    getTriggerList: async (id, table_name) => {
+      const conn = connections.get(id);
+      return await conn.getTriggerList(table_name);
+    },
+    generateSelectSQL: async (id, table_name) => {
+      const conn = connections.get(id);
+      const table = await conn.getTable(table_name);
+      const columns = table.rows.map((col) => {
+        return col.column_name;
+      });
+      const pkey = table.rows
+        .filter((col) => col.is_pk)
+        .map((col) => {
+          return `${col.column_name} = @${col.column_name}`;
+        });
 
-    const db = DB_MAP[db_type];
-    if (!db) {
-      throw new Error(`${db_type} is not supported`);
-    }
+      const sql = `SELECT ${columns.join(",")} FROM ${table_name} WHERE ${pkey.join(" AND ")}`;
+      return conn.format(sql);
+    },
+    generateUpdateSQL: async (id, table_name) => {
+      const conn = connections.get(id);
+      const table = await conn.getTable(table_name);
+      const columns = table.rows
+        .filter((col) => !col.is_pk)
+        .map((col) => {
+          return `${col.column_name} = @${col.column_name}`;
+        });
+      const pkey = table.rows
+        .filter((col) => col.is_pk)
+        .map((col) => {
+          return `${col.column_name} = @${col.column_name}`;
+        });
 
-    const conn = await db.createConnection(conn_str);
-    this.#connections.set(id, conn);
-    return "connected";
-  }
-
-  async getConnectionInfo(id) {
-    const conn = this.#connections.get(id);
-    return await conn.getConnectionInfo();
-  }
-
-  async query(id, sql) {
-    const conn = this.#connections.get(id);
-    return await conn.query(sql);
-  }
-
-  async getTableList(id) {
-    const conn = this.#connections.get(id);
-    return await conn.getTableList();
-  }
-
-  async getViewList(id) {
-    const conn = this.#connections.get(id);
-    return await conn.getViewList();
-  }
-
-  async getStoreProcedureList(id) {
-    const conn = this.#connections.get(id);
-    return await conn.getStoreProcedureList();
-  }
-
-  async getFunctionList(id) {
-    const conn = this.#connections.get(id);
-    return await conn.getFunctionList();
-  }
-
-  async getView(id, view_name) {
-    const conn = this.#connections.get(id);
-    return await conn.getView(view_name);
-  }
-
-  async getStoreProcedure(id, procedure_name) {
-    const conn = this.#connections.get(id);
-    return await conn.getStoreProcedure(procedure_name);
-  }
-
-  async getFunction(id, function_name) {
-    const conn = this.#connections.get(id);
-    return await conn.getFunction(function_name);
-  }
-
-  async getTable(id, table_name) {
-    const conn = this.#connections.get(id);
-    return await conn.getTable(table_name);
-  }
-
-  async getTrigger(id, trig_name) {
-    const conn = this.#connections.get(id);
-    return await conn.getTrigger(trig_name);
-  }
-
-  async getTriggerList(id, table_name) {
-    const conn = this.#connections.get(id);
-    return await conn.getTriggerList(table_name);
-  }
-
-  async generateSelectSQL(id, table_name) {
-    const conn = this.#connections.get(id);
-    const table = await conn.getTable(table_name);
-    const columns = table.rows.map((col) => {
-      return col.column_name;
-    });
-    const pkey = table.rows
-      .filter((col) => col.is_pk)
-      .map((col) => {
-        return `${col.column_name} = @${col.column_name}`;
+      const sql = `UPDATE ${table_name} SET ${columns.join(",")} WHERE ${pkey.join(" AND ")}`;
+      return conn.format(sql);
+    },
+    generateInsertSQL: async (id, table_name) => {
+      const conn = connections.get(id);
+      const table = await conn.getTable(table_name);
+      const columns = table.rows.map((col) => {
+        return col.column_name;
+      });
+      const values = table.rows.map((col) => {
+        return `@${col.column_name}`;
       });
 
-    const sql = `SELECT ${columns.join(",")} FROM ${table_name} WHERE ${pkey.join(" AND ")}`;
-    return conn.format(sql);
-  }
-
-  async generateUpdateSQL(id, table_name) {
-    const conn = this.#connections.get(id);
-    const table = await conn.getTable(table_name);
-    const columns = table.rows
-      .filter((col) => !col.is_pk)
-      .map((col) => {
-        return `${col.column_name} = @${col.column_name}`;
-      });
-    const pkey = table.rows
-      .filter((col) => col.is_pk)
-      .map((col) => {
-        return `${col.column_name} = @${col.column_name}`;
-      });
-
-    const sql = `UPDATE ${table_name} SET ${columns.join(",")} WHERE ${pkey.join(" AND ")}`;
-    return conn.format(sql);
-  }
-
-  async generateInsertSQL(id, table_name) {
-    const conn = this.#connections.get(id);
-    const table = await conn.getTable(table_name);
-    const columns = table.rows.map((col) => {
-      return col.column_name;
-    });
-    const values = table.rows.map((col) => {
-      return `@${col.column_name}`;
-    });
-
-    const sql = `INSERT INTO(${columns.join(",")}) VALUES (${values.join(",")})`;
-    return conn.format(sql);
-  }
-
-  format(id, sql) {
-    const conn = this.#connections.get(id);
-    return conn.format(sql);
-  }
-}
-
-export const driver = new Driver();
+      const sql = `INSERT INTO ${table_name}(${columns.join(",")}) VALUES (${values.join(",")})`;
+      return conn.format(sql);
+    },
+    format: async (id, sql) => {
+      const conn = connections.get(id);
+      return conn.format(sql);
+    },
+  };
+};
