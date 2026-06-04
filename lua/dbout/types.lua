@@ -6,7 +6,7 @@
 --- @field db_type string
 --- @field connstr string
 
---- @alias Container table<integer, Queryer>
+--- @alias Compositor table<integer, Queryer>
 
 --- @class Inspector
 --- @field bufnr integer

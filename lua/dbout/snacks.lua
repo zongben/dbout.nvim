@@ -1,5 +1,5 @@
 local conn = require("dbout.connection")
-local container = require("dbout.ui.container")
+local compositor = require("dbout.ui.compositor")
 
 local empty_msg = "No Connections"
 
@@ -106,13 +106,13 @@ M.open_picker = function()
 
         conn.open_connection(item, function()
           picker:close()
-          container.create_queryer(item)
+          compositor.create_queryer(item)
         end)
       end,
       attach_connection = function(picker, item)
         conn.open_connection(item, function()
           picker:close()
-          container.attach_queryer(item, vim.api.nvim_get_current_buf())
+          compositor.attach_queryer(item, vim.api.nvim_get_current_buf())
         end)
       end,
     },
