@@ -8,6 +8,7 @@ end
 local compositor = {
   queryer = {},
   inspector_winnr = nil,
+  viewer_winnr = nil,
   api = {},
 }
 
@@ -24,6 +25,20 @@ compositor.api = {
     end
 
     return compositor.inspector_winnr
+  end,
+  set_or_create_viewer = function(viewer_bufnr)
+    if compositor.viewer_winnr and vim.api.nvim_win_is_valid(compositor.viewer_winnr) then
+      vim.api.nvim_win_set_buf(compositor.viewer_winnr, viewer_bufnr)
+    else
+      local winnr = vim.api.nvim_open_win(viewer_bufnr, true, {
+        split = "right",
+        win = -1,
+      })
+      vim.api.nvim_set_option_value("winbar", "%#Title#[Query Result]%*", { win = winnr })
+      compositor.viewer_winnr = winnr
+    end
+
+    return compositor.viewer_winnr
   end,
 }
 

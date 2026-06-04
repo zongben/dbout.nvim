@@ -102,7 +102,8 @@ M.query = function()
 
   local sql = table.concat(vim.api.nvim_buf_get_lines(bufnr, start_row, end_row, false), "\n")
   client.query(conn.id, sql, function(jsonstr)
-    viewer.open_viewer(jsonstr)
+    local viewer_bufnr = viewer.open_viewer(jsonstr)
+    _comp_api.set_or_create_viewer(viewer_bufnr)
   end)
 end
 
