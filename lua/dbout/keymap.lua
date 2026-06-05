@@ -1,6 +1,7 @@
-local viewer = require("dbout.ui.viewer")
+local compositor = require("dbout.ui.compositor")
 local queryer = require("dbout.ui.queryer")
 local inspector = require("dbout.ui.inspector")
+local viewer = require("dbout.ui.viewer")
 
 local M = {}
 
@@ -13,7 +14,7 @@ end
 
 M.init = function(keymaps)
   local g = keymaps.global
-  map(nil, { "i", "n" }, g.open_inspector, queryer.open_inspector)
+  map(nil, { "i", "n" }, g.toggle_inspector, compositor.toggle_inspector)
 
   queryer.buffer_keymappings = function(buf)
     local q = keymaps.queryer

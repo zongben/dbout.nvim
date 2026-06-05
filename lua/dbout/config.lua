@@ -3,7 +3,7 @@ local M = {}
 M.defaults = {
   keymaps = {
     global = {
-      open_inspector = "<F12>",
+      toggle_inspector = "<F12>",
       close = "q",
     },
     queryer = {

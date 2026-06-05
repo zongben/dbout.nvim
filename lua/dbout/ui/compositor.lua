@@ -97,4 +97,13 @@ M.attach_queryer = function(conn, bufnr)
   attach_buf(conn, bufnr)
 end
 
+M.toggle_inspector = function()
+  if compositor.inspector_winnr and vim.api.nvim_win_is_valid(compositor.inspector_winnr) then
+    vim.api.nvim_win_close(compositor.inspector_winnr, true)
+    compositor.inspector_winnr = nil
+  else
+    queryer.open_inspector()
+  end
+end
+
 return M
