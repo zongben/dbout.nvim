@@ -10,6 +10,7 @@ M.defaults = {
   keymaps = {
     global = {
       toggle_inspector = "<F12>",
+      toggle_viewer = "<F11>",
       close = "q",
     },
     queryer = {
