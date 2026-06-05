@@ -113,7 +113,7 @@ compositor.api = {
       vim.api.nvim_win_set_buf(compositor.viewer_winnr, viewer_bufnr)
     else
       local split, win = compositor.ui.cal_position("viewer")
-      local winnr = vim.api.nvim_open_win(viewer_bufnr, true, {
+      local winnr = vim.api.nvim_open_win(viewer_bufnr, false, {
         split = split,
         win = win,
       })
