@@ -47,7 +47,6 @@ local attach_buf = function(conn, bufnr)
     conn = conn,
     bufnr = bufnr,
     inspector = nil,
-    viewer = nil,
   }
 
   compositor.queryer[bufnr] = state
