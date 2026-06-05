@@ -14,7 +14,7 @@ M.defaults = {
     },
     queryer = {
       query = "<F5>",
-      format = "<F11>",
+      format = "<F2>",
     },
     inspector = {
       next_tab = "L",
