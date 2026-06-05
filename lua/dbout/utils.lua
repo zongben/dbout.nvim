@@ -34,4 +34,16 @@ M.set_buf_lines = function(buf, lines)
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
 end
 
+M.get_current_win_bufs = function()
+  local wins = vim.api.nvim_tabpage_list_wins(0)
+  local bufs = {}
+
+  for _, winnr in ipairs(wins) do
+    local bufnr = vim.api.nvim_win_get_buf(winnr)
+    table.insert(bufs, bufnr)
+  end
+
+  return bufs
+end
+
 return M

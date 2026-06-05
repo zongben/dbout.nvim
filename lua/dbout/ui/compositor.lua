@@ -1,4 +1,5 @@
 local queryer = require("dbout.ui.queryer")
+local utils = require("dbout.utils")
 
 local set_winbar = function(name)
   return "%#Title#Database:[" .. name .. "]%*"
@@ -9,10 +10,26 @@ local _init_open
 local compositor = {
   ui = {},
   queryer = {},
-  inspector_winnr = nil,
-  viewer_winnr = nil,
+  inspector = {
+    winnr = nil,
+  },
+  viewer = {
+    winnr = nil,
+  },
   api = {},
 }
+
+compositor.ui.close_all_scratch_win = function()
+  if compositor.inspector.winnr and vim.api.nvim_win_is_valid(compositor.inspector.winnr) then
+    vim.api.nvim_win_close(compositor.inspector.winnr, true)
+    compositor.inspector.winnr = nil
+  end
+
+  if compositor.viewer.winnr and vim.api.nvim_win_is_valid(compositor.viewer.winnr) then
+    vim.api.nvim_win_close(compositor.viewer.winnr, true)
+    compositor.viewer.winnr = nil
+  end
+end
 
 compositor.ui.validate_layout = function()
   local layout = compositor.ui.layout
@@ -29,6 +46,16 @@ compositor.ui.validate_layout = function()
   end
 end
 
+compositor.ui.find_active_queryer = function()
+  local bufs = utils.get_current_win_bufs()
+  for _, bufnr in ipairs(bufs) do
+    if compositor.queryer[bufnr] then
+      return compositor.queryer[bufnr]
+    end
+  end
+  return nil
+end
+
 compositor.ui.cal_position = function(panel_name)
   local layout = compositor.ui.layout
 
@@ -43,11 +70,11 @@ compositor.ui.cal_position = function(panel_name)
       split = "right"
       win = -1
     elseif layout.inspector == 2 then
-      local is_viewer_winnr_valid = compositor.viewer_winnr and vim.api.nvim_win_is_valid(compositor.viewer_winnr)
+      local is_viewer_winnr_valid = compositor.viewer.winnr and vim.api.nvim_win_is_valid(compositor.viewer.winnr)
       if layout.viewer == 1 then
         if is_viewer_winnr_valid then
           split = "right"
-          win = compositor.viewer_winnr
+          win = compositor.viewer.winnr
         else
           split = "left"
           win = -1
@@ -55,7 +82,7 @@ compositor.ui.cal_position = function(panel_name)
       elseif layout.viewer == 3 then
         if is_viewer_winnr_valid then
           split = "left"
-          win = compositor.viewer_winnr
+          win = compositor.viewer.winnr
         else
           split = "right"
           win = -1
@@ -70,12 +97,12 @@ compositor.ui.cal_position = function(panel_name)
       split = "right"
       win = -1
     elseif layout.viewer == 2 then
-      local is_inspector_winnr_valid = compositor.inspector_winnr
-        and vim.api.nvim_win_is_valid(compositor.inspector_winnr)
+      local is_inspector_winnr_valid = compositor.inspector.winnr
+        and vim.api.nvim_win_is_valid(compositor.inspector.winnr)
       if layout.inspector == 1 then
         if is_inspector_winnr_valid then
           split = "right"
-          win = compositor.inspector_winnr
+          win = compositor.inspector.winnr
         else
           split = "left"
           win = -1
@@ -83,7 +110,7 @@ compositor.ui.cal_position = function(panel_name)
       elseif layout.inspector == 3 then
         if is_inspector_winnr_valid then
           split = "left"
-          win = compositor.inspector_winnr
+          win = compositor.inspector.winnr
         else
           split = "right"
           win = -1
@@ -97,32 +124,32 @@ end
 
 compositor.api = {
   set_or_create_inspector = function(inspector_bufnr)
-    if compositor.inspector_winnr and vim.api.nvim_win_is_valid(compositor.inspector_winnr) then
-      vim.api.nvim_win_set_buf(compositor.inspector_winnr, inspector_bufnr)
+    if compositor.inspector.winnr and vim.api.nvim_win_is_valid(compositor.inspector.winnr) then
+      vim.api.nvim_win_set_buf(compositor.inspector.winnr, inspector_bufnr)
     else
       local split, win = compositor.ui.cal_position("inspector")
       local winnr = vim.api.nvim_open_win(inspector_bufnr, true, {
         split = split,
         win = win,
       })
-      compositor.inspector_winnr = winnr
+      compositor.inspector.winnr = winnr
     end
 
-    return compositor.inspector_winnr
+    return compositor.inspector.winnr
   end,
   set_or_create_viewer = function(viewer_bufnr)
-    if compositor.viewer_winnr and vim.api.nvim_win_is_valid(compositor.viewer_winnr) then
-      vim.api.nvim_win_set_buf(compositor.viewer_winnr, viewer_bufnr)
+    if compositor.viewer.winnr and vim.api.nvim_win_is_valid(compositor.viewer.winnr) then
+      vim.api.nvim_win_set_buf(compositor.viewer.winnr, viewer_bufnr)
     else
       local split, win = compositor.ui.cal_position("viewer")
       local winnr = vim.api.nvim_open_win(viewer_bufnr, false, {
         split = split,
         win = win,
       })
-      compositor.viewer_winnr = winnr
+      compositor.viewer.winnr = winnr
     end
 
-    return compositor.viewer_winnr
+    return compositor.viewer.winnr
   end,
 }
 
@@ -164,11 +191,17 @@ M.init = function(on_attach, ui)
 
   vim.api.nvim_create_autocmd("BufWinEnter", {
     callback = function(args)
+      local q = compositor.ui.find_active_queryer()
+      if not q then
+        compositor.ui.close_all_scratch_win()
+        return
+      end
+
       local state = compositor.queryer[args.buf]
-      if state and state.conn then
+      if state then
         queryer.set_state(state)
 
-        if compositor.inspector_winnr and vim.api.nvim_win_is_valid(compositor.inspector_winnr) then
+        if compositor.inspector.winnr and vim.api.nvim_win_is_valid(compositor.inspector.winnr) then
           queryer.open_inspector()
         end
       end
@@ -195,18 +228,18 @@ M.attach_queryer = function(conn, bufnr)
 end
 
 M.toggle_inspector = function()
-  if compositor.inspector_winnr and vim.api.nvim_win_is_valid(compositor.inspector_winnr) then
-    vim.api.nvim_win_close(compositor.inspector_winnr, true)
-    compositor.inspector_winnr = nil
+  if compositor.inspector.winnr and vim.api.nvim_win_is_valid(compositor.inspector.winnr) then
+    vim.api.nvim_win_close(compositor.inspector.winnr, true)
+    compositor.inspector.winnr = nil
   else
     queryer.open_inspector()
   end
 end
 
 M.toggle_viewer = function()
-  if compositor.viewer_winnr and vim.api.nvim_win_is_valid(compositor.viewer_winnr) then
-    vim.api.nvim_win_close(compositor.viewer_winnr, true)
-    compositor.viewer_winnr = nil
+  if compositor.viewer.winnr and vim.api.nvim_win_is_valid(compositor.viewer.winnr) then
+    vim.api.nvim_win_close(compositor.viewer.winnr, true)
+    compositor.viewer.winnr = nil
   else
     queryer.open_viewer()
   end
