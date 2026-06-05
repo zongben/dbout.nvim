@@ -62,60 +62,26 @@ compositor.ui.cal_position = function(panel_name)
   local split
   local win
 
-  if panel_name == "inspector" then
-    if layout.inspector == 1 then
-      split = "left"
-      win = -1
-    elseif layout.inspector == 3 then
-      split = "right"
-      win = -1
-    elseif layout.inspector == 2 then
-      local is_viewer_winnr_valid = compositor.viewer.winnr and vim.api.nvim_win_is_valid(compositor.viewer.winnr)
-      if layout.viewer == 1 then
-        if is_viewer_winnr_valid then
-          split = "right"
-          win = compositor.viewer.winnr
-        else
-          split = "left"
-          win = -1
-        end
-      elseif layout.viewer == 3 then
-        if is_viewer_winnr_valid then
-          split = "left"
-          win = compositor.viewer.winnr
-        else
-          split = "right"
-          win = -1
-        end
-      end
-    end
-  elseif panel_name == "viewer" then
-    if layout.viewer == 1 then
-      split = "left"
-      win = -1
-    elseif layout.viewer == 3 then
-      split = "right"
-      win = -1
-    elseif layout.viewer == 2 then
-      local is_inspector_winnr_valid = compositor.inspector.winnr
-        and vim.api.nvim_win_is_valid(compositor.inspector.winnr)
-      if layout.inspector == 1 then
-        if is_inspector_winnr_valid then
-          split = "right"
-          win = compositor.inspector.winnr
-        else
-          split = "left"
-          win = -1
-        end
-      elseif layout.inspector == 3 then
-        if is_inspector_winnr_valid then
-          split = "left"
-          win = compositor.inspector.winnr
-        else
-          split = "right"
-          win = -1
-        end
-      end
+  local is_inspector = (panel_name == "inspector")
+  local target_pos = is_inspector and layout.inspector or layout.viewer
+  local other_pos = is_inspector and layout.viewer or layout.inspector
+  local other_panel = is_inspector and compositor.viewer or compositor.inspector
+
+  if target_pos == 1 then
+    split = "left"
+    win = -1
+  elseif target_pos == 3 then
+    split = "right"
+    win = -1
+  elseif target_pos == 2 then
+    local is_other_valid = other_panel.winnr and vim.api.nvim_win_is_valid(other_panel.winnr)
+
+    if other_pos == 1 then
+      split = is_other_valid and "right" or "left"
+      win = is_other_valid and other_panel.winnr or -1
+    elseif other_pos == 3 then
+      split = is_other_valid and "left" or "right"
+      win = is_other_valid and other_panel.winnr or -1
     end
   end
 
