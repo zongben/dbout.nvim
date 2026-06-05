@@ -26,19 +26,6 @@ M.get_buf_win = function(bufnr)
   return wins[1]
 end
 
-M.create_right_win = function()
-  vim.cmd("botright vsplit")
-  return vim.api.nvim_get_current_win()
-end
-
-M.get_or_create_buf_win = function(bufnr)
-  local winnr = M.get_buf_win(bufnr)
-  if not winnr then
-    winnr = M.create_right_win()
-  end
-  return winnr
-end
-
 M.split_json = function(jsonstr)
   return vim.split(jsonstr, "\n", { plain = true })
 end

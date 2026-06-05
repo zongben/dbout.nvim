@@ -124,7 +124,11 @@ M.new = function()
         if not t then
           return
         end
-        local winnr = utils.get_or_create_buf_win(inspector_bufnr)
+        local winnr = utils.get_buf_win(inspector_bufnr)
+        if not winnr then
+          vim.notify("No inspector window found", vim.log.levels.ERROR)
+          return
+        end
         vim.api.nvim_win_set_buf(winnr, inspector_bufnr)
         winbar.set_sub_tab_table(t.table_name)
         winbar.tab_switch(2)
