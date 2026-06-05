@@ -1,5 +1,4 @@
 local queryer = require("dbout.ui.queryer")
-local viewer = require("dbout.ui.viewer")
 
 local set_winbar = function(name)
   return "%#Title#Database:[" .. name .. "]%*"
@@ -118,7 +117,6 @@ compositor.api = {
         split = split,
         win = win,
       })
-      vim.api.nvim_set_option_value("winbar", "%#Title#[Query Result]%*", { win = winnr })
       compositor.viewer_winnr = winnr
     end
 
@@ -164,7 +162,6 @@ M.init = function(on_attach, ui)
       if compositor.queryer[args.buf] then
         compositor.queryer[args.buf] = nil
         queryer.set_state(nil)
-        viewer.bufnr = nil
       end
     end,
   })
@@ -198,12 +195,7 @@ M.toggle_viewer = function()
     vim.api.nvim_win_close(compositor.viewer_winnr, true)
     compositor.viewer_winnr = nil
   else
-    if not viewer.bufnr then
-      vim.notify("No query result to display", vim.log.levels.INFO)
-      return
-    end
-
-    compositor.api.set_or_create_viewer(viewer.bufnr)
+    queryer.open_viewer()
   end
 end
 

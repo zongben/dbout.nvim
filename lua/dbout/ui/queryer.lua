@@ -90,6 +90,12 @@ M.open_inspector = function()
   _state.inspector.set_winbar(winnr)
 end
 
+M.open_viewer = function()
+  local viewer_bufnr = viewer.open_viewer()
+  local winnr = _comp_api.set_or_create_viewer(viewer_bufnr)
+  vim.api.nvim_set_option_value("winbar", "%#Title#[Query Result]%*", { win = winnr })
+end
+
 M.query = function()
   if not _state then
     return
@@ -102,7 +108,8 @@ M.query = function()
 
   local sql = table.concat(vim.api.nvim_buf_get_lines(bufnr, start_row, end_row, false), "\n")
   client.query(conn.id, sql, function(jsonstr)
-    local viewer_bufnr = viewer.open_viewer(jsonstr)
+    local viewer_bufnr = viewer.open_viewer()
+    viewer.set_viewer(viewer_bufnr, jsonstr)
     _comp_api.set_or_create_viewer(viewer_bufnr)
   end)
 end
