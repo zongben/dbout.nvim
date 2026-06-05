@@ -1,14 +1,13 @@
-local utils = require("dbout.utils")
 local client = require("dbout.client")
 local viewer = require("dbout.ui.viewer")
 
---- @type Queryer | nil
 local _state = nil
-
-local _comp_api
+local _comp_api = {}
+local _on_attach = nil
 
 local visual_select = function()
   local start_row, end_row
+
   if vim.fn.mode():match("[vV\22]") then
     local v_row = vim.fn.getpos("v")[2]
     local c_row = vim.fn.getpos(".")[2]
@@ -20,15 +19,15 @@ local visual_select = function()
       start_row = c_row
       end_row = v_row
     end
+
     start_row = start_row - 1
   else
     start_row = 0
     end_row = -1
   end
+
   return start_row, end_row
 end
-
-local _on_attach = nil
 
 local M = {}
 
@@ -39,7 +38,6 @@ M.init = function(on_attach, comp_api)
   _comp_api = comp_api
 end
 
---- @param state Queryer | nil
 M.set_state = function(state)
   _state = state
 end
@@ -91,6 +89,10 @@ M.open_inspector = function()
 end
 
 M.open_viewer = function()
+  if not _state then
+    return
+  end
+
   local viewer_bufnr = viewer.open_viewer()
   local winnr = _comp_api.set_or_create_viewer(viewer_bufnr)
   vim.api.nvim_set_option_value("winbar", "%#Special#[Query Result]%*", { win = winnr })
@@ -105,9 +107,13 @@ M.query = function()
   local bufnr = _state.bufnr
 
   local start_row, end_row = visual_select()
-
   local sql = table.concat(vim.api.nvim_buf_get_lines(bufnr, start_row, end_row, false), "\n")
+
   client.query(conn.id, sql, function(jsonstr)
+    if not _state or _state.bufnr ~= bufnr then
+      return
+    end
+
     local viewer_bufnr = viewer.open_viewer()
     viewer.set_viewer(viewer_bufnr, jsonstr)
     _comp_api.set_or_create_viewer(viewer_bufnr)
@@ -119,17 +125,14 @@ M.format = function()
     return
   end
 
-  local win = vim.api.nvim_get_current_win()
-  local bufnr = vim.api.nvim_win_get_buf(win)
-
+  local bufnr = _state.bufnr
   local start_row, end_row = visual_select()
-
   local sql = table.concat(vim.api.nvim_buf_get_lines(bufnr, start_row, end_row, false), "\n")
+
   client.format(_state.conn.id, sql, function(jsonstr)
     local str = vim.fn.json_decode(jsonstr)
     local lines = vim.split(str, "\r?\n")
-    utils.set_buf_lines(bufnr, lines)
-    vim.api.nvim_win_set_buf(win, bufnr)
+    vim.api.nvim_buf_set_lines(bufnr, start_row, end_row, false, lines)
   end)
 end
 
