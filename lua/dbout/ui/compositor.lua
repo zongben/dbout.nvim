@@ -179,7 +179,6 @@ M.init = function(on_attach, ui)
     callback = function(args)
       if compositor.queryer[args.buf] then
         compositor.queryer[args.buf] = nil
-        queryer.set_state(nil)
       end
     end,
   })
