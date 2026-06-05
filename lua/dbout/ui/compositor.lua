@@ -4,6 +4,8 @@ local set_winbar = function(name)
   return "%#Title#Database:[" .. name .. "]%*"
 end
 
+local _init_open
+
 local compositor = {
   ui = {},
   queryer = {},
@@ -125,6 +127,11 @@ compositor.api = {
 }
 
 local attach_buf = function(conn, bufnr)
+  local winnr = vim.api.nvim_get_current_win()
+  vim.api.nvim_win_set_buf(winnr, bufnr)
+  vim.api.nvim_set_current_win(winnr)
+  vim.wo.winbar = set_winbar(conn.name)
+
   local state = {
     conn = conn,
     bufnr = bufnr,
@@ -134,6 +141,15 @@ local attach_buf = function(conn, bufnr)
   compositor.queryer[bufnr] = state
   queryer.set_state(state)
   queryer.attach_connection()
+
+  if _init_open.inspector then
+    queryer.open_inspector()
+    vim.api.nvim_set_current_win(winnr) -- keep focus on queryer after opening inspector
+  end
+
+  if _init_open.viewer then
+    queryer.open_viewer()
+  end
 end
 
 local M = {}
@@ -143,6 +159,8 @@ M.init = function(on_attach, ui)
   compositor.ui.validate_layout()
 
   queryer.init(on_attach, compositor.api)
+
+  _init_open = ui.init_open
 
   vim.api.nvim_create_autocmd("BufWinEnter", {
     callback = function(args)
@@ -170,11 +188,6 @@ end
 M.create_queryer = function(conn)
   local bufnr = vim.api.nvim_create_buf(true, false)
   attach_buf(conn, bufnr)
-
-  local winnr = vim.api.nvim_get_current_win()
-  vim.api.nvim_win_set_buf(winnr, bufnr)
-  vim.api.nvim_set_current_win(winnr)
-  vim.wo.winbar = set_winbar(conn.name)
 end
 
 M.attach_queryer = function(conn, bufnr)

@@ -6,6 +6,10 @@ M.defaults = {
       inspector = 1,
       viewer = 3,
     },
+    init_open = {
+      inspector = true,
+      viewer = true,
+    },
   },
   keymaps = {
     global = {
