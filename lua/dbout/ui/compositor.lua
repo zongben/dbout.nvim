@@ -7,6 +7,17 @@ end
 
 local _init_open
 
+local init_scratch_buf = function(queryer_winnr)
+  if _init_open.inspector then
+    queryer.open_inspector()
+    vim.api.nvim_set_current_win(queryer_winnr) -- keep focus on queryer after opening inspector
+  end
+
+  if _init_open.viewer then
+    queryer.open_viewer()
+  end
+end
+
 local compositor = {
   ui = {},
   queryer = {},
@@ -135,14 +146,7 @@ local attach_buf = function(conn, bufnr)
   queryer.set_state(state)
   queryer.attach_connection()
 
-  if _init_open.inspector then
-    queryer.open_inspector()
-    vim.api.nvim_set_current_win(winnr) -- keep focus on queryer after opening inspector
-  end
-
-  if _init_open.viewer then
-    queryer.open_viewer()
-  end
+  init_scratch_buf(winnr)
 end
 
 local M = {}
@@ -157,18 +161,15 @@ M.init = function(on_attach, ui)
 
   vim.api.nvim_create_autocmd("BufWinEnter", {
     callback = function(args)
-      local q = compositor.ui.find_active_queryer()
-      if not q then
-        compositor.ui.close_all_scratch_win()
-        return
-      end
-
       local state = compositor.queryer[args.buf]
+
       if state then
         queryer.set_state(state)
-
-        if compositor.inspector.winnr and vim.api.nvim_win_is_valid(compositor.inspector.winnr) then
-          queryer.open_inspector()
+        init_scratch_buf(utils.get_buf_win(state.bufnr))
+      else
+        local active_q = compositor.ui.find_active_queryer()
+        if not active_q then
+          compositor.ui.close_all_scratch_win()
         end
       end
     end,

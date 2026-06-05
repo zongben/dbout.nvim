@@ -40,7 +40,10 @@ M.get_current_win_bufs = function()
 
   for _, winnr in ipairs(wins) do
     local bufnr = vim.api.nvim_win_get_buf(winnr)
-    table.insert(bufs, bufnr)
+    local buftype = vim.api.nvim_get_option_value("buftype", { buf = bufnr })
+    if buftype ~= "nofile" then
+      table.insert(bufs, bufnr)
+    end
   end
 
   return bufs
