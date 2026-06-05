@@ -4,22 +4,104 @@ local set_winbar = function(name)
   return "%#Title#Database:[" .. name .. "]%*"
 end
 
---- @type Compositor
 local compositor = {
+  ui = {},
   queryer = {},
   inspector_winnr = nil,
   viewer_winnr = nil,
   api = {},
 }
 
+compositor.ui.validate_layout = function()
+  local layout = compositor.ui.layout
+  if not layout or not layout.inspector or not layout.viewer then
+    error("Invalid layout configuration. 'inspector' and 'viewer' must be defined.")
+  end
+
+  if layout.inspector <= 0 or layout.viewer <= 0 or layout.inspector > 3 or layout.viewer > 3 then
+    error("Invalid layout configuration. 'inspector' and 'viewer' must be between 1 and 3.")
+  end
+
+  if layout.inspector == 2 and layout.viewer == 2 then
+    error("Invalid layout configuration. 'inspector' and 'viewer' cannot both be 2.")
+  end
+end
+
+compositor.ui.cal_position = function(panel_name)
+  local layout = compositor.ui.layout
+
+  local split
+  local win
+
+  if panel_name == "inspector" then
+    if layout.inspector == 1 then
+      split = "left"
+      win = -1
+    elseif layout.inspector == 3 then
+      split = "right"
+      win = -1
+    elseif layout.inspector == 2 then
+      local is_viewer_winnr_valid = compositor.viewer_winnr and vim.api.nvim_win_is_valid(compositor.viewer_winnr)
+      if layout.viewer == 1 then
+        if is_viewer_winnr_valid then
+          split = "right"
+          win = compositor.viewer_winnr
+        else
+          split = "left"
+          win = -1
+        end
+      elseif layout.viewer == 3 then
+        if is_viewer_winnr_valid then
+          split = "left"
+          win = compositor.viewer_winnr
+        else
+          split = "right"
+          win = -1
+        end
+      end
+    end
+  elseif panel_name == "viewer" then
+    if layout.viewer == 1 then
+      split = "left"
+      win = -1
+    elseif layout.viewer == 3 then
+      split = "right"
+      win = -1
+    elseif layout.viewer == 2 then
+      local is_inspector_winnr_valid = compositor.inspector_winnr
+        and vim.api.nvim_win_is_valid(compositor.inspector_winnr)
+      if layout.inspector == 1 then
+        if is_inspector_winnr_valid then
+          split = "right"
+          win = compositor.inspector_winnr
+        else
+          split = "left"
+          win = -1
+        end
+      elseif layout.inspector == 3 then
+        if is_inspector_winnr_valid then
+          split = "left"
+          win = compositor.inspector_winnr
+        else
+          split = "right"
+          win = -1
+        end
+      end
+    end
+  end
+
+  return split, win
+end
+
 compositor.api = {
   set_or_create_inspector = function(inspector_bufnr)
     if compositor.inspector_winnr and vim.api.nvim_win_is_valid(compositor.inspector_winnr) then
       vim.api.nvim_win_set_buf(compositor.inspector_winnr, inspector_bufnr)
     else
+      local split, win = compositor.ui.cal_position("inspector")
       local winnr = vim.api.nvim_open_win(inspector_bufnr, true, {
-        split = "right",
-        win = -1,
+        split = split,
+        win = win,
       })
       compositor.inspector_winnr = winnr
     end
@@ -30,9 +112,10 @@ compositor.api = {
     if compositor.viewer_winnr and vim.api.nvim_win_is_valid(compositor.viewer_winnr) then
       vim.api.nvim_win_set_buf(compositor.viewer_winnr, viewer_bufnr)
     else
+      local split, win = compositor.ui.cal_position("viewer")
       local winnr = vim.api.nvim_open_win(viewer_bufnr, true, {
-        split = "right",
-        win = -1,
+        split = split,
+        win = win,
       })
       vim.api.nvim_set_option_value("winbar", "%#Title#[Query Result]%*", { win = winnr })
       compositor.viewer_winnr = winnr
@@ -56,7 +139,10 @@ end
 
 local M = {}
 
-M.init = function(on_attach)
+M.init = function(on_attach, ui)
+  compositor.ui.layout = ui.layout
+  compositor.ui.validate_layout()
+
   queryer.init(on_attach, compositor.api)
 
   vim.api.nvim_create_autocmd("BufWinEnter", {

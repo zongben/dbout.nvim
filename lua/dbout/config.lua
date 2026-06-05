@@ -1,6 +1,12 @@
 local M = {}
 
 M.defaults = {
+  ui = {
+    layout = {
+      inspector = 1,
+      viewer = 3,
+    },
+  },
   keymaps = {
     global = {
       toggle_inspector = "<F12>",

@@ -6,9 +6,6 @@
 --- @field db_type string
 --- @field connstr string
 
---- @class Compositor
---- @field queryer table<integer, Queryer>
-
 --- @class Inspector
 --- @field bufnr integer
 --- @field open_inspector fun(conn: Connection, bufnr: integer): nil

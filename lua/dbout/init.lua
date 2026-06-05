@@ -10,7 +10,7 @@ M.setup = function(opts)
   M.options = vim.tbl_deep_extend("force", config.defaults, opts or {})
   conn.init()
   keymap.init(M.options.keymaps)
-  compositor.init(M.options.on_attach)
+  compositor.init(M.options.on_attach, M.options.ui)
   cmd.init()
 end
 
