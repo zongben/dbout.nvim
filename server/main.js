@@ -1,5 +1,5 @@
 import readline from "readline";
-import { RPC } from "./rpc.js";
+import { makeRPC } from "./rpc.js";
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -7,11 +7,13 @@ const rl = readline.createInterface({
   terminal: false,
 });
 
+const rpc = makeRPC();
+
 rl.on("line", async (line) => {
   try {
-    const req = RPC.parseData(line);
-    RPC.validRequest(req);
-    const res = await RPC.exec(req);
+    const req = rpc.parseData(line);
+    rpc.validRequest(req);
+    const res = await rpc.exec(req);
     if (res) {
       process.stdout.write(JSON.stringify(res) + "\n");
     }

@@ -1,107 +1,101 @@
-local tab_switch = 1
-local tab_state = {
-  { index = 1, tabs = {
-    "Tables",
-    "Views",
-    "StoreProcedures",
-    "Functions",
-  } },
-  { index = 1, tabs = {
-    "Columns",
-    "Triggers",
-  } },
-}
-local sub_tab_table_name
-
-local set_top_winbar = function(winnr)
-  local state = tab_state[1]
-  local tab_index = state.index
-  local tabs = state.tabs
-
-  local bar = {}
-  for index, tab in ipairs(tabs) do
-    if index == tab_index then
-      table.insert(bar, "%#Title#[" .. tab .. "]%*")
-    else
-      table.insert(bar, tab)
-    end
-  end
-  vim.api.nvim_set_option_value("winbar", table.concat(bar, "|"), { win = winnr })
-  vim.api.nvim_win_set_cursor(winnr, { 1, 0 })
-end
-
-local set_sub_winbar = function(winnr)
-  local state = tab_state[2]
-
-  local bar = {}
-  table.insert(bar, "<--Back")
-  table.insert(bar, " %#Directory#" .. sub_tab_table_name .. "%* ")
-
-  for index, tab in ipairs(state.tabs) do
-    if index == state.index then
-      table.insert(bar, "%#Title#[" .. tab .. "]%*")
-    else
-      table.insert(bar, tab)
-    end
-  end
-
-  vim.api.nvim_set_option_value("winbar", table.concat(bar, "|"), { win = winnr })
-  vim.api.nvim_win_set_cursor(winnr, { 1, 0 })
-end
-
 local M = {}
 
-M.set_sub_tab_table = function(table_name)
-  sub_tab_table_name = table_name
-end
+M.new = function()
+  local current_layer = 1
+  local layers = {
+    {
+      index = 1,
+      tabs = { "Tables", "Views", "StoreProcedures", "Functions" },
+    },
+    {
+      index = 1,
+      tabs = { "Columns", "Triggers" },
+    },
+  }
+  local sub_tab_table_name = nil
 
-M.get_sub_tab_table = function()
-  return sub_tab_table_name
-end
+  local render_tabs = function(layer_idx, prefix)
+    local state = layers[layer_idx]
+    local bar = prefix or {}
 
-M.set_winbar = function(winnr)
-  if tab_switch == 1 then
-    set_top_winbar(winnr)
-  elseif tab_switch == 2 then
-    set_sub_winbar(winnr)
+    for index, tab in ipairs(state.tabs) do
+      if index == state.index then
+        table.insert(bar, "%#Title#[" .. tab .. "]%*")
+      else
+        table.insert(bar, tab)
+      end
+    end
+
+    return table.concat(bar, "|")
   end
-end
 
-M.tab_switch = function(tabnr)
-  tab_switch = tabnr
-end
-
-M.next_tab = function()
-  local state = tab_state[tab_switch]
-  state.index = state.index + 1
-  if state.index > #state.tabs then
-    state.index = 1
+  local reset_cursor = function(winnr)
+    vim.api.nvim_win_set_cursor(winnr, { 1, 0 })
   end
-end
 
-M.previous_tab = function()
-  local state = tab_state[tab_switch]
-  state.index = state.index - 1
-  if state.index < 1 then
-    state.index = #state.tabs
+  local m = {}
+
+  m.set_sub_tab_table = function(table_name)
+    sub_tab_table_name = table_name
   end
-end
 
-M.get_current_tab = function()
-  local state = tab_state[tab_switch]
-  local tab = state.tabs[state.index]
-  return tab
-end
+  m.get_sub_tab_table = function()
+    return sub_tab_table_name
+  end
 
-M.reset = function()
-  M.tab_switch(1)
-  tab_state[1].index = 1
-  tab_state[2].index = 1
-end
+  m.set_winbar = function(winnr)
+    if not winnr or not vim.api.nvim_win_is_valid(winnr) then
+      return
+    end
 
-M.back = function()
-  M.tab_switch(1)
-  tab_state[2].index = 1
+    local winbar_str = ""
+    if current_layer == 1 then
+      winbar_str = render_tabs(1)
+    elseif current_layer == 2 then
+      local prefix = {
+        " ◀ Back ",
+        " %#Title#" .. sub_tab_table_name .. "%* ",
+      }
+      winbar_str = render_tabs(2, prefix)
+    end
+
+    vim.api.nvim_set_option_value("winbar", winbar_str, { win = winnr })
+    reset_cursor(winnr)
+  end
+
+  m.tab_switch = function(layer_idx)
+    if layers[layer_idx] then
+      current_layer = layer_idx
+    end
+  end
+
+  m.next_tab = function()
+    local state = layers[current_layer]
+    state.index = (state.index % #state.tabs) + 1
+  end
+
+  m.previous_tab = function()
+    local state = layers[current_layer]
+    state.index = (state.index - 2 + #state.tabs) % #state.tabs + 1
+  end
+
+  m.get_current_tab = function()
+    local state = layers[current_layer]
+    return state.tabs[state.index]
+  end
+
+  m.reset = function()
+    current_layer = 1
+    layers[1].index = 1
+    layers[2].index = 1
+  end
+
+  m.back = function()
+    current_layer = 1
+    layers[2].index = 1
+  end
+
+  return m
 end
 
 return M

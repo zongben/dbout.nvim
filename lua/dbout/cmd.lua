@@ -1,6 +1,6 @@
 local rpc = require("dbout.rpc")
 local conn = require("dbout.connection")
-local queryer = require("dbout.ui.queryer")
+local compositor = require("dbout.ui.compositor")
 
 local args = {
   new_connection = "NewConnection",
@@ -47,7 +47,7 @@ end
 local open_connection = function()
   select_connection(function(c)
     conn.open_connection(c, function()
-      queryer.create_buf(c)
+      compositor.create_queryer(c)
     end)
   end)
 end
@@ -55,7 +55,7 @@ end
 local attach_connection = function()
   select_connection(function(c)
     conn.open_connection(c, function()
-      queryer.attach_buf(c, vim.api.nvim_get_current_buf())
+      compositor.attach_queryer(c, vim.api.nvim_get_current_buf())
     end)
   end)
 end

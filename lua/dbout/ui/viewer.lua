@@ -1,29 +1,42 @@
 local utils = require("dbout.utils")
 
-local viewer_bufnr
-
 local M = {}
 
 M.buffer_keymappings = nil
 
-M.open_viewer = function(jsonstr)
-  if viewer_bufnr == nil then
-    viewer_bufnr = vim.api.nvim_create_buf(false, true)
-    M.buffer_keymappings(viewer_bufnr)
+M.new = function()
+  local viewer_bufnr
+
+  local m = setmetatable({}, {
+    __index = function(_, key)
+      if key == "bufnr" then
+        return viewer_bufnr
+      end
+    end,
+  })
+
+  local init = function()
+    if viewer_bufnr == nil then
+      viewer_bufnr = vim.api.nvim_create_buf(false, true)
+      M.buffer_keymappings(viewer_bufnr)
+      vim.api.nvim_set_option_value("filetype", "json", { buf = viewer_bufnr })
+    end
   end
-  vim.api.nvim_set_option_value("filetype", "json", { buf = viewer_bufnr })
 
+  m.set_viewer_buf = function(jsonstr)
+    local lines = utils.split_json(jsonstr)
+    utils.set_buf_lines(viewer_bufnr, lines)
+  end
 
-  local lines = utils.split_json(jsonstr)
-  utils.set_buf_lines(viewer_bufnr, lines)
+  m.set_winbar = function(winnr)
+    if winnr and vim.api.nvim_win_is_valid(winnr) then
+      vim.api.nvim_set_option_value("winbar", "%#Special#[Query Result]%*", { win = winnr })
+    end
+  end
 
-  local winnr = utils.get_or_create_buf_win(viewer_bufnr)
-  vim.api.nvim_win_set_buf(winnr, viewer_bufnr)
-  vim.api.nvim_set_option_value("winbar", "%#Title#[Query Result]%*", { win = winnr })
-end
+  init()
 
-M.close_viewer = function()
-  utils.close_buf_win(viewer_bufnr)
+  return m
 end
 
 return M

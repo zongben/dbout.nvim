@@ -1,16 +1,12 @@
-local utils = require("dbout.utils")
 local client = require("dbout.client")
-local viewer = require("dbout.ui.viewer")
-local inspector = require("dbout.ui.inspector")
 
-local buffer_connection = {}
-
-local set_winbar = function(name)
-  return "%#Title#Database:[" .. name .. "]%*"
-end
+local _state = nil
+local _comp_api = {}
+local _on_attach = nil
 
 local visual_select = function()
   local start_row, end_row
+
   if vim.fn.mode():match("[vV\22]") then
     local v_row = vim.fn.getpos("v")[2]
     local c_row = vim.fn.getpos(".")[2]
@@ -22,11 +18,13 @@ local visual_select = function()
       start_row = c_row
       end_row = v_row
     end
+
     start_row = start_row - 1
   else
     start_row = 0
     end_row = -1
   end
+
   return start_row, end_row
 end
 
@@ -34,108 +32,118 @@ local M = {}
 
 M.buffer_keymappings = nil
 
-local start_lsp = function(conn)
-  local lsp_name = "sqls" .. "_" .. conn.name
-  vim.lsp.config[lsp_name] = {
-    cmd = { "sqls" },
-    filetypes = { "sql" },
-    root_dir = function(bufnr, on_dir)
-      if buffer_connection[bufnr] and buffer_connection[bufnr].name == conn.name then
-        on_dir()
-      end
-    end,
-    settings = {
-      sqls = {
-        connections = {
-          {
-            driver = conn.db_type,
-            dataSourceName = conn.connstr,
-          },
-        },
-      },
-    },
-  }
-  vim.lsp.enable(lsp_name, true)
+M.init = function(on_attach, comp_api)
+  _on_attach = on_attach
+  _comp_api = comp_api
 end
 
-local buf_detach_lsp = function(bufnr)
-  local clients = vim.lsp.get_clients({ bufnr = bufnr })
-  for _, c in ipairs(clients) do
-    if c.name:match("^sqls") then
-      buffer_connection[bufnr] = nil
-      vim.lsp.buf_detach_client(bufnr, c.id)
-    end
+M.set_state = function(state)
+  _state = state
+end
+
+M.attach_connection = function()
+  if not _state then
+    return
   end
-end
 
-M.init = function()
-  vim.api.nvim_create_autocmd("BufEnter", {
-    callback = function(args)
-      local conn = buffer_connection[args.buf]
-      if not conn then
-        return
-      end
-      vim.wo.winbar = set_winbar(conn.name)
-    end,
-  })
-end
+  local conn = _state.conn
+  local bufnr = _state.bufnr
 
-local set_connection_buf = function(connection, bufnr)
   vim.api.nvim_set_option_value("filetype", "sql", { buf = bufnr })
-  buffer_connection[bufnr] = connection
 
   M.buffer_keymappings(bufnr)
 
-  if vim.api.nvim_get_current_buf() == bufnr then
-    vim.wo.winbar = set_winbar(connection.name)
+  if _on_attach then
+    client.get_connection_info(conn.id, function(jsonstr)
+      local info = vim.fn.json_decode(jsonstr)
+      _on_attach({
+        name = conn.name,
+        db_type = conn.db_type,
+        host = info.host,
+        port = info.port,
+        user = info.user,
+        password = info.password,
+        database = info.database,
+        connstr = conn.connstr,
+      }, bufnr)
+    end)
   end
 end
 
-M.create_buf = function(connection)
-  local bufnr = vim.api.nvim_create_buf(true, false)
-  set_connection_buf(connection, bufnr)
-  utils.switch_win_to_buf(bufnr)
-  start_lsp(connection)
+M.open_inspector = function()
+  if not _state then
+    return
+  end
+
+  if not _state.inspector then
+    _state.inspector = require("dbout.ui.inspector").new(_state.conn, _state.bufnr)
+  end
+
+  local winnr = _comp_api.set_or_create_inspector(_state)
+  _state.inspector.set_winbar(winnr)
 end
 
-M.attach_buf = function(connection, bufnr)
-  buf_detach_lsp(bufnr)
-  set_connection_buf(connection, bufnr)
-  utils.switch_win_to_buf(bufnr)
-  start_lsp(connection)
-  inspector.reset()
+M.open_viewer = function()
+  if not _state then
+    return
+  end
+
+  if not _state.viewer then
+    _state.viewer = require("dbout.ui.viewer").new()
+  end
+
+  local winnr = _comp_api.set_or_create_viewer(_state)
+  _state.viewer.set_winbar(winnr)
+end
+
+M.close_inspector = function()
+  if not _state then
+    return
+  end
+  _comp_api.close_inspector(_state)
+end
+
+M.close_viewer = function()
+  if not _state then
+    return
+  end
+  _comp_api.close_viewer(_state)
 end
 
 M.query = function()
-  local win = vim.api.nvim_get_current_win()
-  local bufnr = vim.api.nvim_win_get_buf(win)
+  if not _state then
+    return
+  end
+
+  local conn = _state.conn
+  local bufnr = _state.bufnr
 
   local start_row, end_row = visual_select()
-
   local sql = table.concat(vim.api.nvim_buf_get_lines(bufnr, start_row, end_row, false), "\n")
-  client.query(buffer_connection[bufnr].id, sql, function(jsonstr)
-    viewer.open_viewer(jsonstr)
+
+  client.query(conn.id, sql, function(jsonstr)
+    if not _state or _state.bufnr ~= bufnr then
+      return
+    end
+
+    M.open_viewer()
+    _state.viewer.set_viewer_buf(jsonstr)
   end)
 end
 
-M.open_inspector = function()
-  local win = vim.api.nvim_get_current_win()
-  local bufnr = vim.api.nvim_win_get_buf(win)
-  inspector.open_inspector(buffer_connection[bufnr], bufnr)
-end
-
 M.format = function()
-  local win = vim.api.nvim_get_current_win()
-  local bufnr = vim.api.nvim_win_get_buf(win)
+  if not _state then
+    return
+  end
 
+  local bufnr = _state.bufnr
   local start_row, end_row = visual_select()
-
   local sql = table.concat(vim.api.nvim_buf_get_lines(bufnr, start_row, end_row, false), "\n")
-  client.format(buffer_connection[bufnr].id, sql, function(jsonstr)
+
+  client.format(_state.conn.id, sql, function(jsonstr)
     local str = vim.fn.json_decode(jsonstr)
     local lines = vim.split(str, "\r?\n")
-    utils.set_buf_lines(bufnr, lines)
-    vim.api.nvim_win_set_buf(win, bufnr)
+    vim.api.nvim_buf_set_lines(bufnr, start_row, end_row, false, lines)
   end)
 end
 

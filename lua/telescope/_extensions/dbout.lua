@@ -6,7 +6,7 @@ local actions = require("telescope.actions")
 local conf = require("telescope.config").values
 local entry_display = require("telescope.pickers.entry_display")
 local conn = require("dbout.connection")
-local queryer = require("dbout.ui.queryer")
+local compositor = require("dbout.ui.compositor")
 local rpc = require("dbout.rpc")
 
 local options = {
@@ -99,7 +99,7 @@ M.open_connection = function(prompt_bufnr)
   local connection = selection.value
   conn.open_connection(connection, function()
     actions.close(prompt_bufnr)
-    queryer.create_buf(connection)
+    compositor.create_queryer(connection)
   end)
 end
 
@@ -129,7 +129,7 @@ M.attach_connection = function(prompt_bufnr)
   local connection = action_state.get_selected_entry().value
   conn.open_connection(connection, function()
     actions.close(prompt_bufnr)
-    queryer.attach_buf(connection, vim.api.nvim_get_current_buf())
+    compositor.attach_queryer(connection, vim.api.nvim_get_current_buf())
   end)
 end
 
