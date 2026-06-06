@@ -18,9 +18,7 @@ M.new = function()
   local init = function()
     if viewer_bufnr == nil then
       viewer_bufnr = vim.api.nvim_create_buf(false, true)
-      M.buffer_keymappings(viewer_bufnr, {
-        close_viewer = m.close_viewer_win,
-      })
+      M.buffer_keymappings(viewer_bufnr)
       vim.api.nvim_set_option_value("filetype", "json", { buf = viewer_bufnr })
     end
   end
@@ -28,10 +26,6 @@ M.new = function()
   m.set_viewer_buf = function(jsonstr)
     local lines = utils.split_json(jsonstr)
     utils.set_buf_lines(viewer_bufnr, lines)
-  end
-
-  m.close_viewer_win = function()
-    utils.close_buf_win(viewer_bufnr)
   end
 
   m.set_winbar = function(winnr)

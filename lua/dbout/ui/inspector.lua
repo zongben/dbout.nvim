@@ -23,7 +23,6 @@ M.new = function(connection, q_bufnr)
     if inspector_bufnr == nil then
       inspector_bufnr = vim.api.nvim_create_buf(false, true)
       M.buffer_keymappings(inspector_bufnr, {
-        close_inspector = m.close_inspector_win,
         next_tab = m.next_tab,
         previous_tab = m.previous_tab,
         inspect = m.inspect,
@@ -219,10 +218,6 @@ M.new = function(connection, q_bufnr)
   m.reset = function()
     utils.close_buf_win(inspector_bufnr)
     winbar.reset()
-  end
-
-  m.close_inspector_win = function()
-    utils.close_buf_win(inspector_bufnr)
   end
 
   m.next_tab = function()

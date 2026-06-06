@@ -94,23 +94,45 @@ compositor.ui.init_scratch_wins = function(state)
 end
 
 compositor.api = {
-  set_or_create_inspector = function(inspector_bufnr)
+  set_or_create_inspector = function(state)
+    local inspector_bufnr = state.inspector.bufnr
+    state.inspector_open = true
+
     if compositor.inspector.winnr and vim.api.nvim_win_is_valid(compositor.inspector.winnr) then
       vim.api.nvim_win_set_buf(compositor.inspector.winnr, inspector_bufnr)
     else
       local split, win = compositor.ui.cal_position("inspector")
       compositor.inspector.winnr = vim.api.nvim_open_win(inspector_bufnr, false, { split = split, win = win })
     end
+
     return compositor.inspector.winnr
   end,
-  set_or_create_viewer = function(viewer_bufnr)
+  set_or_create_viewer = function(state)
+    local viewer_bufnr = state.viewer.bufnr
+    state.viewer_open = true
+
     if compositor.viewer.winnr and vim.api.nvim_win_is_valid(compositor.viewer.winnr) then
       vim.api.nvim_win_set_buf(compositor.viewer.winnr, viewer_bufnr)
     else
       local split, win = compositor.ui.cal_position("viewer")
       compositor.viewer.winnr = vim.api.nvim_open_win(viewer_bufnr, false, { split = split, win = win })
     end
+
     return compositor.viewer.winnr
+  end,
+  close_inspector = function(state)
+    if compositor.inspector.winnr and vim.api.nvim_win_is_valid(compositor.inspector.winnr) then
+      vim.api.nvim_win_close(compositor.inspector.winnr, true)
+      compositor.inspector.winnr = nil
+    end
+    state.inspector_open = false
+  end,
+  close_viewer = function(state)
+    if compositor.viewer.winnr and vim.api.nvim_win_is_valid(compositor.viewer.winnr) then
+      vim.api.nvim_win_close(compositor.viewer.winnr, true)
+      compositor.viewer.winnr = nil
+    end
+    state.viewer_open = false
   end,
 }
 

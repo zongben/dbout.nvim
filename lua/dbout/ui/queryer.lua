@@ -79,7 +79,7 @@ M.open_inspector = function()
     _state.inspector = require("dbout.ui.inspector").new(_state.conn, _state.bufnr)
   end
 
-  local winnr = _comp_api.set_or_create_inspector(_state.inspector.bufnr)
+  local winnr = _comp_api.set_or_create_inspector(_state)
   _state.inspector.set_winbar(winnr)
 end
 
@@ -92,8 +92,22 @@ M.open_viewer = function()
     _state.viewer = require("dbout.ui.viewer").new()
   end
 
-  local winnr = _comp_api.set_or_create_viewer(_state.viewer.bufnr)
+  local winnr = _comp_api.set_or_create_viewer(_state)
   _state.viewer.set_winbar(winnr)
+end
+
+M.close_inspector = function()
+  if not _state then
+    return
+  end
+  _comp_api.close_inspector(_state)
+end
+
+M.close_viewer = function()
+  if not _state then
+    return
+  end
+  _comp_api.close_viewer(_state)
 end
 
 M.query = function()

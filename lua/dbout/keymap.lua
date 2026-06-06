@@ -24,19 +24,18 @@ M.init = function(keymaps)
     map(buf, { "i", "v", "n" }, q.format, queryer.format)
   end
 
-  viewer.buffer_keymappings = function(buf, actions)
+  viewer.buffer_keymappings = function(buf)
     map(buf, { "i", "n" }, g.toggle_inspector, compositor.toggle_inspector)
     map(buf, { "i", "n" }, g.toggle_viewer, compositor.toggle_viewer)
-
-    map(buf, { "n" }, g.close, actions.close_viewer)
+    map(buf, { "n" }, g.close, queryer.close_viewer)
   end
 
   inspector.buffer_keymappings = function(buf, actions)
     map(buf, { "i", "n" }, g.toggle_inspector, compositor.toggle_inspector)
     map(buf, { "i", "n" }, g.toggle_viewer, compositor.toggle_viewer)
+    map(buf, { "n" }, g.close, queryer.close_inspector)
 
     local i = keymaps.inspector
-    map(buf, { "n" }, g.close, actions.close_inspector)
     map(buf, { "n" }, i.next_tab, actions.next_tab)
     map(buf, { "n" }, i.previous_tab, actions.previous_tab)
     map(buf, { "n" }, i.inspect, actions.inspect)
