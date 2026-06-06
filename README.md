@@ -1,7 +1,7 @@
 # Dbout.nvim
 
 **dbout.nvim** is a Neovim plugin that helps you connect to databases, execute SQL queries, and display the results in **JSON format**. 
-No need to switch to external tools — everything happens inside Neovim, making your workflow faster and smoother.
+No need to switch to external tools. Everything happens inside Neovim, making your workflow faster and smoother.
 
 <img width="2543" height="1393" alt="圖片" src="https://github.com/user-attachments/assets/d7d884bd-22d4-49e6-b8d5-22402bd707b1" />
 
@@ -11,6 +11,8 @@ https://github.com/user-attachments/assets/21d4295a-897b-422a-aa69-2d6cde4e555d
 
 - **JSON Result Display**: View query results in a structured JSON format for easy reading and further processing.
 - **No More Connection Strings In Your Neovim Config**: All your database connections are securely saved locally on your machine.
+- **Buffer-Isolated Connections**: Every database query buffer maintains its own isolated connection state.
+- **Context-Aware Window Management**: The layout system dynamically toggles and restores its state as you switch between buffers, and automatically hides itself when you navigate to unrelated files.
 
 ## Supported Databases
 
@@ -45,24 +47,36 @@ The default configuration is as follows:
 
 ```lua
 {
+  ui = {
+    -- See layout configuration section.
+    layout = {
+      inspector = 1,
+      viewer = 3,
+    },
+    -- Open utility panels by default when a buffer attaches to a connection.
+    init_open = {
+      inspector = true,
+      viewer = true,
+    },
+  },
   keymaps = {
+    global = {
+      toggle_inspector = "<F12>",
+      toggle_viewer = "<F11>",
+      close = "q",
+    },
     queryer = {
       query = "<F5>",
-      format = "<F11>",
-      open_inspector = "<F12>",
-    },
-    viewer = {
-      close = "q",
+      format = "<F2>",
     },
     inspector = {
-      close = "q",
       next_tab = "L",
       previous_tab = "H",
       inspect = "I",
       back = "<BS>",
     },
   },
-  -- Called when a buffer attaches to a connection.
+  -- Called when a queryer buffer attaches to a connection.
   -- Use this to configure your preferred LSP.
   -- This function provides connection details to help set up the LSP.
   on_attach = function(conn, bufnr)
@@ -73,6 +87,24 @@ The default configuration is as follows:
   end
 }
 ```
+
+### Layout Configuration
+
+The layout coordinates positions using a 3-column system (`1` = Left, `2` = Middle/Relative, `3` = Right).
+
+```text
+Position:     1               2               3
+       +---------------+---------------+---------------+
+       |               |               |               |
+       |     LEFT      |   RELATIVE    |     RIGHT     |
+       |   (Global)    |   (Attached)  |   (Global)    |
+       |               |               |               |
+       +---------------+---------------+---------------+
+```
+
+- If both the viewer and inspector are set to `1`, the newer panel opens on the left.
+- If both are set to `3`, vice versa (the newer opens on the right).
+- However, both panels cannot be set to `2` simultaneously.
 
 ## Usage
 
@@ -87,9 +119,8 @@ Use the following commands for database connection management:
 After opening or attaching a connection, a buffer for that database connection is created, named Queryer.  
 Inside the Queryer buffer:
 
+`F2` - Format SQL  
 `F5` - Execute the current SQL query  
-`F11` - Format SQL  
-`F12` - Open Inspector  
 
 The Inspector is a buffer used for inspecting database objects.  
 Within the Inspector buffer:
@@ -149,8 +180,9 @@ Snacks.picker.sources.dbout = {
 
 ## TODO
 
-- [ ] CSV output
+- [x] layout system
 - [ ] query history
-- [ ] layout system
-- [ ] custom prestore scripts
+- [ ] CSV output
+- [ ] inspector cache
+- [ ] ui improvement
 - [ ] mongodb support
