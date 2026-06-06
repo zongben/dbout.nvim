@@ -5,11 +5,11 @@ local M = {}
 
 M.buffer_keymappings = nil
 
-M.new = function()
+M.new = function(connection, q_bufnr)
   local winbar = require("dbout.ui.winbar").new()
+  local conn = connection
+  local queryer_bufnr = q_bufnr
   local inspector_bufnr
-  local queryer_bufnr
-  local conn
 
   local m = setmetatable({}, {
     __index = function(_, key)
@@ -18,6 +18,22 @@ M.new = function()
       end
     end,
   })
+
+  local init = function()
+    if inspector_bufnr == nil then
+      inspector_bufnr = vim.api.nvim_create_buf(false, true)
+      M.buffer_keymappings(inspector_bufnr, {
+        close_inspector = m.close_inspector_win,
+        next_tab = m.next_tab,
+        previous_tab = m.previous_tab,
+        inspect = m.inspect,
+        back = m.back,
+      })
+    end
+    vim.api.nvim_set_option_value("filetype", "json", { buf = inspector_bufnr })
+    vim.api.nvim_set_option_value("modifiable", false, { buf = inspector_bufnr })
+    m.set_inspector_buf()
+  end
 
   local updateInspector = function(fn)
     if not inspector_bufnr or not vim.api.nvim_buf_is_valid(inspector_bufnr) then
@@ -193,32 +209,6 @@ M.new = function()
     end
   end
 
-  m.open_inspector = function(connection, bufnr)
-    conn = connection
-    queryer_bufnr = bufnr
-
-    if inspector_bufnr == nil or not vim.api.nvim_buf_is_valid(inspector_bufnr) then
-      inspector_bufnr = vim.api.nvim_create_buf(false, true)
-
-      if type(M.buffer_keymappings) == "function" then
-        M.buffer_keymappings(inspector_bufnr, {
-          close_inspector = m.close_inspector,
-          next_tab = m.next_tab,
-          previous_tab = m.previous_tab,
-          inspect = m.inspect,
-          back = m.back,
-        })
-      end
-    end
-
-    vim.api.nvim_set_option_value("filetype", "json", { buf = inspector_bufnr })
-    vim.api.nvim_set_option_value("modifiable", false, { buf = inspector_bufnr })
-
-    m.set_inspector_buf()
-
-    return inspector_bufnr
-  end
-
   m.set_winbar = function(winnr)
     if winnr and vim.api.nvim_win_is_valid(winnr) then
       vim.api.nvim_win_set_buf(winnr, inspector_bufnr)
@@ -231,7 +221,7 @@ M.new = function()
     winbar.reset()
   end
 
-  m.close_inspector = function()
+  m.close_inspector_win = function()
     utils.close_buf_win(inspector_bufnr)
   end
 
@@ -252,6 +242,8 @@ M.new = function()
       handler()
     end
   end
+
+  init()
 
   return m
 end

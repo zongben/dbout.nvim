@@ -15,24 +15,22 @@ M.new = function()
     end,
   })
 
-  m.open_viewer = function()
+  local init = function()
     if viewer_bufnr == nil then
       viewer_bufnr = vim.api.nvim_create_buf(false, true)
       M.buffer_keymappings(viewer_bufnr, {
-        close_viewer = m.close_viewer,
+        close_viewer = m.close_viewer_win,
       })
+      vim.api.nvim_set_option_value("filetype", "json", { buf = viewer_bufnr })
     end
-    vim.api.nvim_set_option_value("filetype", "json", { buf = viewer_bufnr })
-
-    return viewer_bufnr
   end
 
-  m.set_viewer = function(jsonstr)
+  m.set_viewer_buf = function(jsonstr)
     local lines = utils.split_json(jsonstr)
     utils.set_buf_lines(viewer_bufnr, lines)
   end
 
-  m.close_viewer = function()
+  m.close_viewer_win = function()
     utils.close_buf_win(viewer_bufnr)
   end
 
@@ -41,6 +39,8 @@ M.new = function()
       vim.api.nvim_set_option_value("winbar", "%#Special#[Query Result]%*", { win = winnr })
     end
   end
+
+  init()
 
   return m
 end

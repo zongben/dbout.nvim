@@ -33,7 +33,7 @@ compositor.ui.validate_layout = function()
   end
 end
 
-compositor.ui.close_all_scratch_win = function()
+compositor.ui.suspend_scratch_wins = function()
   for _, panel in ipairs({ compositor.inspector, compositor.viewer }) do
     if panel.winnr and vim.api.nvim_win_is_valid(panel.winnr) then
       vim.api.nvim_win_close(panel.winnr, true)
@@ -77,7 +77,7 @@ compositor.ui.cal_position = function(panel_name)
   end
 end
 
-compositor.ui.sync_scratch_windows = function(state)
+compositor.ui.init_scratch_wins = function(state)
   if state.inspector_open then
     queryer.open_inspector()
   elseif compositor.inspector.winnr and vim.api.nvim_win_is_valid(compositor.inspector.winnr) then
@@ -130,7 +130,7 @@ local attach_buf = function(conn, bufnr, ui)
   queryer.set_state(state)
   queryer.attach_connection()
 
-  compositor.ui.sync_scratch_windows(state)
+  compositor.ui.init_scratch_wins(state)
 end
 
 local M = {}
@@ -149,10 +149,10 @@ M.init = function(on_attach, ui)
       local state = compositor.queryer[args.buf]
       if state then
         queryer.set_state(state)
-        compositor.ui.sync_scratch_windows(state)
+        compositor.ui.init_scratch_wins(state)
       else
         if not compositor.ui.find_active_queryer() then
-          compositor.ui.close_all_scratch_win()
+          compositor.ui.suspend_scratch_wins()
         end
       end
     end,
