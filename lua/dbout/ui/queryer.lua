@@ -1,5 +1,4 @@
 local client = require("dbout.client")
-local viewer = require("dbout.ui.viewer")
 
 local _state = nil
 local _comp_api = {}
@@ -93,9 +92,13 @@ M.open_viewer = function()
     return
   end
 
-  local viewer_bufnr = viewer.open_viewer()
+  if not _state.viewer then
+    _state.viewer = require("dbout.ui.viewer").new()
+  end
+
+  local viewer_bufnr = _state.viewer.open_viewer()
   local winnr = _comp_api.set_or_create_viewer(viewer_bufnr)
-  vim.api.nvim_set_option_value("winbar", "%#Special#[Query Result]%*", { win = winnr })
+  _state.viewer.set_winbar(winnr)
 end
 
 M.query = function()
@@ -114,9 +117,8 @@ M.query = function()
       return
     end
 
-    local viewer_bufnr = viewer.open_viewer()
-    viewer.set_viewer(viewer_bufnr, jsonstr)
-    _comp_api.set_or_create_viewer(viewer_bufnr)
+    M.open_viewer()
+    _state.viewer.set_viewer(jsonstr)
   end)
 end
 

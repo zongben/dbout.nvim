@@ -24,11 +24,11 @@ M.init = function(keymaps)
     map(buf, { "i", "v", "n" }, q.format, queryer.format)
   end
 
-  viewer.buffer_keymappings = function(buf)
+  viewer.buffer_keymappings = function(buf, actions)
     map(buf, { "i", "n" }, g.toggle_inspector, compositor.toggle_inspector)
     map(buf, { "i", "n" }, g.toggle_viewer, compositor.toggle_viewer)
 
-    map(buf, { "n" }, g.close, viewer.close_viewer)
+    map(buf, { "n" }, g.close, actions.close_viewer)
   end
 
   inspector.buffer_keymappings = function(buf, actions)
