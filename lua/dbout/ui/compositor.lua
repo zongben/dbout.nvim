@@ -182,8 +182,10 @@ M.init = function(on_attach, ui)
 
   vim.api.nvim_create_autocmd("BufDelete", {
     callback = function(args)
-      queryer.clear_cache()
-      compositor.queryer[args.buf] = nil
+      if compositor.queryer[args.buf] then
+        queryer.clear_cache()
+        compositor.queryer[args.buf] = nil
+      end
     end,
   })
 end
