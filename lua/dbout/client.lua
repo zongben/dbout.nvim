@@ -1,7 +1,20 @@
 local rpc = require("dbout.rpc")
 
+local cache = {}
+
 local send_rpc = function(method, param, cb)
+  local id = param and param.id
+  local is_cacheable = (method ~= "query" and method ~= "format") and id
+
+  if is_cacheable and cache[id] and cache[id][method] ~= nil then
+    return cb(cache[id][method])
+  end
+
   rpc.send_jsonrpc(method, param, function(jsonstr)
+    if is_cacheable then
+      cache[id] = cache[id] or {}
+      cache[id][method] = jsonstr
+    end
     cb(jsonstr)
   end)
 end
@@ -70,6 +83,10 @@ end
 
 M.get_connection_info = function(id, cb)
   send_rpc("get_connection_info", { id = id }, cb)
+end
+
+M.clear_cache = function(id)
+  cache[id] = nil
 end
 
 return M

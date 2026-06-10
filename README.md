@@ -74,6 +74,7 @@ The default configuration is as follows:
       previous_tab = "H",
       inspect = "I",
       back = "<BS>",
+      refresh = "R"
     },
   },
   -- Called when a queryer buffer attaches to a connection.
@@ -127,6 +128,7 @@ Within the Inspector buffer:
 
 `H` and `L` - Switch between tabs  
 `I` - Inspect more details, such as table columns, triggers, views, etc.  
+`R` - Refresh inspector for clear caches.  
 
 ### Telescope Extension
 
@@ -181,8 +183,8 @@ Snacks.picker.sources.dbout = {
 ## TODO
 
 - [x] layout system
+- [x] inspector cache
 - [ ] query history
 - [ ] CSV output
-- [ ] inspector cache
 - [ ] ui improvement
 - [ ] mongodb support

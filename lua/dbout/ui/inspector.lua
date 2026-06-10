@@ -27,6 +27,7 @@ M.new = function(connection, q_bufnr)
         previous_tab = m.previous_tab,
         inspect = m.inspect,
         back = m.back,
+        refresh = m.refresh,
       })
     end
     vim.api.nvim_set_option_value("filetype", "json", { buf = inspector_bufnr })
@@ -43,7 +44,7 @@ M.new = function(connection, q_bufnr)
     vim.api.nvim_set_option_value("modifiable", false, { buf = inspector_bufnr })
   end
 
-  local refresh_inspector_view = function(winbar_action)
+  local render_inspector = function(winbar_action)
     winbar_action()
     local winnr = utils.get_buf_win(inspector_bufnr)
     if not winnr then
@@ -104,7 +105,6 @@ M.new = function(connection, q_bufnr)
         end)
       end)
     end,
-
     Views = function()
       generic_inspect({
         prompt = "Inspect a view",
@@ -113,7 +113,6 @@ M.new = function(connection, q_bufnr)
         detail_fn = client.get_view,
       })
     end,
-
     StoreProcedures = function()
       if conn.db_type == "sqlite3" then
         return
@@ -125,7 +124,6 @@ M.new = function(connection, q_bufnr)
         detail_fn = client.get_store_procedure,
       })
     end,
-
     Functions = function()
       if conn.db_type == "sqlite3" then
         return
@@ -137,7 +135,6 @@ M.new = function(connection, q_bufnr)
         detail_fn = client.get_function,
       })
     end,
-
     Triggers = function()
       client.get_trigger_list(conn.id, winbar.get_sub_tab_table(), function(jsonstr)
         local data = vim.fn.json_decode(jsonstr)
@@ -160,7 +157,6 @@ M.new = function(connection, q_bufnr)
         end)
       end)
     end,
-
     Columns = function()
       local methods = { "SELECT", "INSERT", "UPDATE" }
       vim.ui.select(methods, { prompt = "Inspect a method" }, function(method)
@@ -215,19 +211,16 @@ M.new = function(connection, q_bufnr)
     end
   end
 
-  m.reset = function()
-    utils.close_buf_win(inspector_bufnr)
-    winbar.reset()
+  m.next_tab = function()
+    render_inspector(winbar.next_tab)
   end
 
-  m.next_tab = function()
-    refresh_inspector_view(winbar.next_tab)
-  end
   m.previous_tab = function()
-    refresh_inspector_view(winbar.previous_tab)
+    render_inspector(winbar.previous_tab)
   end
+
   m.back = function()
-    refresh_inspector_view(winbar.back)
+    render_inspector(winbar.back)
   end
 
   m.inspect = function()
@@ -236,6 +229,11 @@ M.new = function(connection, q_bufnr)
     if handler then
       handler()
     end
+  end
+
+  m.refresh = function()
+    client.clear_cache(conn.id)
+    render_inspector(winbar.reset)
   end
 
   init()

@@ -26,6 +26,7 @@ M.defaults = {
       previous_tab = "H",
       inspect = "I",
       back = "<BS>",
+      refresh = "R",
     },
   },
   on_attach = nil,

@@ -147,4 +147,10 @@ M.format = function()
   end)
 end
 
+M.clear_cache = function()
+  if _state and _state.conn and _state.conn.id then
+    client.clear_cache(_state.conn.id)
+  end
+end
+
 return M

@@ -40,6 +40,7 @@ M.init = function(keymaps)
     map(buf, { "n" }, i.previous_tab, actions.previous_tab)
     map(buf, { "n" }, i.inspect, actions.inspect)
     map(buf, { "n" }, i.back, actions.back)
+    map(buf, { "n" }, i.refresh, actions.refresh)
   end
 end
 
