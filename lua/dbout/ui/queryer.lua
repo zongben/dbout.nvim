@@ -1,6 +1,6 @@
 local client = require("dbout.client")
 
-local _state = nil
+local ctx = nil
 local _comp_api = {}
 local _on_attach = nil
 
@@ -37,17 +37,17 @@ M.init = function(on_attach, comp_api)
   _comp_api = comp_api
 end
 
-M.set_state = function(state)
-  _state = state
+M.set_context = function(context)
+  ctx = context
 end
 
 M.attach_connection = function()
-  if not _state then
+  if not ctx then
     return
   end
 
-  local conn = _state.conn
-  local bufnr = _state.bufnr
+  local conn = ctx.conn
+  local bufnr = ctx.bufnr
 
   vim.api.nvim_set_option_value("filetype", "sql", { buf = bufnr })
 
@@ -71,76 +71,76 @@ M.attach_connection = function()
 end
 
 M.open_inspector = function()
-  if not _state then
+  if not ctx then
     return
   end
 
-  if not _state.inspector then
-    _state.inspector = require("dbout.ui.inspector").new(_state.conn, _state.bufnr)
+  if not ctx.inspector then
+    ctx.inspector = require("dbout.ui.inspector").new(ctx.conn, ctx.bufnr)
   end
 
-  local winnr = _comp_api.set_or_create_inspector(_state)
-  _state.inspector.set_winbar(winnr)
+  local winnr = _comp_api.set_or_create_inspector(ctx)
+  ctx.inspector.set_winbar(winnr)
 end
 
 M.open_viewer = function()
-  if not _state then
+  if not ctx then
     return
   end
 
-  if not _state.viewer then
-    _state.viewer = require("dbout.ui.viewer").new()
+  if not ctx.viewer then
+    ctx.viewer = require("dbout.ui.viewer").new()
   end
 
-  local winnr = _comp_api.set_or_create_viewer(_state)
-  _state.viewer.set_winbar(winnr)
+  local winnr = _comp_api.set_or_create_viewer(ctx)
+  ctx.viewer.set_winbar(winnr)
 end
 
 M.close_inspector = function()
-  if not _state then
+  if not ctx then
     return
   end
-  _comp_api.close_inspector(_state)
+  _comp_api.close_inspector(ctx)
 end
 
 M.close_viewer = function()
-  if not _state then
+  if not ctx then
     return
   end
-  _comp_api.close_viewer(_state)
+  _comp_api.close_viewer(ctx)
 end
 
 M.query = function()
-  if not _state then
+  if not ctx then
     return
   end
 
-  local conn = _state.conn
-  local bufnr = _state.bufnr
+  local conn = ctx.conn
+  local bufnr = ctx.bufnr
 
   local start_row, end_row = visual_select()
   local sql = table.concat(vim.api.nvim_buf_get_lines(bufnr, start_row, end_row, false), "\n")
 
   client.query(conn.id, sql, function(jsonstr)
-    if not _state or _state.bufnr ~= bufnr then
+    if not ctx or ctx.bufnr ~= bufnr then
       return
     end
 
     M.open_viewer()
-    _state.viewer.set_viewer_buf(jsonstr)
+    ctx.viewer.set_viewer_buf(jsonstr)
   end)
 end
 
 M.format = function()
-  if not _state then
+  if not ctx then
     return
   end
 
-  local bufnr = _state.bufnr
+  local bufnr = ctx.bufnr
   local start_row, end_row = visual_select()
   local sql = table.concat(vim.api.nvim_buf_get_lines(bufnr, start_row, end_row, false), "\n")
 
-  client.format(_state.conn.id, sql, function(jsonstr)
+  client.format(ctx.conn.id, sql, function(jsonstr)
     local str = vim.fn.json_decode(jsonstr)
     local lines = vim.split(str, "\r?\n")
     vim.api.nvim_buf_set_lines(bufnr, start_row, end_row, false, lines)
@@ -148,8 +148,8 @@ M.format = function()
 end
 
 M.clear_cache = function()
-  if _state and _state.conn and _state.conn.id then
-    client.clear_cache(_state.conn.id)
+  if ctx and ctx.conn and ctx.conn.id then
+    client.clear_cache(ctx.conn.id)
   end
 end
 
