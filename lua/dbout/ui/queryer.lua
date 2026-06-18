@@ -127,7 +127,7 @@ M.query = function()
     end
 
     M.open_viewer()
-    ctx.viewer.set_viewer_buf(jsonstr)
+    ctx.viewer.set_query_result(jsonstr)
   end)
 end
 

@@ -28,6 +28,17 @@ M.defaults = {
       back = "<BS>",
       refresh = "R",
     },
+    viewer = {
+      next_history = "}",
+      previous_history = "{",
+      delete_history = "<C-d>",
+    },
+  },
+  viewer = {
+    history = {
+      enabled = true,
+      limit = 10,
+    },
   },
   on_attach = nil,
 }

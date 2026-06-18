@@ -9,10 +9,9 @@ https://github.com/user-attachments/assets/21d4295a-897b-422a-aa69-2d6cde4e555d
 
 ## Key Features
 
-- **JSON Result Display**: View query results in a structured JSON format for easy reading and further processing.
+- **JSON Result Display**: View query results in a structured JSON format for easy reading and native highlighting.
 - **No More Connection Strings In Your Neovim Config**: All your database connections are securely saved locally on your machine.
 - **Buffer-Isolated Connections**: Every database query buffer maintains its own isolated connection state.
-- **Context-Aware Window Management**: The layout system dynamically toggles and restores its state as you switch between buffers, and automatically hides itself when you navigate to unrelated files.
 
 ## Supported Databases
 
@@ -59,6 +58,13 @@ The default configuration is as follows:
       viewer = true,
     },
   },
+  viewer = {
+    history = {
+      enabled = true,
+      limit = 10,
+    },
+  },
+  -- Set empty string to disable keymap.
   keymaps = {
     global = {
       toggle_inspector = "<F12>",
@@ -74,7 +80,12 @@ The default configuration is as follows:
       previous_tab = "H",
       inspect = "I",
       back = "<BS>",
-      refresh = "R"
+      refresh = "R",
+    },
+    viewer = {
+      next_history = "}",
+      previous_history = "{",
+      delete_history = "<C-d>",
     },
   },
   -- Called when a queryer buffer attaches to a connection.
@@ -121,7 +132,7 @@ After opening or attaching a connection, a buffer for that database connection i
 Inside the Queryer buffer:
 
 `F2` - Format SQL  
-`F5` - Execute the current SQL query  
+`F5` - Execute the current SQL query and open viewer with query result  
 
 The Inspector is a buffer used for inspecting database objects.  
 Within the Inspector buffer:
@@ -184,7 +195,7 @@ Snacks.picker.sources.dbout = {
 
 - [x] layout system
 - [x] inspector cache
-- [ ] query history
+- [x] query history
 - [ ] CSV output
 - [ ] ui improvement
 - [ ] mongodb support
