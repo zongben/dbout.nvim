@@ -197,5 +197,5 @@ Snacks.picker.sources.dbout = {
 - [x] inspector cache
 - [x] query history
 - [ ] CSV output
-- [ ] ui improvement
+- [ ] queryer fork
 - [ ] mongodb support
