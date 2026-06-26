@@ -44,17 +44,41 @@ const handlers = {
 };
 
 export const makeRPC = () => {
+  const jsonrpc = "2.0";
+
   const responses = {
     ok: (id, result) => {
       return {
-        jsonrpc: "2.0",
-        result: JSON.stringify(result, null, 2),
+        jsonrpc,
+        result,
         id,
+      };
+    },
+    parseError: (data) => {
+      return {
+        jsonrpc,
+        id: null,
+        error: {
+          code: -32700,
+          message: "Parse error",
+          data,
+        },
+      };
+    },
+    invalidRequest: (id, data) => {
+      return {
+        jsonrpc,
+        id,
+        error: {
+          code: -32600,
+          message: "Invalid Request",
+          data,
+        },
       };
     },
     methodNotFound: (id, data) => {
       return {
-        jsonrpc: "2.0",
+        jsonrpc,
         id,
         error: {
           code: -32601,
@@ -63,29 +87,20 @@ export const makeRPC = () => {
         },
       };
     },
-    parseError: (data) => {
+    invalidParams: (id, data) => {
       return {
-        jsonrpc: "2.0",
+        jsonrpc,
+        id,
         error: {
-          code: -32700,
-          message: "Parse error",
-          data,
-        },
-      };
-    },
-    invalidRequest: (data) => {
-      return {
-        jsonrpc: "2.0",
-        error: {
-          code: -32600,
-          message: "Invalid Request",
+          code: -32603,
+          message: "Invalid params",
           data,
         },
       };
     },
     internalError: (id, data) => {
       return {
-        jsonrpc: "2.0",
+        jsonrpc,
         id,
         error: {
           code: -32603,
@@ -95,59 +110,66 @@ export const makeRPC = () => {
       };
     },
   };
+
+  const validRequest = (req) => {
+    let data = undefined;
+    let id = req.id !== undefined ? req.id : null;
+
+    if (!req.jsonrpc) {
+      data = "jsonrpc is required";
+    } else if (req.jsonrpc != "2.0") {
+      data = "jsonrpc 2.0 only supported";
+    } else if (!req.method) {
+      data = "method is required";
+    } else if (typeof req.method !== "string") {
+      data = "method must be a string";
+    } else if (req.params !== undefined && typeof req.params !== "object") {
+      data = "params must be an array or object if provided";
+    } else if (req.id !== undefined) {
+      const t = typeof req.id;
+      if (!(t === "string" || t === "number" || req.id === null)) {
+        data = "id must be string, number, or null if provided";
+        id = null;
+      }
+    }
+
+    if (data) {
+      return responses.invalidRequest(id, data);
+    }
+  };
+
   return {
-    parseData: (data) => {
+    parse: (raw) => {
       try {
-        return JSON.parse(data);
+        return JSON.parse(raw);
       } catch (err) {
-        throw responses.parseError(err);
-      }
-    },
-    validRequest: (decoded) => {
-      if (!decoded.jsonrpc) {
-        throw responses.invalidRequest("jsonrpc is required");
-      }
-
-      if (decoded.jsonrpc != "2.0") {
-        throw responses.invalidRequest("jsonrpc 2.0 only supported");
-      }
-
-      if (!decoded.method) {
-        throw responses.invalidRequest("method is required");
-      }
-
-      if (typeof decoded.method !== "string") {
-        throw responses.invalidRequest("method must be a string");
-      }
-
-      if (decoded.params !== undefined && typeof decoded.params !== "object") {
-        throw responses.invalidRequest(
-          "params must be an array or object if provided",
-        );
-      }
-
-      if (decoded.id !== undefined) {
-        const t = typeof decoded.id;
-        if (!(t === "string" || t === "number" || decoded.id === null)) {
-          throw responses.invalidRequest(
-            "id must be string, number, or null if provided",
-          );
-        }
+        return responses.parseError(err.stack);
       }
     },
     exec: async (req) => {
+      const err = validRequest(req);
+      if (err) {
+        return err;
+      }
+
       const { id, method, params } = req;
 
-      if (!handlers[method])
-        throw responses.methodNotFound(id, `${method} not found`);
+      if (!id) {
+        await handlers[method](params);
+        return;
+      }
+
+      if (!handlers[method]) {
+        return responses.methodNotFound(id, `${method} not found`);
+      }
 
       try {
         const data = await handlers[method](params);
         if (data) {
-          return responses.ok(id, data);
+          return responses.ok(id, JSON.stringify(data, null, 2));
         }
       } catch (err) {
-        throw responses.internalError(req.id, err.stack);
+        return responses.internalError(req.id, err.stack);
       }
     },
   };

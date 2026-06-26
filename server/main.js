@@ -9,15 +9,24 @@ const rl = readline.createInterface({
 
 const rpc = makeRPC();
 
-rl.on("line", async (line) => {
+rl.on("line", async (raw) => {
+  const req = rpc.parse(raw);
+  if (req.error) {
+    process.stdout.write(JSON.stringify(req) + "\n");
+    return;
+  }
+
   try {
-    const req = rpc.parseData(line);
-    rpc.validRequest(req);
     const res = await rpc.exec(req);
     if (res) {
       process.stdout.write(JSON.stringify(res) + "\n");
     }
   } catch (err) {
-    process.stderr.write(JSON.stringify(err) + "\n");
+    process.stderr.write(
+      JSON.stringify({
+        id: req.id,
+        err,
+      }) + "\n",
+    );
   }
 });

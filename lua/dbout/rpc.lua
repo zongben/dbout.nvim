@@ -24,17 +24,20 @@ M.server_up = function()
         buffer = ""
       end
 
-      if callbacks[data.id] then
+      if data.error then
+        vim.notify(data.error.message .. "\n" .. data.error.data, vim.log.levels.ERROR)
+      elseif callbacks[data.id] then
         callbacks[data.id](data.result)
-        callbacks[data.id] = nil
       end
+
+      callbacks[data.id] = nil
     end,
     on_stderr = function(_, raw)
       local data = vim.fn.json_decode(raw)
       if data.id and callbacks[data.id] then
         callbacks[data.id] = nil
       end
-      vim.notify(data.error.message .. "\n" .. data.error.data, vim.log.levels.ERROR)
+      vim.notify(data.err, vim.log.levels.ERROR)
     end,
   })
 end
