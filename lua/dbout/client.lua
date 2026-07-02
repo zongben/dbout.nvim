@@ -2,9 +2,16 @@ local rpc = require("dbout.rpc")
 
 local cache = {}
 
+local cacheable_list = {
+  "get_table_list",
+  "get_view_list",
+  "get_store_procedure_list",
+  "get_function_list",
+}
+
 local send_rpc = function(method, param, cb)
   local id = param and param.id
-  local is_cacheable = (method ~= "query" and method ~= "format") and id
+  local is_cacheable = cacheable_list[method] and id
 
   if is_cacheable and cache[id] and cache[id][method] ~= nil then
     return cb(cache[id][method])
