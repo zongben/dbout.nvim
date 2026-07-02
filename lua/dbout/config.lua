@@ -31,7 +31,7 @@ M.defaults = {
     viewer = {
       next_history = "}",
       previous_history = "{",
-      delete_history = "<C-d>",
+      delete_history = "<S-d>",
     },
   },
   viewer = {
