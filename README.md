@@ -85,7 +85,7 @@ The default configuration is as follows:
     viewer = {
       next_history = "}",
       previous_history = "{",
-      delete_history = "<S-d>",
+      delete_history = "<c-x>",
     },
   },
   -- Called when a queryer buffer attaches to a connection.
