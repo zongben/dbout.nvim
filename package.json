@@ -6,9 +6,12 @@
   "type": "module",
   "dependencies": {
     "better-sqlite3": "^12.11.1",
-    "mssql": "^12.6.0",
+    "mssql": "^12.7.0",
     "mysql2": "^3.22.5",
     "pg": "^8.22.0",
     "sql-formatter": "^15.8.2"
+  },
+  "allowScripts": {
+    "better-sqlite3@12.11.1": true
   }
 }
