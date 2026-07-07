@@ -3,11 +3,23 @@ local client = require("dbout.client")
 
 local M = {}
 
+local make_capabilities = function(db_type)
+  return {
+    Tables = true,
+    Views = db_type ~= "mongodb",
+    StoreProcedures = db_type ~= "sqlite3" and db_type ~= "mongodb",
+    Functions = db_type ~= "sqlite3" and db_type ~= "mongodb",
+    Columns = db_type ~= "mongodb",
+    Triggers = db_type ~= "mongodb",
+    Indexes = db_type == "mongodb",
+  }
+end
+
 M.buffer_keymappings = nil
 
 M.new = function(connection, q_bufnr)
-  local winbar = require("dbout.ui.winbar").new()
   local conn = connection
+  local winbar = require("dbout.ui.winbar").new(make_capabilities(conn.db_type))
   local queryer_bufnr = q_bufnr
   local inspector_bufnr
 
@@ -201,6 +213,8 @@ M.new = function(connection, q_bufnr)
       client.get_table(conn.id, winbar.get_sub_tab_table(), fn)
     elseif tab == "Triggers" then
       client.get_trigger_list(conn.id, winbar.get_sub_tab_table(), fn)
+    elseif tab == "Indexes" then
+      client.get_table(conn.id, winbar.get_sub_tab_table(), fn)
     end
   end
 

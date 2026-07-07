@@ -49,7 +49,11 @@ M.attach_connection = function()
   local conn = ctx.conn
   local bufnr = ctx.bufnr
 
-  vim.api.nvim_set_option_value("filetype", "sql", { buf = bufnr })
+  if conn.db_type == "mongodb" then
+    vim.api.nvim_set_option_value("filetype", "json", { buf = bufnr })
+  else
+    vim.api.nvim_set_option_value("filetype", "sql", { buf = bufnr })
+  end
 
   M.buffer_keymappings(bufnr)
 

@@ -1,3 +1,4 @@
+import { Mongodb } from "./db/mongodb.js";
 import { MsSql } from "./db/mssql.js";
 import { MySql } from "./db/mysql.js";
 import { Postgres } from "./db/postgres.js";
@@ -8,6 +9,7 @@ const DB_TYPE = {
   SQLITE: "sqlite3",
   POSTGRES: "postgresql",
   MYSQL: "mysql",
+  MONGODB: "mongodb",
 };
 
 const DB_MAP = {
@@ -15,6 +17,7 @@ const DB_MAP = {
   [DB_TYPE.SQLITE]: Sqlite,
   [DB_TYPE.POSTGRES]: Postgres,
   [DB_TYPE.MYSQL]: MySql,
+  [DB_TYPE.MONGODB]: Mongodb,
 };
 
 export const makeDriver = () => {

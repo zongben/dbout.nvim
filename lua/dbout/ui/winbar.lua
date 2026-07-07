@@ -1,15 +1,30 @@
 local M = {}
 
-M.new = function()
+local function caps_tabs(tabs, capabilities)
+  local result = {}
+
+  for _, tab in ipairs(tabs) do
+    if capabilities[tab] then
+      table.insert(result, tab)
+    end
+  end
+
+  return result
+end
+
+M.new = function(capabilities)
+  local top_levlel_tabs = { "Tables", "Views", "StoreProcedures", "Functions" }
+  local sub_tabs = { "Columns", "Triggers", "Indexes" }
+
   local current_layer = 1
   local layers = {
     {
       index = 1,
-      tabs = { "Tables", "Views", "StoreProcedures", "Functions" },
+      tabs = caps_tabs(top_levlel_tabs, capabilities),
     },
     {
       index = 1,
-      tabs = { "Columns", "Triggers" },
+      tabs = caps_tabs(sub_tabs, capabilities),
     },
   }
   local sub_tab_table_name = nil

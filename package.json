@@ -6,6 +6,8 @@
   "type": "module",
   "dependencies": {
     "better-sqlite3": "^12.11.1",
+    "bson": "^7.3.1",
+    "mongodb": "^7.4.0",
     "mssql": "^12.7.0",
     "mysql2": "^3.22.5",
     "pg": "^8.22.0",
