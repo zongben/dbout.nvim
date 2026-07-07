@@ -19,6 +19,7 @@ https://github.com/user-attachments/assets/21d4295a-897b-422a-aa69-2d6cde4e555d
 - PostgreSQL
 - MySQL
 - MSSQL
+- MongoDB
 
 ## Installation
 
@@ -191,11 +192,42 @@ Snacks.picker.sources.dbout = {
 }
 ```
 
+## MongoDB
+
+Since MongoDB cannot be queried using script-like SQL syntax, dbout.nvim utilizes **Extended JSON (EJSON)** for data queries, unlike `mongosh`, which uses short API helper methods.  
+
+Below is an example of an EJSON query.
+
+```json
+{
+  "find": "users",
+  "filter": {
+    "status": "active",
+    "createdAt": {
+      "$gte": {
+        "$date": "2026-01-01T00:00:00Z"
+      }
+    }
+  },
+  "projection": {
+    "name": 1,
+    "email": 1
+  },
+  "sort": {
+    "createdAt": -1
+  },
+  "limit": 10
+}
+```
+
+For more details on the syntax and capabilities,
+please refer to the official [MongoDB Extended JSON documentation](https://www.mongodb.com/docs/manual/reference/mongodb-extended-json/).
+
 ## TODO
 
 - [x] layout system
 - [x] inspector cache
 - [x] query history
-- [ ] CSV output
+- [x] mongodb support
 - [ ] queryer fork
-- [ ] mongodb support
+- [ ] CSV output
