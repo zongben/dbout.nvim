@@ -14,6 +14,9 @@ const makeMsSql = async (config) => {
         database: config.database,
       };
     },
+    close: async () => {
+      await pool.close();
+    },
     format: (sql) => {
       return format(sql, {
         language: "tsql",

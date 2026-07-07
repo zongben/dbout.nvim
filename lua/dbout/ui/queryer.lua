@@ -153,4 +153,10 @@ M.clear_cache = function()
   end
 end
 
+M.close_connection = function()
+  if ctx and ctx.conn and ctx.conn.id then
+    client.close_connection(ctx.conn.id)
+  end
+end
+
 return M

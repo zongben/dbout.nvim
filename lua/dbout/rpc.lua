@@ -66,7 +66,9 @@ M.send_notification = function(method, params)
     method = method,
     params = params,
   }
-  vim.fn.chansend(job_id, vim.fn.json_encode(jsonrpc) .. "\n")
+  local json = vim.fn.json_encode(jsonrpc)
+  -- vim.notify(json)
+  vim.fn.chansend(job_id, json .. "\n")
 end
 
 return M

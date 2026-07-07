@@ -4,6 +4,7 @@ const consumer = makeConsumer();
 
 const METHODS = {
   CREATE_CONNECTION: "create_connection",
+  CLOSE_CONNECTION: "close_connection",
   GET_TABLE_LIST: "get_table_list",
   GET_VIEW_LIST: "get_view_list",
   GET_STORE_PROCEDURE_LIST: "get_store_procedure_list",
@@ -24,6 +25,7 @@ const METHODS = {
 
 const handlers = {
   [METHODS.CREATE_CONNECTION]: (params) => consumer.createConnection(params),
+  [METHODS.CLOSE_CONNECTION]: (params) => consumer.closeConnection(params),
   [METHODS.GET_TABLE_LIST]: (params) => consumer.getTableList(params),
   [METHODS.GET_VIEW_LIST]: (params) => consumer.getViewList(params),
   [METHODS.QUERY]: (params) => consumer.query(params),

@@ -184,6 +184,7 @@ M.init = function(on_attach, ui)
     callback = function(args)
       if compositor.queryer[args.buf] then
         queryer.clear_cache()
+        queryer.close_connection()
         compositor.queryer[args.buf] = nil
       end
     end,

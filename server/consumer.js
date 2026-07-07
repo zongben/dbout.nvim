@@ -72,5 +72,9 @@ export const makeConsumer = () => {
       const { id, sql } = params;
       return await driver.format(id, sql);
     },
+    closeConnection: async (params) => {
+      const { id } = params;
+      await driver.closeConnection(id);
+    },
   };
 };

@@ -35,6 +35,13 @@ export const makeDriver = () => {
       connections.set(id, conn);
       return "connected";
     },
+    closeConnection: async (id) => {
+      const conn = connections.get(id);
+      if (conn) {
+        await conn.close();
+      }
+      connections.delete(id);
+    },
     getConnectionInfo: async (id) => {
       const conn = connections.get(id);
       return await conn.getConnectionInfo();

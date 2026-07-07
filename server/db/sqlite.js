@@ -10,6 +10,9 @@ const makeSqlite = async (file_path) => {
         database: db.name,
       };
     },
+    close: async () => {
+      db.close();
+    },
     query: (sql) => {
       const stmt = db.prepare(sql);
 

@@ -15,6 +15,9 @@ const makeMySql = async (conn_str) => {
         database: config.database,
       };
     },
+    close: async () => {
+      await pool.end();
+    },
     query: async (sql) => {
       const start = Date.now();
       const [result, _] = await pool.execute(sql);

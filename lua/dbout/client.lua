@@ -96,4 +96,8 @@ M.clear_cache = function(id)
   cache[id] = nil
 end
 
+M.close_connection = function(id)
+  rpc.send_notification("close_connection", { id = id })
+end
+
 return M

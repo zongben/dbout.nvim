@@ -18,6 +18,9 @@ const makePostgres = async (conn_str) => {
         database: opt.database,
       };
     },
+    close: async () => {
+      await pool.end();
+    },
     query: async (sql) => {
       const client = await pool.connect();
       try {
