@@ -106,13 +106,12 @@ The default configuration is as follows:
 The layout coordinates positions using a 3-column system (`1` = Left, `2` = Middle/Relative, `3` = Right).
 
 ```text
-Position:     1               2               3
-       +---------------+---------------+---------------+
-       |               |               |               |
-       |     LEFT      |   RELATIVE    |     RIGHT     |
-       |   (Global)    |   (Attached)  |   (Global)    |
-       |               |               |               |
-       +---------------+---------------+---------------+
+Position:        1               2               3
+         +---------------+---------------+---------------+
+         |               |               |               |
+         |     LEFT      |   RELATIVE    |     RIGHT     |
+         |               |               |               |
+         +---------------+---------------+---------------+
 ```
 
 - If both the viewer and inspector are set to `1`, the newer panel opens on the left.
