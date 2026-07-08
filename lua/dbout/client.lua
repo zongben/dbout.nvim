@@ -11,7 +11,7 @@ local cacheable_list = {
 
 local send_rpc = function(method, param, cb)
   local id = param and param.id
-  local is_cacheable = cacheable_list[method] and id
+  local is_cacheable = vim.tbl_contains(cacheable_list, method) and id
 
   if is_cacheable and cache[id] and cache[id][method] ~= nil then
     return cb(cache[id][method])
