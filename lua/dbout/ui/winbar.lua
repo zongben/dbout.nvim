@@ -13,14 +13,14 @@ local function caps_tabs(tabs, capabilities)
 end
 
 M.new = function(capabilities)
-  local top_levlel_tabs = { "Tables", "Views", "StoreProcedures", "Functions" }
+  local top_level_tabs = { "Tables", "Views", "StoreProcedures", "Functions" }
   local sub_tabs = { "Columns", "Triggers", "Indexes" }
 
   local current_layer = 1
   local layers = {
     {
       index = 1,
-      tabs = caps_tabs(top_levlel_tabs, capabilities),
+      tabs = caps_tabs(top_level_tabs, capabilities),
     },
     {
       index = 1,
