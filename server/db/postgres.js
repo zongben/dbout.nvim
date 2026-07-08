@@ -2,7 +2,10 @@ import pkg from "pg";
 import { format } from "sql-formatter";
 
 const makePostgres = async (conn_str) => {
-  const pool = new pkg.Pool({ connectionString: conn_str });
+  const pool = new pkg.Pool({
+    connectionString: conn_str,
+    ssl: { rejectUnauthorized: false },
+  });
 
   const instance = {
     getConnectionInfo: async () => {
