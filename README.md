@@ -228,5 +228,6 @@ please refer to the official [MongoDB Extended JSON documentation](https://www.m
 - [x] inspector cache
 - [x] query history
 - [x] mongodb support
+- [ ] completion source
 - [ ] queryer fork
 - [ ] CSV output
