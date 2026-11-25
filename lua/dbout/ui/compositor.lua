@@ -229,4 +229,8 @@ M.toggle_viewer = function()
   toggle_panel("viewer", queryer.open_viewer)
 end
 
+M.get_current_queryer = function()
+  return compositor.ui.find_active_queryer()
+end
+
 return M
