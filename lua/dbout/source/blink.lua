@@ -1,133 +1,179 @@
 local client = require("dbout.client")
 local compositor = require("dbout.ui.compositor")
+local cmp_types = require("blink.cmp.types")
 
-local m = {
-  api = {},
-}
-
-m.api.get_tables = function(conn_id, bufnr)
-  if m[bufnr] == nil then
-    client.get_table_list(conn_id, function(result)
-      local tables = vim.json.decode(result).rows
-      m[bufnr] = {}
-      m[bufnr].tables = tables
-    end)
-  end
-
-  return m[bufnr].tables
-end
+local cache = {}
 
 --- @module 'blink.cmp'
 --- @class blink.cmp.Source
 local source = {}
 
--- `opts` table comes from `sources.providers.your_provider.opts`
--- You may also accept a second argument `config`, to get the full
--- `sources.providers.your_provider` table
+local function decode_rows(response)
+  return vim.json.decode(response).rows or {}
+end
+
+local function load_schema(conn_id, bufnr)
+  if cache[bufnr] then
+    return cache[bufnr]
+  end
+
+  local state = {
+    status = "loading",
+    tables = {},
+    columns = {},
+    column_status = {},
+  }
+  cache[bufnr] = state
+
+  client.get_table_list(conn_id, function(response)
+    state.tables = decode_rows(response)
+    state.status = "loaded"
+  end)
+
+  return state
+end
+
+local function get_used_tables(content, tables)
+  local content_lower = content:lower()
+  local used = {}
+
+  for _, table in ipairs(tables) do
+    local name = table.table_name
+    local name_lower = name:lower()
+    local pattern = "%f[%w_]" .. vim.pesc(name_lower) .. "%f[^%w_]"
+
+    if content_lower:find(pattern) then
+      used[name] = true
+    end
+  end
+
+  return used
+end
+
+local function load_columns(state, conn_id, table_names, callback)
+  local pending = 0
+
+  for table_name in pairs(table_names) do
+    if not state.column_status[table_name] then
+      state.column_status[table_name] = "loading"
+      pending = pending + 1
+
+      client.get_table(conn_id, table_name, function(response)
+        state.columns[table_name] = decode_rows(response)
+        state.column_status[table_name] = "loaded"
+        pending = pending - 1
+
+        if pending == 0 then
+          callback()
+        end
+      end)
+    end
+  end
+
+  if pending == 0 then
+    callback()
+  end
+end
+
+local function completion_range(ctx)
+  return {
+    start = {
+      line = ctx.bounds.line_number - 1,
+      character = ctx.bounds.start_col - 1,
+    },
+    ["end"] = {
+      line = ctx.cursor[1] - 1,
+      character = ctx.cursor[2],
+    },
+  }
+end
+
 function source.new(opts)
   local self = setmetatable({}, { __index = source })
   self.opts = opts
+
+  local queryer = compositor.get_current_queryer()
+  if queryer then
+    load_schema(queryer.conn.id, queryer.bufnr)
+  end
+
   return self
 end
 
--- (Optional) Enable the source in specific contexts only
 function source:enabled()
   return vim.bo.filetype == "sql"
 end
 
--- (Optional) Non-alphanumeric characters that trigger the source
 function source:get_trigger_characters()
   return { "." }
 end
 
 function source:get_completions(ctx, callback)
-  -- vim.notify(vim.inspect(ctx))
-
-  --- @type lsp.CompletionItem[]
-  local items = {}
-
   local queryer = compositor.get_current_queryer()
-  if queryer and queryer.bufnr == ctx.bufnr then
-    local tables = m.api.get_tables(queryer.conn.id, ctx.bufnr)
-    for _, item in ipairs(tables) do
+  if not queryer or queryer.bufnr ~= ctx.bufnr then
+    callback({ items = {}, is_incomplete_backward = false, is_incomplete_forward = false })
+    return function() end
+  end
+
+  local state = cache[ctx.bufnr] or load_schema(queryer.conn.id, ctx.bufnr)
+  if state.status ~= "loaded" then
+    callback({ items = {}, is_incomplete_backward = false, is_incomplete_forward = false })
+    return function() end
+  end
+
+  local items = {}
+  local seen = {}
+  local content = table.concat(vim.api.nvim_buf_get_lines(ctx.bufnr, 0, -1, false), "\n")
+  local used_tables = get_used_tables(content, state.tables)
+  local range = completion_range(ctx)
+
+  local function complete()
+    local function add_item(label, kind)
+      if seen[label] then
+        return
+      end
+
+      seen[label] = true
+
       table.insert(items, {
-        label = item.table_name,
-        kind = require("blink.cmp.types").CompletionItemKind.Text,
+        label = label,
+        kind = kind,
         textEdit = {
-          newText = item.table_name,
-          range = {
-            start = { line = ctx.bounds.line_number, character = ctx.bounds.start_col - 1 },
-            ["end"] = { line = ctx.bounds.line_number, character = ctx.cursor[2] },
-          },
+          newText = label,
+          range = vim.deepcopy(range),
         },
-        insertText = item.table_name,
         insertTextFormat = vim.lsp.protocol.InsertTextFormat.PlainText,
       })
     end
+
+    for _, table in ipairs(state.tables) do
+      add_item(table.table_name, cmp_types.CompletionItemKind.Text)
+    end
+
+    for table_name in pairs(used_tables) do
+      for _, column in ipairs(state.columns[table_name] or {}) do
+        add_item(column.column_name, cmp_types.CompletionItemKind.Field)
+      end
+    end
+
+    callback({
+      items = items,
+      is_incomplete_backward = false,
+      is_incomplete_forward = false,
+    })
   end
 
-  -- The callback _MUST_ be called at least once. The first time it's called,
-  -- blink.cmp will show the results in the completion menu. Subsequent calls
-  -- will append the results to the menu to support streaming results.
-  --
-  -- NOTE: blink.cmp will mutate the items you return, so you must vim.deepcopy them
-  -- before returning if you want to re-use them in the future (such as for caching)
-  callback({
-    items = items,
-    -- Whether blink.cmp should request items when deleting characters
-    -- from the keyword (e.g. "foo|" -> "fo|")
-    -- Note that any non-alphanumeric characters will always request
-    -- new items (excluding `-` and `_`)
-    is_incomplete_backward = false,
-    -- Whether blink.cmp should request items when adding characters
-    -- to the keyword (e.g. "fo|" -> "foo|")
-    -- Note that any non-alphanumeric characters will always request
-    -- new items (excluding `-` and `_`)
-    is_incomplete_forward = false,
-  })
+  load_columns(state, queryer.conn.id, used_tables, complete)
 
-  -- (Optional) Return a function which cancels the request
-  -- If you have long running requests, it's essential you support cancellation
   return function() end
 end
 
--- (Optional) Before accepting the item or showing documentation, blink.cmp will call this function
--- so you may avoid calculating expensive fields (e.g. documentation) for only when they're actually needed
--- Note only some fields may be resolved lazily. You may check the LSP capabilities for a complete list:
--- `textDocument.completion.completionItem.resolveSupport`
--- At the time of writing: 'documentation', 'detail', 'additionalTextEdits', 'command', 'data'
 function source:resolve(item, callback)
-  -- item = vim.deepcopy(item)
-
-  -- Shown in the documentation window (<C-space> when menu open by default)
-  -- item.documentation = {
-  --   kind = "markdown",
-  --   value = "# Foo\n\nBar",
-  -- }
-
-  -- Additional edits to make to the document, such as for auto-imports
-  -- item.additionalTextEdits = {
-  --   {
-  --     newText = "foo",
-  --     range = {
-  --       start = { line = 0, character = 0 },
-  --       ["end"] = { line = 0, character = 0 },
-  --     },
-  --   },
-  -- }
-
   callback(item)
 end
 
--- (Optional) Called immediately after applying the item's textEdit/insertText
--- Only useful when you want to customize how items are accepted,
--- beyond what's possible with `textEdit` and `additionalTextEdits`
 function source:execute(ctx, item, callback, default_implementation)
-  -- When you provide an `execute` function, your source must handle the execution
-  -- of the item itself, but you may use the default implementation at any time
   default_implementation()
-
-  -- The callback _MUST_ be called once
   callback()
 end
 
