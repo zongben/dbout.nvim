@@ -246,7 +246,7 @@ M.new = function(connection, q_bufnr)
   end
 
   m.refresh = function()
-    client.clear_cache(conn.id)
+    -- client.clear_cache(conn.id)
     render_inspector(winbar.reset)
   end
 
