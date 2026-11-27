@@ -1,8 +1,13 @@
 import sql from "mssql";
 import { format } from "sql-formatter";
 
-const makeMsSql = async (config) => {
-  const pool = await new sql.ConnectionPool(config).connect();
+const makeMsSql = async (config, trust_server) => {
+  const pool = await new sql.ConnectionPool({
+    ...config,
+    options: {
+      trustServerCertificate: trust_server,
+    },
+  }).connect();
 
   const instance = {
     getConnectionInfo: () => {
@@ -26,11 +31,12 @@ const makeMsSql = async (config) => {
       const start = Date.now();
       const result = await pool.request().query(sql);
       const end = Date.now();
+      const rows = result.recordset ?? [];
 
       return {
         duration: `${end - start}ms`,
-        total: result.rowsAffected[0],
-        rows: result.recordset ?? [],
+        total: result.recordset ? rows.length : (result.rowsAffected[0] ?? 0),
+        rows,
       };
     },
     getTableList: async () => {
@@ -143,6 +149,26 @@ const makeMsSql = async (config) => {
       });
       return result;
     },
+    getIndexes: async (table_name) => {
+      const sql = `
+        SELECT
+          i.name AS index_name,
+          STRING_AGG(c.name, ', ') WITHIN GROUP (ORDER BY ic.key_ordinal) AS columns,
+          CAST(i.is_unique AS int) AS is_unique,
+          CAST(i.is_primary_key AS int) AS is_primary,
+          i.type_desc AS definition
+        FROM sys.indexes i
+        INNER JOIN sys.index_columns ic
+          ON ic.object_id = i.object_id AND ic.index_id = i.index_id
+        INNER JOIN sys.columns c
+          ON c.object_id = ic.object_id AND c.column_id = ic.column_id
+        WHERE i.object_id = OBJECT_ID('${table_name}')
+          AND ic.key_ordinal > 0
+        GROUP BY i.name, i.is_unique, i.is_primary_key, i.type_desc
+        ORDER BY i.name;
+      `;
+      return await instance.query(sql);
+    },
     getTrigger: async (trig_name) => {
       const sql = `
         SELECT m.definition
@@ -166,8 +192,10 @@ const makeMsSql = async (config) => {
 };
 
 export const MsSql = {
-  makeConnection: async (conn_str) => {
-    const config = sql.ConnectionPool.parseConnectionString(conn_str);
-    return await makeMsSql(config);
+  makeConnection: async (conn_str, trust_server) => {
+    const config = sql.ConnectionPool.parseConnectionString(
+      conn_str,
+    );
+    return await makeMsSql(config, trust_server);
   },
 };

@@ -7,8 +7,8 @@ M.defaults = {
       viewer = 3,
     },
     init_open = {
-      inspector = true,
-      viewer = true,
+      inspector = false,
+      viewer = false,
     },
   },
   keymaps = {

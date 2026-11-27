@@ -46,6 +46,7 @@ M.open_picker = function()
           id = value.id,
           connstr = value.connstr,
           db_type = value.db_type,
+          trust_server = value.trust_server,
         })
       end
 
@@ -84,7 +85,7 @@ M.open_picker = function()
       confirm = function() end,
       new_connection = function(picker)
         picker:close()
-        conn.create_connection({}, function(c)
+        conn.init_connection({}, function(c)
           conn.add_connection(c)
           M.open_picker()
         end)
@@ -94,7 +95,7 @@ M.open_picker = function()
         picker:find()
       end,
       edit_connection = function(picker, item)
-        conn.create_connection(item, function(c)
+        conn.init_connection(item, function(c)
           conn.update_connection(c)
           picker:find()
         end)

@@ -1,8 +1,13 @@
 import mysql from "mysql2/promise";
 import { format } from "sql-formatter";
 
-const makeMySql = async (conn_str) => {
-  const pool = mysql.createPool(conn_str);
+const makeMySql = async (conn_str, trust_server) => {
+  const pool = mysql.createPool({
+    uri: conn_str,
+    ssl: {
+      rejectUnauthorized: !trust_server,
+    },
+  });
 
   const instance = {
     getConnectionInfo: async () => {
@@ -148,6 +153,30 @@ const makeMySql = async (conn_str) => {
       });
       return result;
     },
+    getIndexes: async (table_name) => {
+      const sql = `
+        SELECT
+          INDEX_NAME AS index_name,
+          GROUP_CONCAT(COLUMN_NAME ORDER BY SEQ_IN_INDEX SEPARATOR ', ') AS columns,
+          (MAX(NON_UNIQUE) = 0) AS is_unique,
+          (INDEX_NAME = 'PRIMARY') AS is_primary,
+          INDEX_TYPE AS definition
+        FROM INFORMATION_SCHEMA.STATISTICS
+        WHERE TABLE_SCHEMA = DATABASE()
+          AND TABLE_NAME = '${table_name}'
+        GROUP BY INDEX_NAME, INDEX_TYPE
+        ORDER BY INDEX_NAME;
+      `;
+      const result = await instance.query(sql);
+      result.rows = result.rows.map((item) => ({
+        index_name: item.index_name,
+        columns: item.columns,
+        is_unique: item.is_unique === 1,
+        is_primary: item.is_primary === 1,
+        definition: item.definition,
+      }));
+      return result;
+    },
     getTriggerList: async (table_name) => {
       const sql = `
         SELECT TRIGGER_NAME as trigger_name
@@ -172,7 +201,7 @@ const makeMySql = async (conn_str) => {
 };
 
 export const MySql = {
-  makeConnection: async (conn_str) => {
-    return await makeMySql(conn_str);
+  makeConnection: async (conn_str, trust_server) => {
+    return await makeMySql(conn_str, trust_server);
   },
 };

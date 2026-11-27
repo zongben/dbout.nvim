@@ -1,10 +1,10 @@
 import pkg from "pg";
 import { format } from "sql-formatter";
 
-const makePostgres = async (conn_str) => {
+const makePostgres = async (conn_str, trust_server) => {
   const pool = new pkg.Pool({
     connectionString: conn_str,
-    ssl: { rejectUnauthorized: false },
+    ssl: { rejectUnauthorized: !trust_server },
   });
 
   const instance = {
@@ -91,9 +91,10 @@ const makePostgres = async (conn_str) => {
     },
     getView: async (view_name) => {
       const sql = `
-        SELECT definition as 'definition'
+        SELECT definition
         FROM pg_views
         WHERE viewname = '${view_name}'
+          AND schemaname = 'public'
       `;
       return await instance.query(sql);
     },
@@ -128,8 +129,8 @@ const makePostgres = async (conn_str) => {
           col.character_maximum_length AS max_length,
           NOT a.attnotnull AS is_nullable,
           pg_get_expr(ad.adbin, ad.adrelid) AS default_value,
-          CASE WHEN ct.contype = 'p' THEN 1 ELSE 0 END AS is_pk,
-          CASE WHEN ct.contype = 'u' THEN 1 ELSE 0 END AS is_unique
+          COALESCE(bool_or(ct.contype = 'p'), false) AS is_pk,
+          COALESCE(bool_or(ct.contype = 'u'), false) AS is_unique
         FROM pg_attribute a
         JOIN pg_class c ON a.attrelid = c.oid
         JOIN pg_namespace n ON n.oid = c.relnamespace
@@ -141,7 +142,7 @@ const makePostgres = async (conn_str) => {
           AND a.attnum > 0
           AND NOT a.attisdropped
         GROUP BY a.attnum, a.attname, format_type(a.atttypid, a.atttypmod),
-                 col.character_maximum_length, a.attnotnull, ad.adbin, ad.adrelid, ct.contype
+                 col.character_maximum_length, a.attnotnull, ad.adbin, ad.adrelid
         ORDER BY a.attnum;
       `;
       const result = await instance.query(sql);
@@ -152,11 +153,33 @@ const makePostgres = async (conn_str) => {
           max_length: item.max_length,
           is_nullable: item.is_nullable,
           default_value: item.default_value,
-          is_pk: item.is_pk === 1 ? true : false,
-          is_unique: item.is_unique === 1 ? true : false,
+          is_pk: item.is_pk,
+          is_unique: item.is_unique,
         };
       });
       return result;
+    },
+    getIndexes: async (table_name) => {
+      const sql = `
+        SELECT
+          i.relname AS index_name,
+          string_agg(a.attname, ', ' ORDER BY x.ord) AS columns,
+          ix.indisunique AS is_unique,
+          ix.indisprimary AS is_primary,
+          pg_get_indexdef(ix.indexrelid) AS definition
+        FROM pg_index ix
+        JOIN pg_class i ON i.oid = ix.indexrelid
+        JOIN pg_class t ON t.oid = ix.indrelid
+        JOIN pg_namespace n ON n.oid = t.relnamespace
+        JOIN LATERAL unnest(ix.indkey) WITH ORDINALITY AS x(attnum, ord) ON true
+        JOIN pg_attribute a
+          ON a.attrelid = t.oid AND a.attnum = x.attnum
+        WHERE t.relname = '${table_name}'
+          AND n.nspname = 'public'
+        GROUP BY i.relname, ix.indisunique, ix.indisprimary, ix.indexrelid
+        ORDER BY i.relname;
+      `;
+      return await instance.query(sql);
     },
     getTriggerList: async (table_name) => {
       const sql = `
@@ -187,7 +210,7 @@ const makePostgres = async (conn_str) => {
 };
 
 export const Postgres = {
-  makeConnection: async (conn_str) => {
-    return await makePostgres(conn_str);
+  makeConnection: async (conn_str, trust_server) => {
+    return await makePostgres(conn_str, trust_server);
   },
 };

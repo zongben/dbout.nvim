@@ -17,7 +17,7 @@ rl.on("line", async (raw) => {
   }
 
   try {
-    const res = await rpc.exec(req);
+    const res = Array.isArray(req) ? await rpc.execBatch(req) : await rpc.exec(req);
     if (res) {
       process.stdout.write(JSON.stringify(res) + "\n");
     }

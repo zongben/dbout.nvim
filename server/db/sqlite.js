@@ -18,10 +18,10 @@ const makeSqlite = async (file_path) => {
 
       let total, rows;
       const start = Date.now();
-      try {
+      if (stmt.reader) {
         rows = stmt.all();
         total = rows.length;
-      } catch (err) {
+      } else {
         const info = stmt.run();
         rows = [];
         total = info.changes;
@@ -99,13 +99,30 @@ const makeSqlite = async (file_path) => {
           column_name: item.name,
           data_type: item.type,
           max_length: null,
-          is_nullable: item.notnull === 1 ? true : false,
+          is_nullable: item.notnull !== 1,
           default_value: item.dflt_value,
           is_pk: item.pk === 1 ? true : false,
-          is_unique: indexMap[item.column_name] ? true : false,
+          is_unique: indexMap[item.name] ? true : false,
         };
       });
       return result;
+    },
+    getIndexes: (table_name) => {
+      const indexes = instance.query(`PRAGMA index_list('${table_name}');`);
+      indexes.rows = indexes.rows.map((index) => {
+        const columns = instance
+          .query(`PRAGMA index_info('${index.name}');`)
+          .rows.map((column) => column.name);
+
+        return {
+          index_name: index.name,
+          columns: columns.join(", "),
+          is_unique: index.unique === 1,
+          is_primary: index.origin === "pk",
+          definition: null,
+        };
+      });
+      return indexes;
     },
     getTriggerList: (table_name) => {
       const sql = `

@@ -11,7 +11,7 @@ local make_capabilities = function(db_type)
     Functions = db_type ~= "sqlite3" and db_type ~= "mongodb",
     Columns = db_type ~= "mongodb",
     Triggers = db_type ~= "mongodb",
-    Indexes = db_type == "mongodb",
+    Indexes = true,
   }
 end
 
@@ -214,7 +214,7 @@ M.new = function(connection, q_bufnr)
     elseif tab == "Triggers" then
       client.get_trigger_list(conn.id, winbar.get_sub_tab_table(), fn)
     elseif tab == "Indexes" then
-      client.get_table(conn.id, winbar.get_sub_tab_table(), fn)
+      client.get_indexes(conn.id, winbar.get_sub_tab_table(), fn)
     end
   end
 
@@ -246,7 +246,7 @@ M.new = function(connection, q_bufnr)
   end
 
   m.refresh = function()
-    client.clear_cache(conn.id)
+    -- client.clear_cache(conn.id)
     render_inspector(winbar.reset)
   end
 

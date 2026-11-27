@@ -25,14 +25,14 @@ local select_connection = function(cb)
 end
 
 local new_connection = function()
-  conn.create_connection({}, function(c)
+  conn.init_connection({}, function(c)
     conn.add_connection(c)
   end)
 end
 
 local edit_connection = function()
   select_connection(function(c)
-    conn.create_connection(c, function(cn)
+    conn.init_connection(c, function(cn)
       conn.update_connection(cn)
     end)
   end)

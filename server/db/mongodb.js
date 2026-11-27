@@ -1,10 +1,12 @@
 import { MongoClient } from "mongodb";
 import { EJSON } from "bson";
 
-const makeMongodb = async (conn_str) => {
+const makeMongodb = async (conn_str, trust_server) => {
   const url = new URL(conn_str);
 
-  const client = new MongoClient(conn_str);
+  const client = new MongoClient(conn_str, {
+    tlsAllowInvalidCertificates: trust_server,
+  });
   await client.connect();
   const db = client.db(url.pathname.replace(/^\//, ""));
 
@@ -80,6 +82,29 @@ const makeMongodb = async (conn_str) => {
       `;
       return await instance.query(cmd);
     },
+    getIndexes: async (table_name) => {
+      const cmd = `
+        {
+          "listIndexes": "${table_name}"
+        }
+      `;
+      const result = await instance.query(cmd);
+      result.rows = result.rows.map((index) => ({
+        index_name: index.name,
+        keys: index.key,
+        is_unique: index.unique === true,
+        is_id_index: index.name === "_id_",
+        sparse: index.sparse === true,
+        expire_after_seconds: index.expireAfterSeconds ?? null,
+        partial_filter: index.partialFilterExpression ?? null,
+        options: {
+          hidden: index.hidden ?? false,
+          collation: index.collation ?? null,
+          wildcard_projection: index.wildcardProjection ?? null,
+        },
+      }));
+      return result;
+    },
     getTrigger: async () => {
       return "Not Supported";
     },
@@ -92,7 +117,7 @@ const makeMongodb = async (conn_str) => {
 };
 
 export const Mongodb = {
-  makeConnection: async (conn_str) => {
-    return await makeMongodb(conn_str);
+  makeConnection: async (conn_str, trust_server) => {
+    return await makeMongodb(conn_str, trust_server);
   },
 };

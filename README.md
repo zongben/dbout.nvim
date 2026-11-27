@@ -12,6 +12,7 @@ https://github.com/user-attachments/assets/21d4295a-897b-422a-aa69-2d6cde4e555d
 - **JSON Result Display**: View query results in a structured JSON format for easy reading and native highlighting.
 - **No More Connection Strings In Your Neovim Config**: All your database connections are securely saved locally on your machine.
 - **Buffer-Isolated Connections**: Every database query buffer maintains its own isolated connection state.
+- **SQL Autocompletion Support**: Provide completion sources for completion plugins, enabling automatic suggestions for database tables and columns while writing queries.
 
 ## Supported Databases
 
@@ -25,7 +26,7 @@ https://github.com/user-attachments/assets/21d4295a-897b-422a-aa69-2d6cde4e555d
 
 Requirements:
 
-- [Nodejs](https://github.com/nodejs/node)
+- [Nodejs](https://github.com/nodejs/node) >=22
 
 With lazy.nvim:
 
@@ -53,10 +54,9 @@ The default configuration is as follows:
       inspector = 1,
       viewer = 3,
     },
-    -- Open utility panels by default when a buffer attaches to a connection.
     init_open = {
-      inspector = true,
-      viewer = true,
+      inspector = false,
+      viewer = false,
     },
   },
   viewer = {
@@ -139,7 +139,7 @@ Within the Inspector buffer:
 
 `H` and `L` - Switch between tabs  
 `I` - Inspect more details, such as table columns, triggers, views, etc.  
-`R` - Refresh inspector for clear caches.  
+`R` - Refresh inspector.  
 
 ### Telescope Extension
 
@@ -193,7 +193,7 @@ Snacks.picker.sources.dbout = {
 
 ## MongoDB
 
-Since MongoDB cannot be queried using script-like SQL syntax, dbout.nvim utilizes **Extended JSON (EJSON)** for data queries, unlike `mongosh`, which uses short API helper methods.  
+Since MongoDB cannot be queried using script-like SQL syntax, dbout.nvim utilizes **Extended JSON (EJSON)** for data queries.
 
 Below is an example of an EJSON query.
 
@@ -222,11 +222,62 @@ Below is an example of an EJSON query.
 For more details on the syntax and capabilities,
 please refer to the official [MongoDB Extended JSON documentation](https://www.mongodb.com/docs/manual/reference/mongodb-extended-json/).
 
+## Completion Sources
+
+dbout.nvim provides completion sources for [blink.cmp](https://github.com/Saghen/blink.cmp)
+and [nvim-cmp](https://github.com/hrsh7th/nvim-cmp). Add the source to your completion
+plugin configuration as follows.
+
+### blink.cmp
+
+```lua
+{
+  "saghen/blink.cmp",
+  opts = {
+    sources = {
+      default = { "lsp", "path", "snippets", "buffer", "dbout" },
+      providers = {
+        dbout = {
+          name = "dbout",
+          module = "dbout.source.blink",
+        },
+      },
+    },
+  },
+}
+```
+
+### nvim-cmp
+
+```lua
+{
+  "hrsh7th/nvim-cmp",
+  dependencies = {
+    "zongben/dbout.nvim",
+  },
+  config = function()
+    local cmp = require("cmp")
+
+    cmp.register_source("dbout", require("dbout.source.cmp").new({}))
+    cmp.setup({
+      sources = cmp.config.sources({
+        { name = "dbout" },
+      }),
+    })
+  end,
+}
+```
+
+Completion is available in SQL Queryer buffers after connecting to a database.
+Table names are always offered, while columns are offered for tables referenced
+in the current queryer buffer.
+
 ## TODO
 
 - [x] layout system
 - [x] inspector cache
 - [x] query history
 - [x] mongodb support
+- [x] completion source
 - [ ] queryer fork
 - [ ] CSV output
