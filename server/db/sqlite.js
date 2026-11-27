@@ -18,10 +18,10 @@ const makeSqlite = async (file_path) => {
 
       let total, rows;
       const start = Date.now();
-      try {
+      if (stmt.reader) {
         rows = stmt.all();
         total = rows.length;
-      } catch (err) {
+      } else {
         const info = stmt.run();
         rows = [];
         total = info.changes;
@@ -102,7 +102,7 @@ const makeSqlite = async (file_path) => {
           is_nullable: item.notnull !== 1,
           default_value: item.dflt_value,
           is_pk: item.pk === 1 ? true : false,
-          is_unique: indexMap[item.column_name] ? true : false,
+          is_unique: indexMap[item.name] ? true : false,
         };
       });
       return result;

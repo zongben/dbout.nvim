@@ -91,9 +91,10 @@ const makePostgres = async (conn_str, trust_server) => {
     },
     getView: async (view_name) => {
       const sql = `
-        SELECT definition as 'definition'
+        SELECT definition
         FROM pg_views
         WHERE viewname = '${view_name}'
+          AND schemaname = 'public'
       `;
       return await instance.query(sql);
     },
@@ -128,8 +129,8 @@ const makePostgres = async (conn_str, trust_server) => {
           col.character_maximum_length AS max_length,
           NOT a.attnotnull AS is_nullable,
           pg_get_expr(ad.adbin, ad.adrelid) AS default_value,
-          CASE WHEN ct.contype = 'p' THEN 1 ELSE 0 END AS is_pk,
-          CASE WHEN ct.contype = 'u' THEN 1 ELSE 0 END AS is_unique
+          COALESCE(bool_or(ct.contype = 'p'), false) AS is_pk,
+          COALESCE(bool_or(ct.contype = 'u'), false) AS is_unique
         FROM pg_attribute a
         JOIN pg_class c ON a.attrelid = c.oid
         JOIN pg_namespace n ON n.oid = c.relnamespace
@@ -141,7 +142,7 @@ const makePostgres = async (conn_str, trust_server) => {
           AND a.attnum > 0
           AND NOT a.attisdropped
         GROUP BY a.attnum, a.attname, format_type(a.atttypid, a.atttypmod),
-                 col.character_maximum_length, a.attnotnull, ad.adbin, ad.adrelid, ct.contype
+                 col.character_maximum_length, a.attnotnull, ad.adbin, ad.adrelid
         ORDER BY a.attnum;
       `;
       const result = await instance.query(sql);
@@ -152,8 +153,8 @@ const makePostgres = async (conn_str, trust_server) => {
           max_length: item.max_length,
           is_nullable: item.is_nullable,
           default_value: item.default_value,
-          is_pk: item.is_pk === 1 ? true : false,
-          is_unique: item.is_unique === 1 ? true : false,
+          is_pk: item.is_pk,
+          is_unique: item.is_unique,
         };
       });
       return result;

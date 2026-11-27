@@ -31,11 +31,12 @@ const makeMsSql = async (config, trust_server) => {
       const start = Date.now();
       const result = await pool.request().query(sql);
       const end = Date.now();
+      const rows = result.recordset ?? [];
 
       return {
         duration: `${end - start}ms`,
-        total: result.rowsAffected[0],
-        rows: result.recordset ?? [],
+        total: result.recordset ? rows.length : (result.rowsAffected[0] ?? 0),
+        rows,
       };
     },
     getTableList: async () => {
