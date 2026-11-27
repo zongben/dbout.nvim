@@ -275,7 +275,6 @@ in the current queryer buffer.
 ## TODO
 
 - [x] layout system
-- [x] inspector cache
 - [x] query history
 - [x] mongodb support
 - [x] completion source
