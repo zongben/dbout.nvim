@@ -26,7 +26,7 @@ https://github.com/user-attachments/assets/21d4295a-897b-422a-aa69-2d6cde4e555d
 
 Requirements:
 
-- [Nodejs](https://github.com/nodejs/node)
+- [Nodejs](https://github.com/nodejs/node) >=22
 
 With lazy.nvim:
 

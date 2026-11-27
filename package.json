@@ -16,5 +16,8 @@
   },
   "allowScripts": {
     "better-sqlite3@13.2.0": true
+  },
+  "engines": {
+    "node": ">=22"
   }
 }
