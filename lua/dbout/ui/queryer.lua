@@ -151,12 +151,6 @@ M.format = function()
   end)
 end
 
-M.clear_cache = function()
-  if ctx and ctx.conn and ctx.conn.id then
-    client.clear_cache(ctx.conn.id)
-  end
-end
-
 M.close_connection = function()
   if ctx and ctx.conn and ctx.conn.id then
     client.close_connection(ctx.conn.id)
