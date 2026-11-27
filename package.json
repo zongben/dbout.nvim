@@ -5,15 +5,16 @@
   },
   "type": "module",
   "dependencies": {
-    "better-sqlite3": "^12.11.1",
-    "bson": "^7.3.1",
-    "mongodb": "^7.4.0",
-    "mssql": "^12.7.0",
-    "mysql2": "^3.22.5",
-    "pg": "^8.22.0",
-    "sql-formatter": "^15.8.2"
+    "better-sqlite3": "^13.2.0",
+    "bson": "^7.3.4",
+    "mongodb": "^7.9.1",
+    "mssql": "^12.8.1",
+    "mysql2": "^3.24.6",
+    "pg": "^8.23.1",
+    "sql-formatter": "^15.10.0",
+    "tedious": "^20.4.3"
   },
   "allowScripts": {
-    "better-sqlite3@12.11.1": true
+    "better-sqlite3@13.2.0": true
   }
 }
