@@ -192,6 +192,7 @@ end
 
 M.create_queryer = function(conn)
   local bufnr = vim.api.nvim_create_buf(true, false)
+  vim.bo[bufnr].swapfile = false
   vim.api.nvim_buf_set_name(bufnr, "query_" .. bufnr)
   attach_buf(conn, bufnr, _ui)
 end
