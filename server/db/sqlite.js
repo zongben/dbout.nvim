@@ -99,7 +99,7 @@ const makeSqlite = async (file_path) => {
           column_name: item.name,
           data_type: item.type,
           max_length: null,
-          is_nullable: item.notnull === 1 ? true : false,
+          is_nullable: item.notnull !== 1,
           default_value: item.dflt_value,
           is_pk: item.pk === 1 ? true : false,
           is_unique: indexMap[item.column_name] ? true : false,
