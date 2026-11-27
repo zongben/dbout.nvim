@@ -149,6 +149,26 @@ const makeMsSql = async (config, trust_server) => {
       });
       return result;
     },
+    getIndexes: async (table_name) => {
+      const sql = `
+        SELECT
+          i.name AS index_name,
+          STRING_AGG(c.name, ', ') WITHIN GROUP (ORDER BY ic.key_ordinal) AS columns,
+          CAST(i.is_unique AS int) AS is_unique,
+          CAST(i.is_primary_key AS int) AS is_primary,
+          i.type_desc AS definition
+        FROM sys.indexes i
+        INNER JOIN sys.index_columns ic
+          ON ic.object_id = i.object_id AND ic.index_id = i.index_id
+        INNER JOIN sys.columns c
+          ON c.object_id = ic.object_id AND c.column_id = ic.column_id
+        WHERE i.object_id = OBJECT_ID('${table_name}')
+          AND ic.key_ordinal > 0
+        GROUP BY i.name, i.is_unique, i.is_primary_key, i.type_desc
+        ORDER BY i.name;
+      `;
+      return await instance.query(sql);
+    },
     getTrigger: async (trig_name) => {
       const sql = `
         SELECT m.definition

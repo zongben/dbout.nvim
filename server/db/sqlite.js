@@ -107,6 +107,23 @@ const makeSqlite = async (file_path) => {
       });
       return result;
     },
+    getIndexes: (table_name) => {
+      const indexes = instance.query(`PRAGMA index_list('${table_name}');`);
+      indexes.rows = indexes.rows.map((index) => {
+        const columns = instance
+          .query(`PRAGMA index_info('${index.name}');`)
+          .rows.map((column) => column.name);
+
+        return {
+          index_name: index.name,
+          columns: columns.join(", "),
+          is_unique: index.unique === 1,
+          is_primary: index.origin === "pk",
+          definition: null,
+        };
+      });
+      return indexes;
+    },
     getTriggerList: (table_name) => {
       const sql = `
         SELECT name AS trigger_name

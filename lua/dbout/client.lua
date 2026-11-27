@@ -64,6 +64,10 @@ M.get_table = function(id, table_name, cb)
   send_rpc("get_table", { id = id, table_name = table_name }, cb)
 end
 
+M.get_indexes = function(id, table_name, cb)
+  send_rpc("get_indexes", { id = id, table_name = table_name }, cb)
+end
+
 M.get_trigger = function(id, trig_name, cb)
   send_rpc("get_trigger", { id = id, trig_name = trig_name }, cb)
 end

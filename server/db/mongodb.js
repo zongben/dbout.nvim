@@ -82,6 +82,29 @@ const makeMongodb = async (conn_str, trust_server) => {
       `;
       return await instance.query(cmd);
     },
+    getIndexes: async (table_name) => {
+      const cmd = `
+        {
+          "listIndexes": "${table_name}"
+        }
+      `;
+      const result = await instance.query(cmd);
+      result.rows = result.rows.map((index) => ({
+        index_name: index.name,
+        keys: index.key,
+        is_unique: index.unique === true,
+        is_id_index: index.name === "_id_",
+        sparse: index.sparse === true,
+        expire_after_seconds: index.expireAfterSeconds ?? null,
+        partial_filter: index.partialFilterExpression ?? null,
+        options: {
+          hidden: index.hidden ?? false,
+          collation: index.collation ?? null,
+          wildcard_projection: index.wildcardProjection ?? null,
+        },
+      }));
+      return result;
+    },
     getTrigger: async () => {
       return "Not Supported";
     },

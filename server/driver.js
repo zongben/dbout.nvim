@@ -89,6 +89,10 @@ export const makeDriver = () => {
       const conn = connections.get(id);
       return response(await conn.getTable(table_name));
     },
+    getIndexes: async (id, table_name) => {
+      const conn = connections.get(id);
+      return response(await conn.getIndexes(table_name));
+    },
     getTrigger: async (id, trig_name) => {
       const conn = connections.get(id);
       return response(await conn.getTrigger(trig_name));

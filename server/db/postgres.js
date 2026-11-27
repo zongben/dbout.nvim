@@ -159,6 +159,28 @@ const makePostgres = async (conn_str, trust_server) => {
       });
       return result;
     },
+    getIndexes: async (table_name) => {
+      const sql = `
+        SELECT
+          i.relname AS index_name,
+          string_agg(a.attname, ', ' ORDER BY x.ord) AS columns,
+          ix.indisunique AS is_unique,
+          ix.indisprimary AS is_primary,
+          pg_get_indexdef(ix.indexrelid) AS definition
+        FROM pg_index ix
+        JOIN pg_class i ON i.oid = ix.indexrelid
+        JOIN pg_class t ON t.oid = ix.indrelid
+        JOIN pg_namespace n ON n.oid = t.relnamespace
+        JOIN LATERAL unnest(ix.indkey) WITH ORDINALITY AS x(attnum, ord) ON true
+        JOIN pg_attribute a
+          ON a.attrelid = t.oid AND a.attnum = x.attnum
+        WHERE t.relname = '${table_name}'
+          AND n.nspname = 'public'
+        GROUP BY i.relname, ix.indisunique, ix.indisprimary, ix.indexrelid
+        ORDER BY i.relname;
+      `;
+      return await instance.query(sql);
+    },
     getTriggerList: async (table_name) => {
       const sql = `
         SELECT tg.tgname AS trigger_name

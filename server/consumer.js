@@ -48,6 +48,10 @@ export const makeConsumer = () => {
       const { id, table_name } = params;
       return await driver.getTable(id, table_name);
     },
+    getIndexes: async (params) => {
+      const { id, table_name } = params;
+      return await driver.getIndexes(id, table_name);
+    },
     getTrigger: async (params) => {
       const { id, trig_name } = params;
       return await driver.getTrigger(id, trig_name);
