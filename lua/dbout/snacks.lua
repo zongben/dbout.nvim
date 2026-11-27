@@ -46,6 +46,7 @@ M.open_picker = function()
           id = value.id,
           connstr = value.connstr,
           db_type = value.db_type,
+          trust_server = value.trust_server,
         })
       end
 

@@ -28,7 +28,7 @@ export const makeDriver = () => {
   const connections = new Map();
 
   return {
-    createConnection: async (id, db_type, conn_str) => {
+    createConnection: async (id, db_type, conn_str, trust_server) => {
       if (connections.has(id)) {
         return response("connected");
       }
@@ -38,7 +38,7 @@ export const makeDriver = () => {
         throw new Error(`${db_type} is not supported`);
       }
 
-      const conn = await db.makeConnection(conn_str);
+      const conn = await db.makeConnection(conn_str, trust_server);
       connections.set(id, conn);
       return response("connected");
     },

@@ -1,8 +1,13 @@
 import mysql from "mysql2/promise";
 import { format } from "sql-formatter";
 
-const makeMySql = async (conn_str) => {
-  const pool = mysql.createPool(conn_str);
+const makeMySql = async (conn_str, trust_server) => {
+  const pool = mysql.createPool({
+    uri: conn_str,
+    ssl: {
+      rejectUnauthorized: !trust_server,
+    },
+  });
 
   const instance = {
     getConnectionInfo: async () => {
@@ -172,7 +177,7 @@ const makeMySql = async (conn_str) => {
 };
 
 export const MySql = {
-  makeConnection: async (conn_str) => {
-    return await makeMySql(conn_str);
+  makeConnection: async (conn_str, trust_server) => {
+    return await makeMySql(conn_str, trust_server);
   },
 };

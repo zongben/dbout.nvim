@@ -1,8 +1,13 @@
 import sql from "mssql";
 import { format } from "sql-formatter";
 
-const makeMsSql = async (config) => {
-  const pool = await new sql.ConnectionPool(config).connect();
+const makeMsSql = async (config, trust_server) => {
+  const pool = await new sql.ConnectionPool({
+    ...config,
+    options: {
+      trustServerCertificate: trust_server,
+    },
+  }).connect();
 
   const instance = {
     getConnectionInfo: () => {
@@ -166,8 +171,10 @@ const makeMsSql = async (config) => {
 };
 
 export const MsSql = {
-  makeConnection: async (conn_str) => {
-    const config = sql.ConnectionPool.parseConnectionString(conn_str);
-    return await makeMsSql(config);
+  makeConnection: async (conn_str, trust_server) => {
+    const config = sql.ConnectionPool.parseConnectionString(
+      conn_str,
+    );
+    return await makeMsSql(config, trust_server);
   },
 };

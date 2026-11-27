@@ -1,10 +1,12 @@
 import { MongoClient } from "mongodb";
 import { EJSON } from "bson";
 
-const makeMongodb = async (conn_str) => {
+const makeMongodb = async (conn_str, trust_server) => {
   const url = new URL(conn_str);
 
-  const client = new MongoClient(conn_str);
+  const client = new MongoClient(conn_str, {
+    tlsAllowInvalidCertificates: trust_server,
+  });
   await client.connect();
   const db = client.db(url.pathname.replace(/^\//, ""));
 
@@ -92,7 +94,7 @@ const makeMongodb = async (conn_str) => {
 };
 
 export const Mongodb = {
-  makeConnection: async (conn_str) => {
-    return await makeMongodb(conn_str);
+  makeConnection: async (conn_str, trust_server) => {
+    return await makeMongodb(conn_str, trust_server);
   },
 };

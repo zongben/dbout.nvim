@@ -5,8 +5,8 @@ const driver = makeDriver();
 export const makeConsumer = () => {
   return {
     createConnection: async (params) => {
-      const { id, dbType, connStr } = params;
-      return await driver.createConnection(id, dbType, connStr);
+      const { id, dbType, connStr, trustServer } = params;
+      return await driver.createConnection(id, dbType, connStr, trustServer);
     },
     getConnectionInfo: async (params) => {
       const { id } = params;

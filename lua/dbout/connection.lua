@@ -27,6 +27,15 @@ M.init_connection = function(connection, cb)
       return
     end
 
+    if db_type ~= "sqlite3" then
+      local trust_server = vim.fn.input("Trust server certificate? (y/N): ", connection.trust_server and "y" or "n")
+      if trust_server:lower() == "y" then
+        connection.trust_server = true
+      else
+        connection.trust_server = false
+      end
+    end
+
     local connstr = vim.fn.input("Enter " .. db_type .. " connection string: ", connection.connstr or "")
     if connstr == "" then
       return
@@ -37,6 +46,7 @@ M.init_connection = function(connection, cb)
       name = name,
       db_type = db_type,
       connstr = connstr,
+      trust_server = connection.trust_server or false,
     })
   end
 
@@ -87,6 +97,7 @@ M.update_connection = function(conn)
       c.name = conn.name
       c.db_type = conn.db_type
       c.connstr = conn.connstr
+      c.trust_server = conn.trust_server
       save()
       return
     end
@@ -98,6 +109,7 @@ M.open_connection = function(conn, cb)
     id = conn.id,
     dbType = conn.db_type,
     connStr = conn.connstr,
+    trustServer = conn.trust_server,
   }, function()
     cb()
   end)
