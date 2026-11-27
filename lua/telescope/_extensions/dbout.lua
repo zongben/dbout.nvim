@@ -105,7 +105,7 @@ end
 
 M.new_connection = function(prompt_bufnr)
   actions.close(prompt_bufnr)
-  conn.create_connection({}, function(c)
+  conn.init_connection({}, function(c)
     conn.add_connection(c)
     refresh_picker(prompt_bufnr)
   end)
@@ -119,7 +119,7 @@ end
 
 M.edit_connection = function(prompt_bufnr)
   local connection = action_state.get_selected_entry().value
-  conn.create_connection(connection, function(c)
+  conn.init_connection(connection, function(c)
     conn.update_connection(c)
     refresh_picker(prompt_bufnr)
   end)

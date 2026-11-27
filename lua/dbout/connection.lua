@@ -15,7 +15,7 @@ M.init = function()
   connections = saver.load() or {}
 end
 
-M.create_connection = function(connection, cb)
+M.init_connection = function(connection, cb)
   local fn = function(db_type)
     local name = vim.fn.input("Enter name: ", connection.name or "")
     if name == "" then
