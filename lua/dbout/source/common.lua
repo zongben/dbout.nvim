@@ -92,6 +92,24 @@ local function load_columns(state, conn_id, table_names, callback)
   end
 end
 
+local function format_column_documentation(column)
+  local lines = {
+    ("**Type:** `%s`"):format(column.data_type or "unknown"),
+    ("**Nullable:** `%s`"):format(column.is_nullable and "yes" or "no"),
+    ("**Primary key:** `%s`"):format(column.is_pk and "yes" or "no"),
+    ("**Unique:** `%s`"):format(column.is_unique and "yes" or "no"),
+  }
+
+  if column.max_length then
+    table.insert(lines, 2, ("**Max length:** `%s`"):format(column.max_length))
+  end
+  if column.default_value ~= nil and column.default_value ~= vim.NIL then
+    table.insert(lines, ("**Default:** `%s`"):format(vim.inspect(column.default_value)))
+  end
+
+  return table.concat(lines, "\n")
+end
+
 function M.new(opts)
   local self = setmetatable({}, { __index = M })
   self.opts = opts
@@ -121,16 +139,26 @@ function M:get_completions(bufnr, start_col, cursor, callback)
   local used_tables = get_used_tables(content, state.tables)
 
   local function complete()
-    local function add_item(label, kind)
+    local function add_item(label, kind, column)
       if seen[label] then
         return
       end
 
       seen[label] = true
-      table.insert(items, {
+      local item = {
         label = label,
         kind = kind,
-      })
+      }
+
+      if column then
+        item.detail = column.column_name
+        item.documentation = {
+          kind = "markdown",
+          value = format_column_documentation(column),
+        }
+      end
+
+      table.insert(items, item)
     end
 
     for _, table in ipairs(state.tables) do
@@ -139,7 +167,7 @@ function M:get_completions(bufnr, start_col, cursor, callback)
 
     for table_name in pairs(used_tables) do
       for _, column in ipairs(state.columns[table_name] or {}) do
-        add_item(column.column_name, vim.lsp.protocol.CompletionItemKind.Field)
+        add_item(column.column_name, vim.lsp.protocol.CompletionItemKind.Field, column)
       end
     end
 

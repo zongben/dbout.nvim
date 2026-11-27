@@ -28,6 +28,9 @@ function source:complete(params, callback)
         label = item.label,
         word = item.label,
         kind = item.kind,
+        menu = item.detail,
+        detail = item.detail,
+        documentation = item.documentation,
       })
     end
 
