@@ -20,13 +20,17 @@ const DB_MAP = {
   [DB_TYPE.MONGODB]: Mongodb,
 };
 
+const response = (data) => {
+  return JSON.stringify(data, null, 2);
+};
+
 export const makeDriver = () => {
   const connections = new Map();
 
   return {
     createConnection: async (id, db_type, conn_str) => {
       if (connections.has(id)) {
-        return "connected";
+        return response("connected");
       }
 
       const db = DB_MAP[db_type];
@@ -36,7 +40,7 @@ export const makeDriver = () => {
 
       const conn = await db.makeConnection(conn_str);
       connections.set(id, conn);
-      return "connected";
+      return response("connected");
     },
     closeConnection: async (id) => {
       const conn = connections.get(id);
@@ -47,51 +51,51 @@ export const makeDriver = () => {
     },
     getConnectionInfo: async (id) => {
       const conn = connections.get(id);
-      return await conn.getConnectionInfo();
+      return response(await conn.getConnectionInfo());
     },
     query: async (id, sql) => {
       const conn = connections.get(id);
-      return await conn.query(sql);
+      return response(await conn.query(sql));
     },
     getTableList: async (id) => {
       const conn = connections.get(id);
-      return await conn.getTableList();
+      return response(await conn.getTableList());
     },
     getViewList: async (id) => {
       const conn = connections.get(id);
-      return await conn.getViewList();
+      return response(await conn.getViewList());
     },
     getStoreProcedureList: async (id) => {
       const conn = connections.get(id);
-      return await conn.getStoreProcedureList();
+      return response(await conn.getStoreProcedureList());
     },
     getFunctionList: async (id) => {
       const conn = connections.get(id);
-      return await conn.getFunctionList();
+      return response(await conn.getFunctionList());
     },
     getView: async (id, view_name) => {
       const conn = connections.get(id);
-      return await conn.getView(view_name);
+      return response(await conn.getView(view_name));
     },
     getStoreProcedure: async (id, procedure_name) => {
       const conn = connections.get(id);
-      return await conn.getStoreProcedure(procedure_name);
+      return response(await conn.getStoreProcedure(procedure_name));
     },
     getFunction: async (id, function_name) => {
       const conn = connections.get(id);
-      return await conn.getFunction(function_name);
+      return response(await conn.getFunction(function_name));
     },
     getTable: async (id, table_name) => {
       const conn = connections.get(id);
-      return await conn.getTable(table_name);
+      return response(await conn.getTable(table_name));
     },
     getTrigger: async (id, trig_name) => {
       const conn = connections.get(id);
-      return await conn.getTrigger(trig_name);
+      return response(await conn.getTrigger(trig_name));
     },
     getTriggerList: async (id, table_name) => {
       const conn = connections.get(id);
-      return await conn.getTriggerList(table_name);
+      return response(await conn.getTriggerList(table_name));
     },
     generateSelectSQL: async (id, table_name) => {
       const conn = connections.get(id);
@@ -106,7 +110,7 @@ export const makeDriver = () => {
         });
 
       const sql = `SELECT ${columns.join(",")} FROM ${table_name} WHERE ${pkey.join(" AND ")}`;
-      return conn.format(sql);
+      return response(conn.format(sql));
     },
     generateUpdateSQL: async (id, table_name) => {
       const conn = connections.get(id);
@@ -123,7 +127,7 @@ export const makeDriver = () => {
         });
 
       const sql = `UPDATE ${table_name} SET ${columns.join(",")} WHERE ${pkey.join(" AND ")}`;
-      return conn.format(sql);
+      return response(conn.format(sql));
     },
     generateInsertSQL: async (id, table_name) => {
       const conn = connections.get(id);
@@ -136,11 +140,11 @@ export const makeDriver = () => {
       });
 
       const sql = `INSERT INTO ${table_name}(${columns.join(",")}) VALUES (${values.join(",")})`;
-      return conn.format(sql);
+      return response(conn.format(sql));
     },
     format: async (id, sql) => {
       const conn = connections.get(id);
-      return conn.format(sql);
+      return response(conn.format(sql));
     },
   };
 };

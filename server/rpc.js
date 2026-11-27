@@ -94,7 +94,7 @@ export const makeRPC = () => {
         jsonrpc,
         id,
         error: {
-          code: -32603,
+          code: -32602,
           message: "Invalid params",
           data,
         },
@@ -114,30 +114,63 @@ export const makeRPC = () => {
   };
 
   const validRequest = (req) => {
-    let data = undefined;
-    let id = req.id !== undefined ? req.id : null;
+    if (req === null || typeof req !== "object" || Array.isArray(req)) {
+      return responses.invalidRequest(null, "request must be an object");
+    }
 
-    if (!req.jsonrpc) {
-      data = "jsonrpc is required";
-    } else if (req.jsonrpc != "2.0") {
-      data = "jsonrpc 2.0 only supported";
-    } else if (!req.method) {
-      data = "method is required";
-    } else if (typeof req.method !== "string") {
-      data = "method must be a string";
-    } else if (req.params !== undefined && typeof req.params !== "object") {
-      data = "params must be an array or object if provided";
-    } else if (req.id !== undefined) {
-      const t = typeof req.id;
-      if (!(t === "string" || t === "number" || req.id === null)) {
-        data = "id must be string, number, or null if provided";
-        id = null;
+    const hasId = Object.prototype.hasOwnProperty.call(req, "id");
+    const id = hasId ? req.id : null;
+
+    if (req.jsonrpc !== "2.0") {
+      return responses.invalidRequest(id, "jsonrpc must be 2.0");
+    }
+    if (typeof req.method !== "string") {
+      return responses.invalidRequest(id, "method must be a string");
+    }
+    if (
+      req.params !== undefined &&
+      (req.params === null ||
+        typeof req.params !== "object" ||
+        (!Array.isArray(req.params) && Object.getPrototypeOf(req.params) !== Object.prototype))
+    ) {
+      return responses.invalidRequest(id, "params must be an array or object");
+    }
+    if (hasId) {
+      const type = typeof req.id;
+      if (
+        !(type === "string" || (type === "number" && Number.isFinite(req.id)) || req.id === null)
+      ) {
+        return responses.invalidRequest(null, "id must be string, number, or null");
       }
     }
 
-    if (data) {
-      return responses.invalidRequest(id, data);
-    }
+    return undefined;
+  };
+
+  const exec = async (req) => {
+      const err = validRequest(req);
+      if (err) {
+        return err;
+      }
+
+      const { id, method, params } = req;
+      const isNotification = !Object.prototype.hasOwnProperty.call(req, "id");
+
+      if (!handlers[method]) {
+        return isNotification ? undefined : responses.methodNotFound(id, `${method} not found`);
+      }
+
+      try {
+        const data = await handlers[method](params);
+        if (isNotification) {
+          return undefined;
+        }
+        return responses.ok(id, data === undefined ? null : data);
+      } catch (err) {
+        return isNotification
+          ? undefined
+          : responses.internalError(id, err instanceof Error ? err.message : String(err));
+      }
   };
 
   return {
@@ -145,34 +178,24 @@ export const makeRPC = () => {
       try {
         return JSON.parse(raw);
       } catch (err) {
-        return responses.parseError(err.stack);
+        return responses.parseError(err.message);
       }
     },
-    exec: async (req) => {
-      const err = validRequest(req);
-      if (err) {
-        return err;
+    exec,
+    execBatch: async (requests) => {
+      if (!Array.isArray(requests) || requests.length === 0) {
+        return responses.invalidRequest(null, "batch must contain at least one request");
       }
 
-      const { id, method, params } = req;
-
-      if (!id) {
-        await handlers[method](params);
-        return;
-      }
-
-      if (!handlers[method]) {
-        return responses.methodNotFound(id, `${method} not found`);
-      }
-
-      try {
-        const data = await handlers[method](params);
-        if (data) {
-          return responses.ok(id, JSON.stringify(data, null, 2));
+      const responsesForBatch = [];
+      for (const request of requests) {
+        const response = await exec(request);
+        if (response !== undefined) {
+          responsesForBatch.push(response);
         }
-      } catch (err) {
-        return responses.internalError(req.id, err.stack);
       }
+
+      return responsesForBatch.length > 0 ? responsesForBatch : undefined;
     },
   };
 };
