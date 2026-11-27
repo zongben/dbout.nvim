@@ -1,6 +1,6 @@
-import { makeConsumer } from "./consumer.js";
+import { makeDriver } from "./driver.js";
 
-const consumer = makeConsumer();
+const driver = makeDriver();
 
 const METHODS = {
   CREATE_CONNECTION: "create_connection",
@@ -25,26 +25,35 @@ const METHODS = {
 };
 
 const handlers = {
-  [METHODS.CREATE_CONNECTION]: (params) => consumer.createConnection(params),
-  [METHODS.CLOSE_CONNECTION]: (params) => consumer.closeConnection(params),
-  [METHODS.GET_TABLE_LIST]: (params) => consumer.getTableList(params),
-  [METHODS.GET_VIEW_LIST]: (params) => consumer.getViewList(params),
-  [METHODS.QUERY]: (params) => consumer.query(params),
-  [METHODS.GET_STORE_PROCEDURE_LIST]: (params) =>
-    consumer.getStoreProcedureList(params),
-  [METHODS.GET_FUNCTION_LIST]: (params) => consumer.getFunctionList(params),
-  [METHODS.GET_VIEW]: (params) => consumer.getView(params),
-  [METHODS.GET_STORE_PROCEDURE]: (params) => consumer.getStoreProcedure(params),
-  [METHODS.GET_FUNCTION]: (params) => consumer.getFunction(params),
-  [METHODS.GET_TABLE]: (params) => consumer.getTable(params),
-  [METHODS.GET_INDEXES]: (params) => consumer.getIndexes(params),
-  [METHODS.GET_TRIGGER]: (params) => consumer.getTrigger(params),
-  [METHODS.GET_TRIGGER_LIST]: (params) => consumer.getTriggerList(params),
-  [METHODS.GENERATE_SELECT_SQL]: (params) => consumer.generateSelectSQL(params),
-  [METHODS.GENERATE_INSERT_SQL]: (params) => consumer.generateInsertSQL(params),
-  [METHODS.GENERATE_UPDATE_SQL]: (params) => consumer.generateUpdateSQL(params),
-  [METHODS.FORMAT]: (params) => consumer.format(params),
-  [METHODS.GET_CONNECTION_INFO]: (params) => consumer.getConnectionInfo(params),
+  [METHODS.CREATE_CONNECTION]: ({ id, dbType, connStr, trustServer }) =>
+    driver.createConnection(id, dbType, connStr, trustServer),
+  [METHODS.CLOSE_CONNECTION]: ({ id }) => driver.closeConnection(id),
+  [METHODS.GET_TABLE_LIST]: ({ id }) => driver.getTableList(id),
+  [METHODS.GET_VIEW_LIST]: ({ id }) => driver.getViewList(id),
+  [METHODS.QUERY]: ({ id, sql }) => driver.query(id, sql),
+  [METHODS.GET_STORE_PROCEDURE_LIST]: ({ id }) =>
+    driver.getStoreProcedureList(id),
+  [METHODS.GET_FUNCTION_LIST]: ({ id }) => driver.getFunctionList(id),
+  [METHODS.GET_VIEW]: ({ id, view_name }) => driver.getView(id, view_name),
+  [METHODS.GET_STORE_PROCEDURE]: ({ id, procedure_name }) =>
+    driver.getStoreProcedure(id, procedure_name),
+  [METHODS.GET_FUNCTION]: ({ id, function_name }) =>
+    driver.getFunction(id, function_name),
+  [METHODS.GET_TABLE]: ({ id, table_name }) => driver.getTable(id, table_name),
+  [METHODS.GET_INDEXES]: ({ id, table_name }) =>
+    driver.getIndexes(id, table_name),
+  [METHODS.GET_TRIGGER]: ({ id, trig_name }) =>
+    driver.getTrigger(id, trig_name),
+  [METHODS.GET_TRIGGER_LIST]: ({ id, table_name }) =>
+    driver.getTriggerList(id, table_name),
+  [METHODS.GENERATE_SELECT_SQL]: ({ id, table_name }) =>
+    driver.generateSelectSQL(id, table_name),
+  [METHODS.GENERATE_INSERT_SQL]: ({ id, table_name }) =>
+    driver.generateInsertSQL(id, table_name),
+  [METHODS.GENERATE_UPDATE_SQL]: ({ id, table_name }) =>
+    driver.generateUpdateSQL(id, table_name),
+  [METHODS.FORMAT]: ({ id, sql }) => driver.format(id, sql),
+  [METHODS.GET_CONNECTION_INFO]: ({ id }) => driver.getConnectionInfo(id),
 };
 
 export const makeRPC = () => {
@@ -133,16 +142,22 @@ export const makeRPC = () => {
       req.params !== undefined &&
       (req.params === null ||
         typeof req.params !== "object" ||
-        (!Array.isArray(req.params) && Object.getPrototypeOf(req.params) !== Object.prototype))
+        (!Array.isArray(req.params) &&
+          Object.getPrototypeOf(req.params) !== Object.prototype))
     ) {
       return responses.invalidRequest(id, "params must be an array or object");
     }
     if (hasId) {
       const type = typeof req.id;
-      if (
-        !(type === "string" || (type === "number" && Number.isFinite(req.id)) || req.id === null)
-      ) {
-        return responses.invalidRequest(null, "id must be string, number, or null");
+      if (!(
+        type === "string" ||
+        (type === "number" && Number.isFinite(req.id)) ||
+        req.id === null
+      )) {
+        return responses.invalidRequest(
+          null,
+          "id must be string, number, or null",
+        );
       }
     }
 
@@ -150,29 +165,34 @@ export const makeRPC = () => {
   };
 
   const exec = async (req) => {
-      const err = validRequest(req);
-      if (err) {
-        return err;
-      }
+    const err = validRequest(req);
+    if (err) {
+      return err;
+    }
 
-      const { id, method, params } = req;
-      const isNotification = !Object.prototype.hasOwnProperty.call(req, "id");
+    const { id, method, params } = req;
+    const isNotification = !Object.prototype.hasOwnProperty.call(req, "id");
 
-      if (!handlers[method]) {
-        return isNotification ? undefined : responses.methodNotFound(id, `${method} not found`);
-      }
+    if (!handlers[method]) {
+      return isNotification
+        ? undefined
+        : responses.methodNotFound(id, `${method} not found`);
+    }
 
-      try {
-        const data = await handlers[method](params);
-        if (isNotification) {
-          return undefined;
-        }
-        return responses.ok(id, data === undefined ? null : data);
-      } catch (err) {
-        return isNotification
-          ? undefined
-          : responses.internalError(id, err instanceof Error ? err.message : String(err));
+    try {
+      const data = await handlers[method](params);
+      if (isNotification) {
+        return undefined;
       }
+      return responses.ok(id, data === undefined ? null : data);
+    } catch (err) {
+      return isNotification
+        ? undefined
+        : responses.internalError(
+            id,
+            err instanceof Error ? err.message : String(err),
+          );
+    }
   };
 
   return {
@@ -186,7 +206,10 @@ export const makeRPC = () => {
     exec,
     execBatch: async (requests) => {
       if (!Array.isArray(requests) || requests.length === 0) {
-        return responses.invalidRequest(null, "batch must contain at least one request");
+        return responses.invalidRequest(
+          null,
+          "batch must contain at least one request",
+        );
       }
 
       const responsesForBatch = [];
