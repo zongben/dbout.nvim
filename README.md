@@ -54,10 +54,9 @@ The default configuration is as follows:
       inspector = 1,
       viewer = 3,
     },
-    -- Open utility panels by default when a buffer attaches to a connection.
     init_open = {
-      inspector = true,
-      viewer = true,
+      inspector = false,
+      viewer = false,
     },
   },
   viewer = {
